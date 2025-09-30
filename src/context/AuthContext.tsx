@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | Admin | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<User | Admin>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   checkMarathonId: (marathonId: string) => Promise<{ available: boolean; message?: string }>;
@@ -37,12 +37,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initAuth = async () => {
       try {
         const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+        
         if (token) {
           const response = await authService.verifyToken();
+          
           if (response.valid && response.user) {
             setUser(response.user);
           } else {
             localStorage.removeItem(STORAGE_KEYS.TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER);
+          }
+        } else if (storedUser) {
+          // Token yoksa stored user'ı kullan
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
             localStorage.removeItem(STORAGE_KEYS.USER);
           }
         }
@@ -66,6 +78,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       setUser(response.user);
+      
+      // Kullanıcı bilgilerini döndür
+      return response.user;
     } catch (error) {
       throw error;
     } finally {

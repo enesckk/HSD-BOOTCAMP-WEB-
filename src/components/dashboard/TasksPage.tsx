@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Upload, 
   FileText, 
@@ -23,12 +24,19 @@ import {
 } from 'lucide-react';
 
 const TasksPage = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('upload');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadType, setUploadType] = useState('file'); // 'file' or 'link'
-  const [editingTask, setEditingTask] = useState<number | null>(null);
+  const [editingTask, setEditingTask] = useState<any | null>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [formData, setFormData] = useState({
-    taskName: '',
+    title: '',
     description: '',
     huaweiCloudAccount: '',
     file: null as File | null,
@@ -36,55 +44,33 @@ const TasksPage = () => {
     notes: ''
   });
 
-  const tasks = [
-    {
-      id: 1,
-      name: 'Proje Planı',
-      description: 'Proje planı ve wireframe dosyaları',
-      status: 'completed',
-      uploadDate: '15 Eylül 2024',
-      huaweiCloudAccount: 'ahmet_yilmaz',
-      fileType: 'file',
-      fileName: 'proje_plani.pdf',
-      fileSize: '2.5 MB',
-      notes: 'İlk versiyon tamamlandı'
-    },
-    {
-      id: 2,
-      name: 'Teknik Dokümantasyon',
-      description: 'API dokümantasyonu ve teknik şartname',
-      status: 'completed',
-      uploadDate: '18 Eylül 2024',
-      huaweiCloudAccount: 'fatma_demir',
-      fileType: 'link',
-      fileLink: 'https://docs.google.com/document/d/example',
-      notes: 'Son güncelleme yapıldı'
-    },
-    {
-      id: 3,
-      name: 'UI/UX Tasarım',
-      description: 'Kullanıcı arayüzü tasarım dosyaları',
-      status: 'pending',
-      uploadDate: null,
-      huaweiCloudAccount: '',
-      fileType: null,
-      fileName: null,
-      fileSize: null,
-      notes: ''
-    },
-    {
-      id: 4,
-      name: 'Sunum Hazırlığı',
-      description: 'Final sunumu için hazırlık dosyaları',
-      status: 'pending',
-      uploadDate: null,
-      huaweiCloudAccount: '',
-      fileType: null,
-      fileName: null,
-      fileSize: null,
-      notes: ''
-    }
-  ];
+  // Fetch tasks from API
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/tasks?userId=${user.id}`);
+        const json = await res.json();
+        console.log('Tasks API response:', json);
+        
+        // Ensure we always have an array
+        const tasksArray = Array.isArray(json) ? json : 
+                          Array.isArray(json.items) ? json.items : 
+                          Array.isArray(json.tasks) ? json.tasks : [];
+        
+        console.log('Tasks array:', tasksArray);
+        setTasks(tasksArray);
+      } catch (e) {
+        console.error('Tasks fetch error', e);
+        setError('Görevler yüklenemedi');
+        setTasks([]); // Ensure tasks is always an array
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTasks();
+  }, [user]);
 
   const tabs = [
     { id: 'upload', label: 'Görev Yükle', icon: Upload },
@@ -102,49 +88,128 @@ const TasksPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsUploading(true);
+    setError('');
+    setSuccessMessage('');
     
-    // Simulate upload
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsUploading(false);
-    // Reset form
-    setFormData({
-      taskName: '',
-      description: '',
-      huaweiCloudAccount: '',
-      file: null,
-      fileLink: '',
-      notes: ''
-    });
-    setEditingTask(null);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('huaweiCloudAccount', formData.huaweiCloudAccount);
+      formDataToSend.append('uploadType', uploadType);
+      
+      if (uploadType === 'file' && formData.file) {
+        formDataToSend.append('file', formData.file);
+      } else if (uploadType === 'link') {
+        formDataToSend.append('fileUrl', formData.fileLink);
+      }
+      
+      const url = editingTask ? `/api/tasks/${editingTask.id}` : '/api/tasks';
+      const method = editingTask ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        body: formDataToSend
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Görev kaydedilemedi');
+      }
+      
+      const newTask = await res.json();
+      
+      if (editingTask) {
+        setTasks(prev => (prev || []).map(t => t.id === editingTask.id ? newTask : t));
+        setSuccessMessage('Görev başarıyla güncellendi!');
+      } else {
+        setTasks(prev => [newTask, ...(prev || [])]);
+        setSuccessMessage('Görev başarıyla yüklendi!');
+      }
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        huaweiCloudAccount: '',
+        file: null,
+        fileLink: '',
+        notes: ''
+      });
+      setEditingTask(null);
+      setActiveTab('tasks');
+      
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (e) {
+      console.error('Task save error', e);
+      setError(e instanceof Error ? e.message : 'Görev kaydedilemedi');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleEdit = (taskId: number) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      setFormData({
-        taskName: task.name,
-        description: task.description,
-        huaweiCloudAccount: task.huaweiCloudAccount || '',
-        file: null,
-        fileLink: task.fileLink || '',
-        notes: task.notes || ''
+  const handleEdit = (task: any) => {
+    if (!task) return;
+    setFormData({
+      title: task.title || '',
+      description: task.description || '',
+      huaweiCloudAccount: task.huaweiCloudAccount || '',
+      file: null,
+      fileLink: task.fileUrl || '',
+      notes: ''
+    });
+    setUploadType(task.uploadType === 'LINK' ? 'link' : 'file');
+    setEditingTask(task);
+    setActiveTab('upload');
+  };
+
+  const handleDelete = async (taskId: string) => {
+    if (!taskId || !confirm('Bu görevi silmek istediğinizden emin misiniz?')) return;
+    
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE'
       });
-      setUploadType(task.fileType === 'link' ? 'link' : 'file');
-      setEditingTask(taskId);
-      setActiveTab('upload');
+      
+      if (!res.ok) throw new Error('Görev silinemedi');
+      
+      setTasks(prev => (prev || []).filter(t => t.id !== taskId));
+      setSuccessMessage('Görev başarıyla silindi!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (e) {
+      console.error('Delete error', e);
+      setError('Görev silinemedi');
     }
+  };
+
+  const handleViewDetail = (task: any) => {
+    setSelectedTask(task);
+    setShowDetailModal(true);
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'COMPLETED':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'pending':
+      case 'PENDING':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       default:
         return <AlertCircle className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'Tamamlandı';
+      case 'PENDING':
+        return 'Bekliyor';
+      default:
+        return 'Bilinmiyor';
     }
   };
 
@@ -154,7 +219,7 @@ const TasksPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Görev Yönetimi</h1>
+          <h1 className="sr-only">Görev Yönetimi</h1>
           <p className="text-gray-600 mt-2">Görevlerinizi yükleyin ve takip edin</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -213,8 +278,8 @@ const TasksPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.taskName}
-                  onChange={(e) => handleInputChange('taskName', e.target.value)}
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
                   placeholder="Örn: Proje Planı"
                   required
@@ -367,7 +432,7 @@ const TasksPage = () => {
                   type="button"
                   onClick={() => {
                     setFormData({
-                      taskName: '',
+                      title: '',
                       description: '',
                       huaweiCloudAccount: '',
                       file: null,
@@ -407,86 +472,197 @@ const TasksPage = () => {
 
       {activeTab === 'tasks' && (
         <div className="space-y-6">
-          {tasks.map((task, index) => (
+          {/* Success/Error Messages */}
+          {successMessage && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 text-sm">{successMessage}</p>
+            </div>
+          )}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+              <span className="ml-3 text-gray-600">Görevler yükleniyor...</span>
+            </div>
+          ) : (tasks || []).length === 0 ? (
             <motion.div
-              key={task.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+              className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <h3 className="text-xl font-bold text-gray-900">{task.name}</h3>
-                    {getStatusIcon(task.status)}
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz görev yok</h3>
+              <p className="text-gray-600">İlk görevinizi yüklemek için "Görev Yükle" sekmesini kullanın.</p>
+            </motion.div>
+          ) : (
+            (tasks || []).map((task, index) => (
+              <motion.div
+                key={task.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <h3 className="text-xl font-bold text-gray-900">{task.title}</h3>
+                      {getStatusIcon(task.status)}
+                      <span className="text-sm text-gray-500">{getStatusText(task.status)}</span>
+                    </div>
+                    
+                    <p className="text-gray-600 mb-4">{task.description}</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Cloud className="w-4 h-4 text-red-600" />
+                        <span className="text-gray-500">Huawei Cloud:</span>
+                        <span className="font-medium text-gray-900">{task.huaweiCloudAccount || 'Belirtilmemiş'}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-red-600" />
+                        <span className="text-gray-500">Yükleme:</span>
+                        <span className="font-medium text-gray-900">{new Date(task.createdAt).toLocaleDateString('tr-TR')} {new Date(task.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      {task.uploadType === 'FILE' && task.fileUrl && (
+                        <div className="flex items-center space-x-2">
+                          <FileText className="w-4 h-4 text-red-600" />
+                          <span className="text-gray-500">Dosya:</span>
+                          <a href={task.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
+                            Dosyayı Görüntüle
+                          </a>
+                        </div>
+                      )}
+                      {task.uploadType === 'LINK' && task.fileUrl && (
+                        <div className="flex items-center space-x-2">
+                          <Link className="w-4 h-4 text-red-600" />
+                          <span className="text-gray-500">Link:</span>
+                          <a href={task.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
+                            Dosyayı Görüntüle
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
-                  <p className="text-gray-600 mb-4">{task.description}</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Cloud className="w-4 h-4 text-red-600" />
-                      <span className="text-gray-500">Huawei Cloud:</span>
-                      <span className="font-medium text-gray-900">{task.huaweiCloudAccount || 'Belirtilmemiş'}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-red-600" />
-                      <span className="text-gray-500">Yükleme:</span>
-                      <span className="font-medium text-gray-900">{task.uploadDate || 'Henüz yüklenmedi'}</span>
-                    </div>
-                    {task.fileType === 'file' && task.fileName && (
-                      <div className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4 text-red-600" />
-                        <span className="text-gray-500">Dosya:</span>
-                        <span className="font-medium text-gray-900">{task.fileName} ({task.fileSize})</span>
-                      </div>
-                    )}
-                    {task.fileType === 'link' && task.fileLink && (
-                      <div className="flex items-center space-x-2">
-                        <Link className="w-4 h-4 text-red-600" />
-                        <span className="text-gray-500">Link:</span>
-                        <a href={task.fileLink} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
-                          Dosyayı Görüntüle
-                        </a>
-                      </div>
-                    )}
+                  <div className="flex items-center space-x-2 ml-4">
+                    <button 
+                      onClick={() => handleViewDetail(task)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Detayları Görüntüle"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleEdit(task)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                      title="Düzenle"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(task.id)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                      title="Sil"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  
-                  {task.notes && (
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">
-                        <strong>Not:</strong> {task.notes}
-                      </p>
-                    </div>
-                  )}
                 </div>
-                
-                <div className="flex items-center space-x-2 ml-4">
-                  {task.status === 'completed' && (
-                    <>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                  <button 
-                    onClick={() => handleEdit(task.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
-                    title="Düzenle"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Sil">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+              </motion.div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Görev Detayları</h3>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">{selectedTask.title}</h4>
+                <p className="text-gray-600">{selectedTask.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Cloud className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Huawei Cloud:</span>
+                  <span className="font-medium text-gray-900">{selectedTask.huaweiCloudAccount || 'Belirtilmemiş'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Yükleme:</span>
+                  <span className="font-medium text-gray-900">{new Date(selectedTask.createdAt).toLocaleDateString('tr-TR')} {new Date(selectedTask.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Target className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Durum:</span>
+                  <span className="font-medium text-gray-900">{getStatusText(selectedTask.status)}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Upload className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Tür:</span>
+                  <span className="font-medium text-gray-900">{selectedTask.uploadType === 'FILE' ? 'Dosya' : 'Link'}</span>
                 </div>
               </div>
-            </motion.div>
-          ))}
+              
+              {selectedTask.fileUrl && (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h5 className="font-medium text-gray-900 mb-2">Dosya/Link</h5>
+                  <a 
+                    href={selectedTask.fileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-red-600 hover:text-red-700 break-all"
+                  >
+                    {selectedTask.fileUrl}
+                  </a>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleEdit(selectedTask);
+                    setActiveTab('upload');
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Düzenle
+                </button>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
 

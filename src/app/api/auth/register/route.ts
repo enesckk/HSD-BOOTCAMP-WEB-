@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { RegisterRequest } from '@/types/user';
 import { prisma } from '@/lib/prisma';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = 'your-super-secret-jwt-key-for-afet-maratonu-2024';
 const JWT_EXPIRES_IN = '7d';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
 
@@ -65,6 +65,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Map Turkish team roles to enum values
+    const teamRoleMap: { [key: string]: 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI' } = {
+      'Lider': 'LIDER',
+      'Teknik Sorumlu': 'TEKNIK_SORUMLU',
+      'Tasarımcı': 'TASARIMCI'
+    };
+
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -78,7 +85,7 @@ export async function POST(request: NextRequest) {
         phone,
         university,
         department,
-        teamRole: teamRole as 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI',
+        teamRole: teamRoleMap[teamRole],
         role: 'PARTICIPANT',
         isActive: true,
       },

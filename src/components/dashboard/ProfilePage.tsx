@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import { 
   User, 
   Mail, 
@@ -14,31 +15,114 @@ import {
   X,
   Camera,
   Shield,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 
 const ProfilePage = () => {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    fullName: 'Ahmet Yılmaz',
-    email: 'ahmet@example.com',
-    phone: '+90 555 123 45 67',
-    university: 'Gaziantep Üniversitesi',
-    department: 'Bilgisayar Mühendisliği',
+    fullName: '',
+    email: '',
+    phone: '',
+    university: '',
+    department: '',
     teamRole: 'Lider',
-    marathonId: 'MAR001'
+    marathonId: ''
   });
+  const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
+
+  // User verilerini formData'ya yükle
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        university: user.university || '',
+        department: user.department || '',
+        teamRole: user.teamRole || 'Lider',
+        marathonId: user.marathonId || ''
+      });
+      setPasswords({ current: '', next: '', confirm: '' });
+    }
+  }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    // Save logic here
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setError('');
+    
+    // takım rolü değişmeyecek
+    const payload: any = {
+      fullName: formData.fullName,
+      phone: formData.phone,
+      university: formData.university,
+      department: formData.department,
+      email: formData.email,
+    };
+
+    // şifre güncelleme (opsiyonel)
+    if (passwords.next) {
+      if (passwords.next !== passwords.confirm) {
+        setError('Yeni şifre ve doğrulama eşleşmiyor');
+        return;
+      }
+      payload.password = passwords.next;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        // Auth context storage anahtarı projede STORAGE_KEYS.USER
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setIsEditing(false);
+        setPasswords({ current: '', next: '', confirm: '' });
+        // Sayfayı yenile
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Profil güncelleme hatası');
+      }
+    } catch (error) {
+      console.error('Profil güncelleme hatası:', error);
+      setError('Bağlantı hatası');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
+    // Orijinal verileri geri yükle
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        university: user.university || '',
+        department: user.department || '',
+        teamRole: user.teamRole || 'Lider',
+        marathonId: user.marathonId || ''
+      });
+    }
+    setError('');
     setIsEditing(false);
   };
 
@@ -47,7 +131,7 @@ const ProfilePage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Profil Bilgileri</h1>
+          <h1 className="sr-only">Profil Bilgileri</h1>
           <p className="text-gray-600 mt-2">Kişisel bilgilerinizi görüntüleyin ve düzenleyin</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -65,12 +149,17 @@ const ProfilePage = () => {
             <div className="flex items-center space-x-2">
               <motion.button
                 onClick={handleSave}
-                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                disabled={isLoading}
+                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Save className="w-4 h-4" />
-                <span>Kaydet</span>
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                <span>{isLoading ? 'Kaydediliyor...' : 'Kaydet'}</span>
               </motion.button>
               <motion.button
                 onClick={handleCancel}
@@ -246,30 +335,65 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* Team Role */}
+              {/* Team Role (readonly) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Takım Rolü
                 </label>
-                {isEditing ? (
-                  <select
-                    value={formData.teamRole}
-                    onChange={(e) => handleInputChange('teamRole', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
-                  >
-                    <option value="Lider">Lider</option>
-                    <option value="Teknik Sorumlu">Teknik Sorumlu</option>
-                    <option value="Tasarımcı">Tasarımcı</option>
-                  </select>
-                ) : (
-                  <p className="text-gray-900 py-2">{formData.teamRole}</p>
-                )}
+                <p className="text-gray-900 py-2">{formData.teamRole}</p>
+                <p className="text-xs text-gray-500 mt-1">Bu alan değiştirilemez</p>
               </div>
             </div>
 
+            {/* Password Update */}
             {isEditing && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Şifre Güncelle</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mevcut Şifre</label>
+                    <input
+                      type="password"
+                      value={passwords.current}
+                      onChange={(e) => setPasswords(prev => ({ ...prev, current: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
+                    <input
+                      type="password"
+                      value={passwords.next}
+                      onChange={(e) => setPasswords(prev => ({ ...prev, next: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                      placeholder="En az 6 karakter"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre (Tekrar)</label>
+                    <input
+                      type="password"
+                      value={passwords.confirm}
+                      onChange={(e) => setPasswords(prev => ({ ...prev, confirm: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                      placeholder="Yeni şifreyi tekrar yazın"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            {error && (
               <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-800">
+                  <strong>Hata:</strong> {error}
+                </p>
+              </div>
+            )}
+
+            {isEditing && !error && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
                   <strong>Not:</strong> Bilgilerinizi güncelledikten sonra değişikliklerin onaylanması gerekebilir.
                 </p>
               </div>

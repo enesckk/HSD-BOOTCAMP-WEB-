@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Upload, 
   FileText, 
@@ -27,60 +28,72 @@ import {
 } from 'lucide-react';
 
 const PresentationPage = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('upload');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadType, setUploadType] = useState('file'); // 'file' or 'link'
-  const [editingPresentation, setEditingPresentation] = useState<number | null>(null);
+  const [editingPresentation, setEditingPresentation] = useState<any | null>(null);
+  const [presentations, setPresentations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedPresentation, setSelectedPresentation] = useState<any | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [presentationToDelete, setPresentationToDelete] = useState<any | null>(null);
+  const [teamInfo, setTeamInfo] = useState({ name: '', members: [] as string[] });
   const [formData, setFormData] = useState({
-    presentationTitle: '',
+    title: '',
     description: '',
     file: null as File | null,
     fileLink: '',
-    notes: '',
-    teamName: 'Afet Teknoloji Takımı',
-    teamMembers: ['Ahmet Yılmaz', 'Fatma Demir', 'Mehmet Kaya']
+    notes: ''
   });
 
-  const presentations = [
-    {
-      id: 1,
-      title: 'Final Sunumu - Proje Tanıtımı',
-      description: 'Afet yönetimi projesinin final sunumu',
-      status: 'completed',
-      uploadDate: '20 Eylül 2024',
-      fileType: 'file',
-      fileName: 'final_sunum.pptx',
-      fileSize: '15.2 MB',
-      notes: 'Final sunum hazırlandı',
-      teamName: 'Afet Teknoloji Takımı',
-      teamMembers: ['Ahmet Yılmaz', 'Fatma Demir', 'Mehmet Kaya']
-    },
-    {
-      id: 2,
-      title: 'Ara Sunum - Proje İlerlemesi',
-      description: 'Proje ilerlemesi ve teknik detaylar',
-      status: 'completed',
-      uploadDate: '15 Eylül 2024',
-      fileType: 'link',
-      fileLink: 'https://docs.google.com/presentation/d/example',
-      notes: 'Ara sunum tamamlandı',
-      teamName: 'Afet Teknoloji Takımı',
-      teamMembers: ['Ahmet Yılmaz', 'Fatma Demir', 'Mehmet Kaya']
-    },
-    {
-      id: 3,
-      title: 'Demo Sunumu',
-      description: 'Proje demo ve canlı gösterim',
-      status: 'pending',
-      uploadDate: null,
-      fileType: null,
-      fileName: null,
-      fileSize: null,
-      notes: '',
-      teamName: 'Afet Teknoloji Takımı',
-      teamMembers: ['Ahmet Yılmaz', 'Fatma Demir', 'Mehmet Kaya']
-    }
-  ];
+  // Fetch presentations and team info from API
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      try {
+        setIsLoading(true);
+        
+        // Fetch presentations
+        const presentationsRes = await fetch(`/api/presentations?userId=${user.id}`);
+        const presentationsData = await presentationsRes.json();
+        console.log('Presentations API response:', presentationsData);
+        
+        const presentationsArray = Array.isArray(presentationsData) ? presentationsData : 
+                                  Array.isArray(presentationsData.items) ? presentationsData.items : 
+                                  Array.isArray(presentationsData.presentations) ? presentationsData.presentations : [];
+        
+        setPresentations(presentationsArray);
+        
+        // Fetch team info
+        const teamRes = await fetch(`/api/teams?userId=${user.id}`);
+        const teamData = await teamRes.json();
+        console.log('Team API response:', teamData);
+        
+        const team = Array.isArray(teamData) ? teamData[0] : 
+                    Array.isArray(teamData.items) ? teamData.items[0] : 
+                    teamData.team || null;
+        
+        if (team) {
+          setTeamInfo({
+            name: team.name || 'Takım Adı',
+            members: (team.members || []).map((m: any) => m.fullName || m.name || 'Üye')
+          });
+        }
+        
+      } catch (e) {
+        console.error('Data fetch error', e);
+        setError('Veriler yüklenemedi');
+        setPresentations([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
 
   const tabs = [
     { id: 'upload', label: 'Sunum Yükle', icon: Upload },
@@ -98,49 +111,139 @@ const PresentationPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsUploading(true);
+    setError('');
+    setSuccessMessage('');
     
-    // Simulate upload
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsUploading(false);
-    // Reset form
-    setFormData(prev => ({
-      ...prev,
-      presentationTitle: '',
-      description: '',
-      file: null,
-      fileLink: '',
-      notes: ''
-    }));
-    setEditingPresentation(null);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('teamName', teamInfo.name);
+      formDataToSend.append('memberNames', teamInfo.members.join(', '));
+      formDataToSend.append('uploadType', uploadType);
+      
+      if (uploadType === 'file' && formData.file) {
+        formDataToSend.append('file', formData.file);
+      } else if (uploadType === 'link') {
+        formDataToSend.append('fileUrl', formData.fileLink);
+      }
+      
+      const url = editingPresentation ? `/api/presentations/${editingPresentation.id}` : '/api/presentations';
+      const method = editingPresentation ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        body: formDataToSend
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Sunum kaydedilemedi');
+      }
+      
+      const newPresentation = await res.json();
+      
+      if (editingPresentation) {
+        setPresentations(prev => (prev || []).map(p => p.id === editingPresentation.id ? newPresentation : p));
+        setSuccessMessage('Sunum başarıyla güncellendi!');
+      } else {
+        setPresentations(prev => [newPresentation, ...(prev || [])]);
+        setSuccessMessage('Sunum başarıyla yüklendi!');
+      }
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        file: null,
+        fileLink: '',
+        notes: ''
+      });
+      setEditingPresentation(null);
+      setActiveTab('presentations');
+      
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (e) {
+      console.error('Presentation save error', e);
+      setError(e instanceof Error ? e.message : 'Sunum kaydedilemedi');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleEdit = (presentationId: number) => {
-    const presentation = presentations.find(p => p.id === presentationId);
-    if (presentation) {
-      setFormData(prev => ({
-        ...prev,
-        presentationTitle: presentation.title,
-        description: presentation.description,
-        file: null,
-        fileLink: presentation.fileLink || '',
-        notes: presentation.notes || ''
-      }));
-      setUploadType(presentation.fileType === 'link' ? 'link' : 'file');
-      setEditingPresentation(presentationId);
-      setActiveTab('upload');
+  const handleEdit = (presentation: any) => {
+    if (!presentation) return;
+    setFormData({
+      title: presentation.title || '',
+      description: presentation.description || '',
+      file: null,
+      fileLink: presentation.fileUrl || '',
+      notes: ''
+    });
+    setUploadType(presentation.uploadType === 'LINK' ? 'link' : 'file');
+    setEditingPresentation(presentation);
+    setActiveTab('upload');
+  };
+
+  const handleDeleteClick = (presentation: any) => {
+    setPresentationToDelete(presentation);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!presentationToDelete) return;
+    
+    try {
+      const res = await fetch(`/api/presentations/${presentationToDelete.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!res.ok) throw new Error('Sunum silinemedi');
+      
+      setPresentations(prev => (prev || []).filter(p => p.id !== presentationToDelete.id));
+      setSuccessMessage('Sunum başarıyla silindi!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      setShowDeleteModal(false);
+      setPresentationToDelete(null);
+    } catch (e) {
+      console.error('Delete error', e);
+      setError('Sunum silinemedi');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setPresentationToDelete(null);
+  };
+
+  const handleViewDetail = (presentation: any) => {
+    setSelectedPresentation(presentation);
+    setShowDetailModal(true);
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'COMPLETED':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'pending':
+      case 'PENDING':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       default:
         return <AlertCircle className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'Tamamlandı';
+      case 'PENDING':
+        return 'Bekliyor';
+      default:
+        return 'Bilinmiyor';
     }
   };
 
@@ -170,7 +273,7 @@ const PresentationPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sunum Yönetimi</h1>
+          <h1 className="sr-only">Sunum Yönetimi</h1>
           <p className="text-gray-600 mt-2">Sunumlarınızı yükleyin ve takip edin</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -197,8 +300,8 @@ const PresentationPage = () => {
             <Users className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{formData.teamName}</h2>
-            <p className="text-gray-600">Takım Üyeleri: {formData.teamMembers.join(', ')}</p>
+            <h2 className="text-xl font-bold text-gray-900">{teamInfo.name || 'Takım Adı'}</h2>
+            <p className="text-gray-600">Takım Üyeleri: {teamInfo.members.join(', ') || 'Üye bilgisi yükleniyor...'}</p>
           </div>
         </div>
       </motion.div>
@@ -246,8 +349,8 @@ const PresentationPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.presentationTitle}
-                  onChange={(e) => handleInputChange('presentationTitle', e.target.value)}
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-600"
                   placeholder="Örn: Final Sunumu - Proje Tanıtımı"
                   required
@@ -378,14 +481,13 @@ const PresentationPage = () => {
               <div className="flex items-center justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({
-                    ...prev,
-                    presentationTitle: '',
+                  onClick={() => setFormData({
+                    title: '',
                     description: '',
                     file: null,
                     fileLink: '',
                     notes: ''
-                  }))}
+                  })}
                   className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   Temizle
@@ -417,7 +519,37 @@ const PresentationPage = () => {
 
       {activeTab === 'presentations' && (
         <div className="space-y-6">
-          {presentations.map((presentation, index) => (
+          {/* Success/Error Messages */}
+          {successMessage && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 text-sm">{successMessage}</p>
+            </div>
+          )}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+              <span className="ml-3 text-gray-600">Sunumlar yükleniyor...</span>
+            </div>
+          ) : (presentations || []).length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center"
+            >
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Presentation className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz sunum yok</h3>
+              <p className="text-gray-600">İlk sunumunuzu yüklemek için "Sunum Yükle" sekmesini kullanın.</p>
+            </motion.div>
+          ) : (
+            (presentations || []).map((presentation, index) => (
             <motion.div
               key={presentation.id}
               initial={{ opacity: 0, y: 20 }}
@@ -430,6 +562,7 @@ const PresentationPage = () => {
                   <div className="flex items-center space-x-3 mb-3">
                     <h3 className="text-xl font-bold text-gray-900">{presentation.title}</h3>
                     {getStatusIcon(presentation.status)}
+                    <span className="text-sm text-gray-500">{getStatusText(presentation.status)}</span>
                   </div>
                   
                   <p className="text-gray-600 mb-4">{presentation.description}</p>
@@ -438,20 +571,22 @@ const PresentationPage = () => {
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-red-600" />
                       <span className="text-gray-500">Yükleme:</span>
-                      <span className="font-medium text-gray-900">{presentation.uploadDate || 'Henüz yüklenmedi'}</span>
+                      <span className="font-medium text-gray-900">{new Date(presentation.createdAt).toLocaleDateString('tr-TR')} {new Date(presentation.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    {presentation.fileType === 'file' && presentation.fileName && (
+                    {presentation.uploadType === 'FILE' && presentation.fileUrl && (
                       <div className="flex items-center space-x-2">
-                        {getFileIcon(presentation.fileName)}
+                        {getFileIcon(presentation.fileUrl.split('/').pop() || '')}
                         <span className="text-gray-500">Dosya:</span>
-                        <span className="font-medium text-gray-900">{presentation.fileName} ({presentation.fileSize})</span>
+                        <a href={presentation.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
+                          Dosyayı Görüntüle
+                        </a>
                       </div>
                     )}
-                    {presentation.fileType === 'link' && presentation.fileLink && (
+                    {presentation.uploadType === 'LINK' && presentation.fileUrl && (
                       <div className="flex items-center space-x-2">
                         <Link className="w-4 h-4 text-red-600" />
                         <span className="text-gray-500">Link:</span>
-                        <a href={presentation.fileLink} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
+                        <a href={presentation.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
                           Sunumu Görüntüle
                         </a>
                       </div>
@@ -468,44 +603,175 @@ const PresentationPage = () => {
                       <strong>Takım:</strong> {presentation.teamName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <strong>Üyeler:</strong> {presentation.teamMembers.join(', ')}
+                      <strong>Üyeler:</strong> {presentation.memberNames}
                     </p>
                   </div>
-                  
-                  {presentation.notes && (
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">
-                        <strong>Not:</strong> {presentation.notes}
-                      </p>
-                    </div>
-                  )}
                 </div>
                 
                 <div className="flex items-center space-x-2 ml-4">
-                  {presentation.status === 'completed' && (
-                    <>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
                   <button 
-                    onClick={() => handleEdit(presentation.id)}
+                    onClick={() => handleViewDetail(presentation)}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Detayları Görüntüle"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleEdit(presentation)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                     title="Düzenle"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => handleDeleteClick(presentation)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                    title="Sil"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </motion.div>
-          ))}
+          ))
+          )}
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedPresentation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowDetailModal(false)} />
+          <div className="relative bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Sunum Detayları</h3>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                <span>Sunum: {selectedPresentation.title}</span>
+                <span>Durum: {getStatusText(selectedPresentation.status)}</span>
+                <span>Tür: {selectedPresentation.uploadType === 'FILE' ? 'Dosya' : 'Link'}</span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">{selectedPresentation.title}</h4>
+                <p className="text-gray-600">{selectedPresentation.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Yükleme:</span>
+                  <span className="font-medium text-gray-900">{new Date(selectedPresentation.createdAt).toLocaleDateString('tr-TR')} {new Date(selectedPresentation.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Target className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Durum:</span>
+                  <span className="font-medium text-gray-900">{getStatusText(selectedPresentation.status)}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Upload className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Tür:</span>
+                  <span className="font-medium text-gray-900">{selectedPresentation.uploadType === 'FILE' ? 'Dosya' : 'Link'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-red-600" />
+                  <span className="text-gray-500">Takım:</span>
+                  <span className="font-medium text-gray-900">{selectedPresentation.teamName}</span>
+                </div>
+              </div>
+              
+              {selectedPresentation.fileUrl && (
+                <div className="p-4 bg-gray-50 rounded-lg mb-4">
+                  <h5 className="font-medium text-gray-900 mb-2">Dosya/Link</h5>
+                  <a 
+                    href={selectedPresentation.fileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-red-600 hover:text-red-700 break-all"
+                  >
+                    {selectedPresentation.fileUrl}
+                  </a>
+                </div>
+              )}
+              
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h5 className="font-medium text-gray-900 mb-2">Takım Üyeleri</h5>
+                <p className="text-gray-600">{selectedPresentation.memberNames}</p>
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                  handleEdit(selectedPresentation);
+                  setActiveTab('upload');
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Düzenle
+              </button>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && presentationToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={handleDeleteCancel} />
+          <div className="relative bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-md mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Sunumu Sil</h3>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                <span>Sunum: {presentationToDelete.title}</span>
+                <span>Durum: {getStatusText(presentationToDelete.status)}</span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="p-4 bg-red-50 rounded-lg mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{presentationToDelete.title}</h4>
+                    <p className="text-sm text-gray-600">Bu sunumu silmek istediğinizden emin misiniz?</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-yellow-800">
+                      <strong>Uyarı:</strong> Bu işlem geri alınamaz. Sunum kalıcı olarak silinecektir.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Evet, Sil
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

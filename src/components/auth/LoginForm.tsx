@@ -63,8 +63,14 @@ const LoginForm = () => {
     setSubmitError('');
     
     try {
-      await login(formData);
-      router.push('/dashboard');
+      const user = await login(formData);
+      
+      // Kullanıcı rolüne göre yönlendirme
+      if (user?.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error: any) {
       console.error('Giriş hatası:', error);
       setSubmitError(error.message || 'Giriş yapılırken bir hata oluştu');

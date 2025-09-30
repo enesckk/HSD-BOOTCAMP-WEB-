@@ -7,7 +7,7 @@ export interface User {
   university: string;
   department: string;
   teamRole: 'Lider' | 'Teknik Sorumlu' | 'Tasarımcı';
-  role: 'participant' | 'admin';
+  role: 'PARTICIPANT' | 'ADMIN';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -17,7 +17,7 @@ export interface Admin {
   id: string;
   email: string;
   fullName: string;
-  role: 'admin';
+  role: 'ADMIN';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
