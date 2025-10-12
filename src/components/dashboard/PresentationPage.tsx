@@ -24,7 +24,8 @@ import {
   Presentation,
   Video,
   Image,
-  File
+  File,
+  User
 } from 'lucide-react';
 
 const PresentationPage = () => {
@@ -58,7 +59,7 @@ const PresentationPage = () => {
         setIsLoading(true);
         
         // Fetch presentations
-        const presentationsRes = await fetch(`/api/presentations?userId=${user.id}`);
+        const presentationsRes = await fetch(`/api/presentations?userId=${user.id}&includeTeam=true`);
         const presentationsData = await presentationsRes.json();
         console.log('Presentations API response:', presentationsData);
         
@@ -113,12 +114,32 @@ const PresentationPage = () => {
     e.preventDefault();
     if (!user) return;
     
+    // Form validation
+    if (!formData.title.trim()) {
+      setError('Sunum başlığı gereklidir');
+      return;
+    }
+    if (!formData.description.trim()) {
+      setError('Sunum açıklaması gereklidir');
+      return;
+    }
+    if (uploadType === 'file' && !formData.file) {
+      setError('Sunum dosyası seçmelisiniz');
+      return;
+    }
+    if (uploadType === 'link' && !formData.fileLink.trim()) {
+      setError('Sunum linki gereklidir');
+      return;
+    }
+    
     setIsUploading(true);
     setError('');
     setSuccessMessage('');
     
     try {
+      console.log('User ID:', user.id);
       const formDataToSend = new FormData();
+      formDataToSend.append('userId', user.id);
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('teamName', teamInfo.name);
@@ -389,10 +410,10 @@ const PresentationPage = () => {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Upload className="w-5 h-5" />
+                      <Upload className={`w-5 h-5 ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`} />
                       <div className="text-left">
-                        <p className="font-medium">Dosya Yükle</p>
-                        <p className="text-sm text-gray-500">PPTX, PDF, MP4 vb.</p>
+                        <p className={`font-medium ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`}>Dosya Yükle</p>
+                        <p className={`text-sm ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`}>PPTX, PDF, MP4 vb.</p>
                       </div>
                     </div>
                   </button>
@@ -406,10 +427,10 @@ const PresentationPage = () => {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Link className="w-5 h-5" />
+                      <Link className={`w-5 h-5 ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`} />
                       <div className="text-left">
-                        <p className="font-medium">Link Paylaş</p>
-                        <p className="text-sm text-gray-500">Google Slides, YouTube vb.</p>
+                        <p className={`font-medium ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`}>Link Paylaş</p>
+                        <p className={`text-sm ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`}>Google Slides, YouTube vb.</p>
                       </div>
                     </div>
                   </button>
@@ -429,14 +450,13 @@ const PresentationPage = () => {
                       className="hidden"
                       id="file-upload"
                       accept=".pptx,.ppt,.pdf,.mp4,.avi,.mov,.jpg,.jpeg,.png"
-                      required
                     />
                     <label htmlFor="file-upload" className="cursor-pointer">
-                      <Presentation className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">
+                      <Presentation className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                      <p className="text-sm text-gray-900">
                         {formData.file ? formData.file.name : 'Sunum dosyası seçmek için tıklayın'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-900 mt-1">
                         PPTX, PPT, PDF, MP4, AVI, MOV, JPG, PNG (Max 50MB)
                       </p>
                     </label>
@@ -449,7 +469,7 @@ const PresentationPage = () => {
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Link className="h-5 w-5 text-gray-400" />
+                      <Link className="h-5 w-5 text-gray-900" />
                     </div>
                     <input
                       type="url"
@@ -564,6 +584,22 @@ const PresentationPage = () => {
                     {getStatusIcon(presentation.status)}
                     <span className="text-sm text-gray-500">{getStatusText(presentation.status)}</span>
                   </div>
+                  
+                  {/* Sunum Sahibi */}
+                  {presentation.user && (
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Users className="w-4 h-4 text-red-600" />
+                      <span className="text-sm text-gray-500">Sunum Sahibi:</span>
+                      <span className="font-medium text-gray-900">{presentation.user.fullName}</span>
+                      {presentation.user.teamRole && (
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                          {presentation.user.teamRole === 'LIDER' ? 'Lider' : 
+                           presentation.user.teamRole === 'TEKNIK_SORUMLU' ? 'Teknik Sorumlu' : 
+                           presentation.user.teamRole === 'TASARIMCI' ? 'Tasarımcı' : 'Üye'}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   
                   <p className="text-gray-600 mb-4">{presentation.description}</p>
                   

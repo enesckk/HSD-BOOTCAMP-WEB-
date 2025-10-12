@@ -40,6 +40,9 @@ const ParticipantDashboard = () => {
         const tasksJson = await tasksRes.json();
         const presJson = await presRes.json();
         const teamJson = await teamRes.json();
+        
+        console.log('Dashboard data:', { tasksJson, presJson, teamJson });
+        
         setTasks(tasksJson.items || []);
         setPresentations(presJson.items || []);
         setTeam((teamJson.items && teamJson.items[0]) || null);
@@ -52,17 +55,35 @@ const ParticipantDashboard = () => {
     fetchData();
   }, [user]);
 
-  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed').length, [tasks]);
+  const completedTasks = useMemo(() => {
+    const completed = tasks.filter(t => t.status === 'COMPLETED').length;
+    console.log('Tasks analysis:', { tasks, completed, total: tasks.length });
+    return completed;
+  }, [tasks]);
   const totalTasks = tasks.length;
   const pendingTasks = Math.max(totalTasks - completedTasks, 0);
   const inProgressTasks = 0;
   
   // Proje ilerlemesi: görevler + sunumlar
-  const completedPresentations = useMemo(() => presentations.filter(p => p.status === 'completed').length, [presentations]);
+  const completedPresentations = useMemo(() => {
+    const completed = presentations.filter(p => p.status === 'approved').length;
+    console.log('Presentations analysis:', { presentations, completed, total: presentations.length });
+    return completed;
+  }, [presentations]);
   const totalPresentations = presentations.length;
   const totalItems = totalTasks + totalPresentations;
   const completedItems = completedTasks + completedPresentations;
   const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  
+  console.log('Progress calculation:', { 
+    completedTasks, 
+    totalTasks, 
+    completedPresentations, 
+    totalPresentations, 
+    totalItems, 
+    completedItems, 
+    progressPercent 
+  });
   const teamMembersCount = useMemo(() => team?.members?.length || 0, [team]);
 
   const stats = [
@@ -241,7 +262,7 @@ const ParticipantDashboard = () => {
                 <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
                   <IconComponent className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <TrendingUp className="w-5 h-5 text-gray-400" />
+                <TrendingUp className="w-5 h-5 text-gray-900" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-1">{isLoading ? '...' : stat.value}</h3>
               <p className="text-gray-600 text-sm">{stat.title}</p>
@@ -273,7 +294,7 @@ const ParticipantDashboard = () => {
                 <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
                   <IconComponent className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <TrendingUp className="w-5 h-5 text-gray-400" />
+                <TrendingUp className="w-5 h-5 text-gray-900" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-1">{isLoading ? '...' : stat.value}</h3>
               <p className="text-gray-600 text-sm">{stat.title}</p>
@@ -356,7 +377,7 @@ const ParticipantDashboard = () => {
               ) : (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Info className="w-8 h-8 text-gray-400" />
+                    <Info className="w-8 h-8 text-gray-900" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz Aktivite Yok</h3>
                   <p className="text-gray-500">Görev yükleyerek veya sunum hazırlayarak aktivitelerinizi burada görebilirsiniz.</p>
@@ -376,7 +397,7 @@ const ParticipantDashboard = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Yaklaşan Etkinlikler</h2>
-              <Calendar className="w-5 h-5 text-gray-400" />
+              <Calendar className="w-5 h-5 text-gray-900" />
             </div>
             <div className="space-y-4">
               {upcomingEvents.map((event, index) => (

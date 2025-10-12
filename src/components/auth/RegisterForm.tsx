@@ -148,7 +148,7 @@ const RegisterForm = () => {
   };
 
   const handleGoBack = () => {
-    window.history.back();
+    window.location.href = '/';
   };
 
   const getPasswordStrengthColor = () => {

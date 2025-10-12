@@ -30,28 +30,42 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
 
-    const foundUser = user || admin;
-    if (!foundUser) {
+    if (!user && !admin) {
       return NextResponse.json(
         { message: 'Geçersiz e-posta veya şifre' },
         { status: 401 }
       );
     }
 
-    // Check if user is active
-    if (!foundUser.isActive) {
+    // Password check
+    let isValid = false;
+    let principal: any = user || admin;
+
+    if (user) {
+      // Kullanıcılar için hash doğrulaması
+      if (!user.password) {
+        return NextResponse.json(
+          { message: 'Hesap şifresi ayarlı değil' },
+          { status: 401 }
+        );
+      }
+      isValid = await bcrypt.compare(password, user.password);
+    } else if (admin) {
+      // Admin için geçici parola kontrolü (gerekirse Admin modeline password alanı eklenebilir)
+      isValid = password === 'admin123';
+    }
+
+    if (!isValid) {
+      return NextResponse.json(
+        { message: 'Geçersiz e-posta veya şifre' },
+        { status: 401 }
+      );
+    }
+
+    // Check if active
+    if (!principal.isActive) {
       return NextResponse.json(
         { message: 'Hesabınız deaktif durumda' },
-        { status: 401 }
-      );
-    }
-
-    // For now, we'll use a simple password check
-    // In a real app, you'd store hashed passwords in the database
-    const validPassword = password === 'admin123'; // Temporary for testing
-    if (!validPassword) {
-      return NextResponse.json(
-        { message: 'Geçersiz e-posta veya şifre' },
         { status: 401 }
       );
     }
@@ -59,9 +73,9 @@ export async function POST(request: NextRequest) {
     // Generate tokens
     const token = jwt.sign(
       { 
-        userId: foundUser.id, 
-        email: foundUser.email, 
-        role: foundUser.role 
+        userId: principal.id, 
+        email: principal.email, 
+        role: principal.role 
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
@@ -69,9 +83,9 @@ export async function POST(request: NextRequest) {
 
     const refreshToken = jwt.sign(
       { 
-        userId: foundUser.id, 
-        email: foundUser.email, 
-        role: foundUser.role,
+        userId: principal.id, 
+        email: principal.email, 
+        role: principal.role,
         type: 'refresh'
       },
       JWT_SECRET,
@@ -80,14 +94,13 @@ export async function POST(request: NextRequest) {
 
     // Format user data for response
     const userResponse = {
-      id: foundUser.id,
-      email: foundUser.email,
-      fullName: foundUser.fullName,
-      role: foundUser.role,
-      isActive: foundUser.isActive,
-      createdAt: foundUser.createdAt.toISOString(),
-      updatedAt: foundUser.updatedAt.toISOString(),
-      // Add participant-specific fields if it's a user
+      id: principal.id,
+      email: principal.email,
+      fullName: principal.fullName,
+      role: principal.role,
+      isActive: principal.isActive,
+      createdAt: principal.createdAt.toISOString(),
+      updatedAt: principal.updatedAt.toISOString(),
       ...(user && {
         marathonId: user.marathonId,
         phone: user.phone,
@@ -95,7 +108,6 @@ export async function POST(request: NextRequest) {
         department: user.department,
         teamRole: user.teamRole,
       }),
-      // Add admin-specific fields if it's an admin
       ...(admin && {
         phone: admin.phone,
       }),

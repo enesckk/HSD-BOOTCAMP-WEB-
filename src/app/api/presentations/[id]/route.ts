@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const presentation = await prisma.presentation.findUnique({
-      where: { id: params.id }
+      where: { id },
     });
 
     if (!presentation) {
-      return NextResponse.json(
-        { error: 'Presentation not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Presentation not found' }, { status: 404 });
     }
 
     return NextResponse.json(presentation);
@@ -34,33 +30,64 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const { 
-      teamName, 
-      memberNames, 
-      title, 
-      description, 
-      uploadType, 
-      fileUrl, 
-      linkUrl, 
-      status 
-    } = body;
+    const { id } = params;
+    const { status } = await request.json();
+    
+    console.log('Presentation update request:', { id, status });
 
-    const presentation = await prisma.presentation.update({
-      where: { id: params.id },
-      data: {
-        teamName,
-        memberNames,
-        title,
-        description,
-        uploadType,
-        fileUrl,
-        linkUrl,
-        status
+    if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+      console.log('Invalid status received:', status);
+      return NextResponse.json(
+        { error: 'Invalid status' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Updating presentation with status:', status);
+
+    const updatedPresentation = await prisma.presentation.update({
+      where: { id },
+      data: { status },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            teamMembers: {
+              include: {
+                members: true
+              }
+            }
+          }
+        }
       }
     });
 
-    return NextResponse.json(presentation);
+    // Sunum onaylandığında veya reddedildiğinde sunum sahibine bildirim gönder
+    try {
+      if ((status === 'approved' || status === 'rejected') && updatedPresentation.user) {
+        const title = status === 'approved' ? 'Sunum Onaylandı' : 'Sunum Reddedildi';
+        const message = status === 'approved' 
+          ? `"${updatedPresentation.title}" sunumunuz onaylandı`
+          : `"${updatedPresentation.title}" sunumunuz reddedildi`;
+        
+        await prisma.notification.create({
+          data: {
+            type: 'PRESENTATION',
+            title,
+            message,
+            actionUrl: '/dashboard/presentation',
+            read: false
+          }
+        });
+      }
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Bildirim hatası sunum güncellemeyi engellemez
+    }
+
+    console.log('Presentation updated successfully:', updatedPresentation);
+    return NextResponse.json(updatedPresentation);
   } catch (error) {
     console.error('Error updating presentation:', error);
     return NextResponse.json(
@@ -75,11 +102,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     await prisma.presentation.delete({
-      where: { id: params.id }
+      where: { id },
     });
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Presentation deleted successfully' });
   } catch (error) {
     console.error('Error deleting presentation:', error);
     return NextResponse.json(

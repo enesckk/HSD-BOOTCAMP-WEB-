@@ -56,7 +56,6 @@ export async function GET(request: NextRequest) {
         updatedAt: foundUser.updatedAt.toISOString(),
         // Add participant-specific fields if it's a user
         ...(user && {
-          marathonId: user.marathonId,
           phone: user.phone,
           university: user.university,
           department: user.department,

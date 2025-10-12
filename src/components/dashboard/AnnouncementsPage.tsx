@@ -146,9 +146,17 @@ const AnnouncementsPage = () => {
       {/* Content: Accordion List */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100">
         {filtered.length === 0 && (
-          <div className="p-6 text-sm text-gray-500 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-gray-400" />
-            Sonuç bulunamadı.
+          <div className="p-12 text-center">
+            <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {items.length === 0 ? 'Henüz Duyuru Yok' : 'Sonuç Bulunamadı'}
+            </h3>
+            <p className="text-gray-600">
+              {items.length === 0 
+                ? 'Henüz duyuru eklenmemiş. Duyurular burada görüntülenecek.'
+                : 'Arama kriterlerinize uygun duyuru bulunamadı.'
+              }
+            </p>
           </div>
         )}
 

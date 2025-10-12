@@ -16,6 +16,20 @@ type Message = {
   createdAt?: string; // ISO
   attachments?: { name: string; url?: string }[];
   unread?: boolean;
+  fromUser?: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  toUser?: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  toTeam?: {
+    id: string;
+    name: string;
+  };
 };
 
 const inboxSeed: Message[] = [
@@ -70,7 +84,7 @@ const MessagesPage = () => {
     const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
     console.log('MessagesPage - Headers:', headers);
     
-    fetch('/api/messages?box=inbox', { headers })
+    fetch('/api/messages/participant?box=inbox', { headers })
       .then(r => {
         console.log('Inbox response status:', r.status);
         return r.json();
@@ -84,7 +98,7 @@ const MessagesPage = () => {
         setInbox([]);
       });
       
-    fetch('/api/messages?box=sent', { headers })
+    fetch('/api/messages/participant?box=sent', { headers })
       .then(r => {
         console.log('Sent response status:', r.status);
         return r.json();
@@ -152,20 +166,20 @@ const MessagesPage = () => {
     setSelectedInboxIds(prev => (prev || []).filter(id => !ids.includes(id)));
     const token = localStorage.getItem('afet_maratonu_token');
     const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-    fetch('/api/messages', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'markRead' }) });
+    fetch('/api/messages/participant', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'markRead' }) });
   };
   const markInboxUnread = (ids: number[]) => {
     setInbox(prev => (prev || []).map(m => (ids.includes(m.id) ? { ...m, unread: true } : m)));
     const token = localStorage.getItem('afet_maratonu_token');
     const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-    fetch('/api/messages', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'markUnread' }) });
+    fetch('/api/messages/participant', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'markUnread' }) });
   };
   const deleteSent = (ids: number[]) => {
     setSent(prev => (prev || []).filter(m => !ids.includes(m.id)));
     setSelectedSentIds(prev => (prev || []).filter(id => !ids.includes(id)));
     const token = localStorage.getItem('afet_maratonu_token');
     const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-    fetch('/api/messages', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'deleteSent' }) });
+    fetch('/api/messages/participant', { method: 'PUT', headers, body: JSON.stringify({ ids, action: 'deleteSent' }) });
   };
 
   const openMessageModal = (message: Message, source: 'inbox' | 'sent') => {
@@ -186,11 +200,33 @@ const MessagesPage = () => {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (messageToDelete) {
-      deleteSent([messageToDelete.id]);
-      setShowDeleteModal(false);
-      setMessageToDelete(null);
+      try {
+        const token = localStorage.getItem('afet_maratonu_token');
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const res = await fetch(`/api/messages/${messageToDelete.id}`, {
+          method: 'DELETE',
+          headers
+        });
+        
+        if (res.ok) {
+          deleteSent([messageToDelete.id]);
+          setShowDeleteModal(false);
+          setMessageToDelete(null);
+        } else {
+          console.error('Failed to delete message');
+        }
+      } catch (error) {
+        console.error('Error deleting message:', error);
+      }
     }
   };
 
@@ -209,7 +245,10 @@ const MessagesPage = () => {
       // Mesajı güncelle
       const res = await fetch(`/api/messages/${messageToEdit.id}`, { 
         method: 'PUT', 
-        headers: { 'Content-Type': 'application/json' }, 
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('afet_maratonu_token') ? { 'Authorization': `Bearer ${localStorage.getItem('afet_maratonu_token')}` } : {})
+        }, 
         body: JSON.stringify({
           subject: messageToEdit.subject,
           body: messageToEdit.body
@@ -250,7 +289,7 @@ const MessagesPage = () => {
       
       console.log('Sending message data:', compose);
       
-      const res = await fetch('/api/messages', { 
+      const res = await fetch('/api/messages/participant', { 
         method: 'POST', 
         headers, 
         body: JSON.stringify(compose) 
@@ -469,6 +508,9 @@ const MessagesPage = () => {
                             <Clock className="w-3.5 h-3.5" /> {new Date(m.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
+                        <span className="inline-flex items-center gap-1">
+                          • Gönderen: {m.fromUser?.fullName || 'Sistem'}
+                        </span>
                         {m.attachments && m.attachments.length > 0 && (
                           <span className="inline-flex items-center gap-1">
                             <Paperclip className="w-3.5 h-3.5" /> {m.attachments.length} ek
@@ -538,6 +580,9 @@ const MessagesPage = () => {
                             <Clock className="w-3.5 h-3.5" /> {new Date(m.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
+                        <span className="inline-flex items-center gap-1">
+                          • Alıcı: {m.toUser?.fullName || 'Yönetim'}
+                        </span>
                         </div>
                       </div>
                     </div>
@@ -589,8 +634,8 @@ const MessagesPage = () => {
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">{modalMessage.subject}</h3>
               <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-                <span>Gönderen: Yönetim</span>
-                <span>Alıcı: {modalMessage.to === 'Yönetim' ? 'Yönetim' : (user?.fullName || 'Kullanıcı')}</span>
+                <span>Gönderen: {modalMessage.fromUser?.fullName || 'Sistem'}</span>
+                <span>Alıcı: {modalMessage.toUser?.fullName || 'Yönetim'}</span>
                 <span>{modalMessage.createdAt ? new Date(modalMessage.createdAt).toLocaleDateString('tr-TR') : 'Tarih yok'}{modalMessage.createdAt ? ` • ${new Date(modalMessage.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>
               </div>
             </div>
@@ -795,8 +840,8 @@ const MessagesPage = () => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200">
             <div className="flex items-center justify-center mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

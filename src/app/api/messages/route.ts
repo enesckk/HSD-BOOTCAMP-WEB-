@@ -69,10 +69,42 @@ export async function GET(req: NextRequest) {
     console.log('Fetching messages for box:', box);
     
     if (box === 'sent') {
-      // Bu kullanıcının gönderdiği mesajlar
+      // Admin kullanıcısını bul
+      const adminUser = await prisma.user.findFirst({
+        where: { role: 'ADMIN' }
+      });
+      
+      if (!adminUser) {
+        console.log('No admin user found for sent messages');
+        return NextResponse.json({ items: [] });
+      }
+      
+      // Admin'in gönderdiği mesajlar
       const sent = await prisma.message.findMany({
         where: {
-          fromUserId: testUser.id // Test kullanıcının gönderdiği mesajlar
+          fromUserId: adminUser.id // Admin'in gönderdiği mesajlar
+        },
+        include: {
+          fromUser: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            }
+          },
+          toUser: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            }
+          },
+          toTeam: {
+            select: {
+              id: true,
+              name: true,
+            }
+          }
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -82,8 +114,36 @@ export async function GET(req: NextRequest) {
       // Bu kullanıcıya gelen mesajlar - kişiye özel
       const inbox = await prisma.message.findMany({
         where: {
-          toRole: 'participant', // Katılımcılara gelen mesajlar
-          // Gelecekte userId field'ı eklenirse burada kontrol edilecek
+          OR: [
+            { toUserId: testUser.id }, // Bu kullanıcıya özel mesajlar
+            { 
+              toRole: 'participant',
+              toUserId: null,
+              toTeamId: null
+            } // Tüm katılımcılara gönderilen genel mesajlar
+          ]
+        },
+        include: {
+          fromUser: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            }
+          },
+          toUser: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            }
+          },
+          toTeam: {
+            select: {
+              id: true,
+              name: true,
+            }
+          }
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -149,32 +209,80 @@ export async function POST(req: NextRequest) {
   try {
     console.log('POST /api/messages - Starting message creation');
     
-    // Geçici olarak authentication'ı bypass et
-    console.log('Bypassing authentication for testing');
-    
-    // İlk kullanıcıyı al (test için)
-    const testUser = await prisma.user.findFirst();
-    if (!testUser) {
-      console.log('No users found in database');
-      return NextResponse.json({ error: 'No users found' }, { status: 404 });
-    }
-    
-    console.log('Using test user:', testUser.id, testUser.fullName);
-
-    const { to, subject, body } = await req.json();
-    console.log('Message data received:', { to, subject, body });
-    
-    const message = await prisma.message.create({
-      data: {
-        fromUserId: testUser.id, // Test kullanıcı ID'si
-        toRole: to === 'admin' ? 'admin' : 'participant',
-        subject,
-        body
-      }
+    // Admin kullanıcısını bul (admin panelinden mesaj gönderen)
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'ADMIN' }
     });
     
-    console.log('Message created successfully:', message.id);
-    return NextResponse.json({ item: message });
+    if (!adminUser) {
+      console.log('No admin user found');
+      return NextResponse.json({ error: 'Admin user not found' }, { status: 404 });
+    }
+    
+    console.log('Using admin user:', adminUser.id, adminUser.fullName);
+
+    const { recipientType, subject, body, userIds, teamId } = await req.json();
+    console.log('Message data received:', { recipientType, subject, body, userIds, teamId });
+    
+    // Mesajları oluştur
+    const messages = [];
+    
+    if (recipientType === 'user' && userIds && userIds.length > 0) {
+      // Belirli kullanıcılara mesaj gönder
+      for (const userId of userIds) {
+        const message = await prisma.message.create({
+          data: {
+            fromUserId: adminUser.id,
+            toUserId: userId,
+            toRole: 'participant',
+            subject,
+            body
+          }
+        });
+        messages.push(message);
+      }
+    } else if (recipientType === 'team' && teamId) {
+      // Takıma mesaj gönder
+      const message = await prisma.message.create({
+        data: {
+          fromUserId: adminUser.id,
+          toTeamId: teamId,
+          toRole: 'participant',
+          subject,
+          body
+        }
+      });
+      messages.push(message);
+    } else if (recipientType === 'teamMembers' && teamId && userIds && userIds.length > 0) {
+      // Takım üyelerine mesaj gönder
+      for (const userId of userIds) {
+        const message = await prisma.message.create({
+          data: {
+            fromUserId: adminUser.id,
+            toUserId: userId,
+            toTeamId: teamId,
+            toRole: 'participant',
+            subject,
+            body
+          }
+        });
+        messages.push(message);
+      }
+    } else {
+      // Tüm katılımcılara mesaj gönder
+      const message = await prisma.message.create({
+        data: {
+          fromUserId: adminUser.id,
+          toRole: 'participant',
+          subject,
+          body
+        }
+      });
+      messages.push(message);
+    }
+    
+    console.log('Messages created successfully:', messages.length);
+    return NextResponse.json({ items: messages });
   } catch (error) {
     console.error('Error creating message:', error);
     return NextResponse.json(

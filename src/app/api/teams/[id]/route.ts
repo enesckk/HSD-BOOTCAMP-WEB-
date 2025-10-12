@@ -65,6 +65,13 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Önce takımdaki tüm üyelerin teamId'sini null yap
+    await prisma.user.updateMany({
+      where: { teamId: params.id },
+      data: { teamId: null }
+    });
+
+    // Sonra takımı sil
     await prisma.team.delete({
       where: { id: params.id }
     });
@@ -78,3 +85,5 @@ export async function DELETE(
     );
   }
 }
+
+

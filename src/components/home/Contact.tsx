@@ -366,8 +366,7 @@ const Contact: React.FC = () => {
               </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-              <button 
-                onClick={() => window.location.href = '/register'}
+              <button                onClick={() => window.location.href = '/application'}
                     className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
               >
                     <span>Hemen Başvurunuzu Yapın</span>

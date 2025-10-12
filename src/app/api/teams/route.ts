@@ -3,25 +3,75 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const userId = request.nextUrl.searchParams.get('userId');
-    const teams = await prisma.team.findMany({
-      where: userId ? { OR: [ { leaderId: userId }, { members: { some: { id: userId } } } ] } : undefined,
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+    const all = searchParams.get('all');
+
+    // Admin listesi: tüm takımlar
+    if (all === 'true') {
+      const teams = await prisma.team.findMany({
+        include: { leader: true, members: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      return NextResponse.json({ items: teams }, { status: 200 });
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: 'userId gereklidir' }, { status: 400 });
+    }
+
+    // Lider olduğu veya üye olduğu takımı getir
+    const teamByLeader = await prisma.team.findFirst({
+      where: { leaderId: userId },
       include: {
         leader: true,
-        members: true
+        members: {
+          include: {
+            tasks: {
+              orderBy: { createdAt: 'desc' }
+            },
+            presentations: {
+              orderBy: { createdAt: 'desc' }
+            }
+          }
+        },
       },
-      orderBy: { createdAt: 'desc' }
     });
-    
-    return NextResponse.json({ items: teams });
+
+    if (teamByLeader) {
+      return NextResponse.json({ items: [teamByLeader] }, { status: 200 });
+    }
+
+    // Üye olduğu takım (TeamMembers relation üzerinden)
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user?.teamId) {
+      const teamByMember = await prisma.team.findUnique({
+        where: { id: user.teamId },
+        include: {
+          leader: true,
+          members: {
+            include: {
+              tasks: {
+                orderBy: { createdAt: 'desc' }
+              },
+              presentations: {
+                orderBy: { createdAt: 'desc' }
+              }
+            }
+          },
+        },
+      });
+      if (teamByMember) {
+        return NextResponse.json({ items: [teamByMember] }, { status: 200 });
+      }
+    }
+
+    return NextResponse.json({ items: [] }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching teams:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch teams' },
-      { status: 500 }
-    );
+    console.error('Teams GET error:', error);
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
 

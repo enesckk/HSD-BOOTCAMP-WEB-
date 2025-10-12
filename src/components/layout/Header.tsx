@@ -84,166 +84,177 @@ const Header: React.FC = () => {
   const isActive = (sectionId: string) => activeSection === sectionId;
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-xl shadow-2xl border-b border-white/20'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center space-x-4 cursor-pointer"
-            onClick={() => scrollToSection('home')}
-          >
-            <Image
-              src="/huaweilogo.png"
-              alt="Huawei Logo"
-              width={100}
-              height={60}
-              className="object-contain"
-              priority
-            />
-            <div className="hidden sm:block">
-              <h1 className={`font-bold text-xl lg:text-2xl ${
-                isScrolled ? 'text-gray-900' : 'text-white'
-              }`}>
-                {APP_NAME}
-              </h1>
-            </div>
-          </motion.div>
+    <>
+      {/* Top Bar - Site Adı ve Butonlar */}
+      <motion.div
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200'
+            : 'bg-black/20 backdrop-blur-md border-b border-white/10'
+        }`}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo ve Site Adı */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-4 cursor-pointer"
+              onClick={() => scrollToSection('home')}
+            >
+              <Image
+                src="/huaweilogo.png"
+                alt="Huawei Logo"
+                width={100}
+                height={60}
+                className="object-contain"
+                priority
+              />
+              <div className="hidden sm:block">
+                <h1 className={`font-bold text-xl lg:text-2xl ${
+                  isScrolled ? 'text-gray-900' : 'text-white'
+                }`}>
+                  {APP_NAME}
+                </h1>
+              </div>
+            </motion.div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-10">
-            {menuItems.map((item) => (
+            {/* Auth Buttons */}
+            <div className="flex items-center space-x-6">
               <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`font-medium text-lg transition-all duration-300 relative ${
-                  isScrolled 
-                    ? isActive(item.id)
-                      ? 'text-red-600 font-semibold'
-                      : 'text-gray-700 hover:text-red-600'
-                    : isActive(item.id)
-                      ? 'text-yellow-400 font-semibold'
-                      : 'text-white hover:text-yellow-400'
-                }`}
+                onClick={handleLoginClick}
+                className="group relative bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl text-base transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center space-x-3 shadow-lg"
               >
-                {item.label}
-                {isActive(item.id) && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full ${
-                      isScrolled ? 'bg-red-600' : 'bg-yellow-400'
-                    }`}
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
+                <LogIn className="w-5 h-5" />
+                <span>Giriş Yap</span>
               </button>
-            ))}
-          </nav>
+              
+              <button
+                onClick={handleRegisterClick}
+                className="group relative bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl text-base transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center space-x-3 shadow-lg"
+              >
+                <span>Maratona Başvur</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-6">
+      {/* Bottom Bar - Navigation Menu */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 0.1 }}
+        className={`fixed top-20 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center h-16">
+            {/* Desktop Navigation - Ortalanmış */}
+            <nav className="hidden lg:flex items-center space-x-10">
+              {menuItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`font-medium text-lg transition-all duration-300 relative ${
+                    isScrolled 
+                      ? isActive(item.id)
+                        ? 'text-red-600 font-semibold'
+                        : 'text-gray-700 hover:text-red-600'
+                      : isActive(item.id)
+                        ? 'text-red-400 font-semibold'
+                        : 'text-white hover:text-red-400'
+                  }`}
+                >
+                  {item.label}
+                  {isActive(item.id) && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full ${
+                        isScrolled ? 'bg-red-600' : 'bg-red-400'
+                      }`}
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            {/* Mobile Menu Button */}
             <button
-              onClick={handleLoginClick}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 ${
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`lg:hidden p-3 rounded-lg transition-all duration-300 ${
                 isScrolled
                   ? 'text-gray-700 hover:bg-gray-100'
                   : 'text-white hover:bg-white/20'
               }`}
             >
-              <LogIn className="w-5 h-5" />
-              <span className="font-medium">Giriş Yap</span>
-            </button>
-            
-            <button
-              onClick={handleRegisterClick}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg ${
-                isScrolled
-                  ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
-                  : 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900'
-              }`}
-            >
-              Kayıt Ol
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`lg:hidden p-3 rounded-xl transition-all duration-300 ${
-              isScrolled
-                ? 'text-gray-700 hover:bg-gray-100'
-                : 'text-white hover:bg-white/20'
-            }`}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-white/20"
-          >
-            <div className="container mx-auto px-4 py-6">
-              <nav className="flex flex-col space-y-6">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => scrollToSection(item.id)}
-                    className={`text-left font-medium text-lg py-3 transition-colors duration-300 relative ${
-                      isActive(item.id)
-                        ? 'text-red-600 font-semibold'
-                        : 'text-gray-700 hover:text-red-600'
-                    }`}
-                  >
-                    {item.label}
-                    {isActive(item.id) && (
-                      <motion.div
-                        layoutId="mobileActiveIndicator"
-                        className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-red-600 rounded-full"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                ))}
-                
-                <div className="pt-6 border-t border-gray-200">
-                  <button
-                    onClick={handleLoginClick}
-                    className="flex items-center space-x-3 text-gray-700 font-medium py-3 hover:text-red-600 transition-colors duration-300 w-full"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    <span>Giriş Yap</span>
-                  </button>
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-white/20"
+            >
+              <div className="container mx-auto px-4 py-6">
+                <nav className="flex flex-col space-y-6">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => scrollToSection(item.id)}
+                      className={`text-left font-medium text-lg py-3 transition-colors duration-300 relative ${
+                        isActive(item.id)
+                          ? 'text-red-600 font-semibold'
+                          : 'text-gray-700 hover:text-red-600'
+                      }`}
+                    >
+                      {item.label}
+                      {isActive(item.id) && (
+                        <motion.div
+                          layoutId="mobileActiveIndicator"
+                          className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-red-600 rounded-full"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                    </button>
+                  ))}
                   
-                  <button
-                    onClick={handleRegisterClick}
-                    className="w-full mt-4 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-8 py-4 rounded-xl font-medium transition-all duration-300"
-                  >
-                    Kayıt Ol
-                  </button>
-                </div>
-              </nav>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+                  <div className="pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handleLoginClick}
+                      className="flex items-center space-x-3 text-gray-700 font-medium py-3 hover:text-red-600 transition-colors duration-300 w-full"
+                    >
+                      <LogIn className="w-5 h-5" />
+                      <span>Giriş Yap</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleRegisterClick}
+                      className="w-full mt-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300"
+                    >
+                      Maratona Başvur
+                    </button>
+                  </div>
+                </nav>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+    </>
   );
 };
 

@@ -70,29 +70,51 @@ const TeamPage = () => {
 
   const teamMembers = useMemo(() => {
     if (!team) return [] as any[];
-    return (team.members || []).map((m: any) => ({
-      id: m.id,
-      name: m.fullName,
-      role: m.teamRole === 'LIDER' ? 'Lider' : m.teamRole === 'TEKNIK_SORUMLU' ? 'Teknik Sorumlu' : 'Tasarımcı',
-      email: m.email,
-      phone: m.phone,
-      university: m.university,
-      department: m.department,
-      avatar: (m.fullName || 'U')[0]?.toUpperCase(),
-      status: m.isActive ? 'active' : 'inactive',
-      joinDate: new Date(m.createdAt).toLocaleDateString('tr-TR'),
-      tasksCompleted: 0,
-      contribution: 0,
-    }));
+    return (team.members || []).map((m: any) => {
+      const tasks = m.tasks || [];
+      const presentations = m.presentations || [];
+      const completedTasks = tasks.filter((t: any) => t.status === 'COMPLETED').length;
+      const approvedPresentations = presentations.filter((p: any) => p.status === 'approved').length;
+      
+      return {
+        id: m.id,
+        name: m.fullName,
+        role: m.teamRole === 'LIDER' ? 'Lider' : m.teamRole === 'TEKNIK_SORUMLU' ? 'Teknik Sorumlu' : 'Tasarımcı',
+        email: m.email,
+        phone: m.phone,
+        university: m.university,
+        department: m.department,
+        avatar: (m.fullName || 'U')[0]?.toUpperCase(),
+        status: m.isActive ? 'active' : 'inactive',
+        joinDate: new Date(m.createdAt).toLocaleDateString('tr-TR'),
+        tasksCompleted: completedTasks,
+        totalTasks: tasks.length,
+        presentationsCompleted: approvedPresentations,
+        totalPresentations: presentations.length,
+        contribution: Math.round(((completedTasks + approvedPresentations) / Math.max(tasks.length + presentations.length, 1)) * 100),
+        tasks: tasks,
+        presentations: presentations,
+      };
+    });
   }, [team]);
 
-  const teamStats = useMemo(() => ({
-    totalMembers: teamMembers.length,
-    activeMembers: teamMembers.filter((m: any) => m.status === 'active').length,
-    totalTasks: 0,
-    completedTasks: 0,
-    completionRate: 0
-  }), [teamMembers]);
+  const teamStats = useMemo(() => {
+    const totalTasks = teamMembers.reduce((sum: number, m: any) => sum + m.totalTasks, 0);
+    const completedTasks = teamMembers.reduce((sum: number, m: any) => sum + m.tasksCompleted, 0);
+    const totalPresentations = teamMembers.reduce((sum: number, m: any) => sum + m.totalPresentations, 0);
+    const completedPresentations = teamMembers.reduce((sum: number, m: any) => sum + m.presentationsCompleted, 0);
+    
+    return {
+      totalMembers: teamMembers.length,
+      activeMembers: teamMembers.filter((m: any) => m.status === 'active').length,
+      totalTasks,
+      completedTasks,
+      totalPresentations,
+      completedPresentations,
+      completionRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+      presentationRate: totalPresentations > 0 ? Math.round((completedPresentations / totalPresentations) * 100) : 0
+    };
+  }, [teamMembers]);
 
   const [activities, setActivities] = useState<any[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
@@ -146,6 +168,8 @@ const TeamPage = () => {
   const tabs = [
     { id: 'overview', label: 'Genel Bakış', icon: Target },
     { id: 'members', label: 'Takım Üyeleri', icon: Users },
+    { id: 'tasks', label: 'Görevler', icon: CheckCircle },
+    { id: 'presentations', label: 'Sunumlar', icon: Award },
     { id: 'activities', label: 'Aktiviteler', icon: Clock }
   ];
 
@@ -166,7 +190,7 @@ const TeamPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="sr-only">Takım Bilgileri</h1>
-          <p className="text-gray-600 mt-2">Takımınızın performansını ve aktivitelerini takip edin</p>
+          <p className="text-gray-600 mt-2">Takımınızı yönetin, üyeleri görüntüleyin ve aktiviteleri takip edin</p>
         </div>
       </div>
 
@@ -178,7 +202,7 @@ const TeamPage = () => {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
               <Users className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -193,7 +217,7 @@ const TeamPage = () => {
                     type="text"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    className="text-2xl font-bold text-gray-900 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="text-2xl font-bold text-gray-900 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                     autoFocus
                   />
                   <button
@@ -226,7 +250,18 @@ const TeamPage = () => {
                         const updated = await res.json();
                         console.log('Updated team:', updated);
                         
-                        setTeam(updated);
+                        // Takım verilerini yeniden çek
+                        if (user?.id) {
+                          const teamRes = await fetch(`/api/teams?userId=${user.id}`);
+                          const teamJson = await teamRes.json();
+                          const refreshedTeam = teamJson.items && teamJson.items.length > 0 ? teamJson.items[0] : 
+                                             teamJson.length > 0 ? teamJson[0] : 
+                                             teamJson.team || null;
+                          
+                          setTeam(refreshedTeam);
+                          setTeamName(refreshedTeam?.name || '');
+                        }
+                        
                         setIsEditingTeamName(false);
                         setSuccessMessage('Takım adı başarıyla kaydedildi!');
                         setTimeout(() => setSuccessMessage(''), 3000);
@@ -237,24 +272,24 @@ const TeamPage = () => {
                         setIsSavingName(false);
                       }
                     }}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-60"
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-60 shadow-sm"
                     disabled={isSavingName}
                   >
                     <CheckCircle className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setIsEditingTeamName(false)}
-                    className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors shadow-sm"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <h2 className="text-2xl font-bold text-gray-900">{teamName || 'Takım Adı'}</h2>
+                  <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{teamName || 'Takım Adı'}</h2>
                   <button
                     onClick={() => setIsEditingTeamName(true)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shadow-sm"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -282,17 +317,17 @@ const TeamPage = () => {
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+        <nav className="flex space-x-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`flex items-center space-x-2 py-2 px-3 rounded-t-lg font-medium text-sm transition-colors ${
                   activeTab === tab.id
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-white border-x border-t border-gray-200 text-red-600'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <IconComponent className="w-4 h-4" />
@@ -326,16 +361,16 @@ const TeamPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+              className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white shadow-lg"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
-                  <Users className="w-6 h-6 text-red-600" />
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold text-gray-900">{teamStats.totalMembers}</span>
+                <span className="text-3xl font-extrabold">{teamStats.totalMembers}</span>
               </div>
-              <h3 className="text-sm font-medium text-gray-600">Toplam Üye</h3>
-              <p className="text-xs text-gray-500 mt-1">Aktif: {teamStats.activeMembers}</p>
+              <h3 className="text-sm font-semibold text-white/90">Toplam Üye</h3>
+              <p className="text-xs text-white/80 mt-1">Aktif: {teamStats.activeMembers}</p>
             </motion.div>
 
             <motion.div
@@ -366,8 +401,40 @@ const TeamPage = () => {
                 </div>
                 <span className="text-2xl font-bold text-gray-900">{teamStats.completionRate}%</span>
               </div>
-              <h3 className="text-sm font-medium text-gray-600">Tamamlanma Oranı</h3>
+              <h3 className="text-sm font-medium text-gray-600">Görev Tamamlanma Oranı</h3>
               <p className="text-xs text-gray-500 mt-1">Mükemmel performans</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-red-600" />
+                </div>
+                <span className="text-2xl font-bold text-gray-900">{teamStats.completedPresentations}</span>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Onaylanan Sunum</h3>
+              <p className="text-xs text-gray-500 mt-1">Toplam: {teamStats.totalPresentations}</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-red-600" />
+                </div>
+                <span className="text-2xl font-bold text-gray-900">{teamStats.presentationRate}%</span>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Sunum Onaylanma Oranı</h3>
+              <p className="text-xs text-gray-500 mt-1">Harika çalışma</p>
             </motion.div>
 
           </div>
@@ -434,23 +501,23 @@ const TeamPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-md">
                     <span className="text-white font-bold text-lg">{member.avatar}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
-                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                      <span className="px-2 py-1 bg-red-50 text-red-700 border border-red-200 text-xs font-semibold rounded-full">
                         {member.role}
                       </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${
                         member.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-50 text-green-700 border-green-200' 
+                          : 'bg-gray-50 text-gray-700 border-gray-200'
                       }`}>
                         {member.status === 'active' ? 'Aktif' : 'Pasif'}
                       </span>
@@ -500,6 +567,208 @@ const TeamPage = () => {
               </div>
             </motion.div>
             ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'tasks' && (
+        <div className="space-y-6">
+          {!team ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center"
+            >
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Takım Oluşturulmadı</h3>
+              <p className="text-gray-600">Takım görevlerini görmek için önce bir takıma atanmanız gerekiyor.</p>
+              <p className="text-sm text-gray-500 mt-2">Lütfen yönetici ile iletişime geçin.</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Takım Görevleri</h2>
+              {teamMembers.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz görev yok</h3>
+                  <p className="text-gray-600">Takım üyeleri görev yüklediğinde burada görünecek.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {teamMembers.map((member: any) => (
+                    <div key={member.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <span className="text-red-600 font-semibold">{member.avatar}</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{member.name}</h3>
+                            <p className="text-sm text-gray-500">{member.role}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">
+                            {member.tasksCompleted}/{member.totalTasks} tamamlandı
+                          </p>
+                          <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${member.totalTasks > 0 ? (member.tasksCompleted / member.totalTasks) * 100 : 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {member.tasks && member.tasks.length > 0 ? (
+                        <div className="space-y-3">
+                          {member.tasks.map((task: any) => (
+                            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{task.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {new Date(task.createdAt).toLocaleDateString('tr-TR')}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {task.status === 'COMPLETED' ? (
+                                  <CheckCircle className="w-5 h-5 text-green-600" />
+                                ) : task.status === 'PENDING' ? (
+                                  <Clock className="w-5 h-5 text-yellow-600" />
+                                ) : (
+                                  <AlertCircle className="w-5 h-5 text-red-600" />
+                                )}
+                                <span className={`text-sm font-medium ${
+                                  task.status === 'COMPLETED' ? 'text-green-600' : 
+                                  task.status === 'PENDING' ? 'text-yellow-600' : 'text-red-600'
+                                }`}>
+                                  {task.status === 'COMPLETED' ? 'Tamamlandı' : 
+                                   task.status === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          <p>Bu üye henüz görev yüklemedi.</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'presentations' && (
+        <div className="space-y-6">
+          {!team ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center"
+            >
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Takım Oluşturulmadı</h3>
+              <p className="text-gray-600">Takım sunumlarını görmek için önce bir takıma atanmanız gerekiyor.</p>
+              <p className="text-sm text-gray-500 mt-2">Lütfen yönetici ile iletişime geçin.</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Takım Sunumları</h2>
+              {teamMembers.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Award className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz sunum yok</h3>
+                  <p className="text-gray-600">Takım üyeleri sunum yüklediğinde burada görünecek.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {teamMembers.map((member: any) => (
+                    <div key={member.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <span className="text-red-600 font-semibold">{member.avatar}</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{member.name}</h3>
+                            <p className="text-sm text-gray-500">{member.role}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">
+                            {member.presentationsCompleted}/{member.totalPresentations} onaylandı
+                          </p>
+                          <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${member.totalPresentations > 0 ? (member.presentationsCompleted / member.totalPresentations) * 100 : 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {member.presentations && member.presentations.length > 0 ? (
+                        <div className="space-y-3">
+                          {member.presentations.map((presentation: any) => (
+                            <div key={presentation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{presentation.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{presentation.description}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {new Date(presentation.createdAt).toLocaleDateString('tr-TR')}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {presentation.status === 'approved' ? (
+                                  <CheckCircle className="w-5 h-5 text-green-600" />
+                                ) : presentation.status === 'PENDING' ? (
+                                  <Clock className="w-5 h-5 text-yellow-600" />
+                                ) : (
+                                  <AlertCircle className="w-5 h-5 text-red-600" />
+                                )}
+                                <span className={`text-sm font-medium ${
+                                  presentation.status === 'approved' ? 'text-green-600' : 
+                                  presentation.status === 'PENDING' ? 'text-yellow-600' : 'text-red-600'
+                                }`}>
+                                  {presentation.status === 'approved' ? 'Onaylandı' : 
+                                   presentation.status === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          <p>Bu üye henüz sunum yüklemedi.</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           )}
         </div>
       )}

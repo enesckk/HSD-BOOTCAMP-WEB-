@@ -80,7 +80,7 @@ const LoginForm = () => {
   };
 
   const handleGoBack = () => {
-    window.history.back();
+    window.location.href = '/';
   };
 
   return (
@@ -150,7 +150,7 @@ const LoginForm = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`block w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-base placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-base text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
                     }`}
                     placeholder="ornek@email.com"
@@ -182,7 +182,7 @@ const LoginForm = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`block w-full pl-12 pr-12 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-base placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-12 pr-12 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-base text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
                     }`}
                     placeholder="••••••••"
@@ -248,12 +248,12 @@ const LoginForm = () => {
             {/* Footer Links */}
             <div className="mt-8 text-center space-y-4">
               <div className="text-gray-600">
-                Hesabınız yok mu?{' '}
+                Başvurunuz yok mu?{' '}
                 <a 
                   href="/register" 
                   className="text-red-600 hover:text-red-700 font-semibold transition-colors duration-300 hover:underline"
                 >
-                  Kayıt olun
+                  Başvuru yapın
                 </a>
               </div>
               

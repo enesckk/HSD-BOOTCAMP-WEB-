@@ -16,7 +16,7 @@ import {
   Eye,
   Plus,
   Cloud,
-  User,
+  Users,
   Calendar,
   Target,
   Award,
@@ -50,7 +50,7 @@ const TasksPage = () => {
       if (!user) return;
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/tasks?userId=${user.id}`);
+        const res = await fetch(`/api/tasks?userId=${user.id}&includeTeam=true`);
         const json = await res.json();
         console.log('Tasks API response:', json);
         
@@ -96,6 +96,7 @@ const TasksPage = () => {
     
     try {
       const formDataToSend = new FormData();
+      formDataToSend.append('userId', user.id);
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('huaweiCloudAccount', formData.huaweiCloudAccount);
@@ -308,7 +309,7 @@ const TasksPage = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Cloud className="h-5 w-5 text-gray-400" />
+                    <Cloud className="h-5 w-5 text-gray-900" />
                   </div>
                   <input
                     type="text"
@@ -338,10 +339,10 @@ const TasksPage = () => {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Upload className="w-5 h-5" />
+                      <Upload className={`w-5 h-5 ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`} />
                       <div className="text-left">
-                        <p className="font-medium">Dosya Yükle</p>
-                        <p className="text-sm text-gray-500">PDF, DOC, ZIP vb.</p>
+                        <p className={`font-medium ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`}>Dosya Yükle</p>
+                        <p className={`text-sm ${uploadType === 'file' ? 'text-red-700' : 'text-gray-900'}`}>PDF, DOC, ZIP vb.</p>
                       </div>
                     </div>
                   </button>
@@ -355,10 +356,10 @@ const TasksPage = () => {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Link className="w-5 h-5" />
+                      <Link className={`w-5 h-5 ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`} />
                       <div className="text-left">
-                        <p className="font-medium">Link Paylaş</p>
-                        <p className="text-sm text-gray-500">Google Drive, Dropbox vb.</p>
+                        <p className={`font-medium ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`}>Link Paylaş</p>
+                        <p className={`text-sm ${uploadType === 'link' ? 'text-red-700' : 'text-gray-900'}`}>Google Drive, Dropbox vb.</p>
                       </div>
                     </div>
                   </button>
@@ -381,11 +382,11 @@ const TasksPage = () => {
                       required
                     />
                     <label htmlFor="file-upload" className="cursor-pointer">
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">
+                      <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                      <p className="text-sm text-gray-900">
                         {formData.file ? formData.file.name : 'Dosya seçmek için tıklayın'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-900 mt-1">
                         PDF, DOC, DOCX, ZIP, RAR (Max 10MB)
                       </p>
                     </label>
@@ -398,7 +399,7 @@ const TasksPage = () => {
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Link className="h-5 w-5 text-gray-400" />
+                      <Link className="h-5 w-5 text-gray-900" />
                     </div>
                     <input
                       type="url"
@@ -518,6 +519,22 @@ const TasksPage = () => {
                       <span className="text-sm text-gray-500">{getStatusText(task.status)}</span>
                     </div>
                     
+                    {/* Görev Sahibi */}
+                    {task.user && (
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Users className="w-4 h-4 text-red-600" />
+                        <span className="text-sm text-gray-500">Görev Sahibi:</span>
+                        <span className="font-medium text-gray-900">{task.user.fullName}</span>
+                        {task.user.teamRole && (
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                            {task.user.teamRole === 'LIDER' ? 'Lider' : 
+                             task.user.teamRole === 'TEKNIK_SORUMLU' ? 'Teknik Sorumlu' : 
+                             task.user.teamRole === 'TASARIMCI' ? 'Tasarımcı' : 'Üye'}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
                     <p className="text-gray-600 mb-4">{task.description}</p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -535,8 +552,14 @@ const TasksPage = () => {
                         <div className="flex items-center space-x-2">
                           <FileText className="w-4 h-4 text-red-600" />
                           <span className="text-gray-500">Dosya:</span>
-                          <a href={task.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
-                            Dosyayı Görüntüle
+                          <a 
+                            href={`/api/files/${encodeURIComponent(task.fileUrl.split('/').pop() || '')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            download={task.fileUrl.split('/').pop()}
+                            className="font-medium text-red-600 hover:text-red-700 underline"
+                          >
+                            Dosyayı İndir
                           </a>
                         </div>
                       )}
@@ -584,7 +607,7 @@ const TasksPage = () => {
 
       {/* Detail Modal */}
       {showDetailModal && selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-white/10 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -631,15 +654,29 @@ const TasksPage = () => {
               
               {selectedTask.fileUrl && (
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h5 className="font-medium text-gray-900 mb-2">Dosya/Link</h5>
-                  <a 
-                    href={selectedTask.fileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-red-600 hover:text-red-700 break-all"
-                  >
-                    {selectedTask.fileUrl}
-                  </a>
+                  <h5 className="font-medium text-gray-900 mb-2">
+                    {selectedTask.uploadType === 'FILE' ? 'Dosya' : 'Link'}
+                  </h5>
+                  {selectedTask.uploadType === 'FILE' ? (
+                    <a 
+                      href={`/api/files/${encodeURIComponent(selectedTask.fileUrl.split('/').pop() || '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      download={selectedTask.fileUrl.split('/').pop()}
+                      className="text-red-600 hover:text-red-700 underline"
+                    >
+                      Dosyayı İndir
+                    </a>
+                  ) : (
+                    <a 
+                      href={selectedTask.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-red-600 hover:text-red-700 break-all"
+                    >
+                      {selectedTask.fileUrl}
+                    </a>
+                  )}
                 </div>
               )}
               

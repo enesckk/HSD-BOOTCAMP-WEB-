@@ -74,7 +74,7 @@ const About: React.FC = () => {
   ];
 
   const handleApplyClick = () => {
-    window.location.href = '/register';
+    window.location.href = '/application';
   };
 
   return (

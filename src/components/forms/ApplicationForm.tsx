@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
+  Mail,
   Phone, 
   GraduationCap, 
   BookOpen, 
@@ -18,9 +19,11 @@ import {
 
 interface ApplicationFormData {
   fullName: string;
+  email: string;
   phone: string;
   university: string;
   department: string;
+  teamRole: 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI' | '';
   projectIdea: string;
   youtubeVideo: string;
   logicQuestion1: string;
@@ -30,9 +33,11 @@ interface ApplicationFormData {
 const ApplicationForm = () => {
   const [formData, setFormData] = useState<ApplicationFormData>({
     fullName: '',
+    email: '',
     phone: '',
     university: '',
     department: '',
+    teamRole: '',
     projectIdea: '',
     youtubeVideo: '',
     logicQuestion1: '',
@@ -55,10 +60,13 @@ const ApplicationForm = () => {
     const newErrors: Partial<ApplicationFormData> = {};
 
     if (!formData.fullName.trim()) newErrors.fullName = 'Ad soyad gereklidir';
+    if (!formData.email.trim()) newErrors.email = 'E-posta gereklidir';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Geçerli bir e-posta adresi giriniz';
     if (!formData.phone.trim()) newErrors.phone = 'Telefon numarası gereklidir';
     if (!formData.university.trim()) newErrors.university = 'Üniversite adı gereklidir';
     if (!formData.department.trim()) newErrors.department = 'Bölüm adı gereklidir';
     if (!formData.projectIdea.trim()) newErrors.projectIdea = 'Proje fikri gereklidir';
+    if (!formData.teamRole) newErrors.teamRole = 'Rol seçiniz';
     if (!formData.youtubeVideo.trim()) newErrors.youtubeVideo = 'YouTube video linki gereklidir';
     else if (!formData.youtubeVideo.includes('youtube.com') && !formData.youtubeVideo.includes('youtu.be')) {
       newErrors.youtubeVideo = 'Geçerli bir YouTube linki giriniz';
@@ -104,11 +112,12 @@ const ApplicationForm = () => {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="fixed inset-0 z-50">
+        <div className="absolute inset-0 bg-white/10" />
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center"
+          className="relative max-w-md w-full mx-auto mt-24 bg-white rounded-2xl shadow-xl border border-gray-200 p-8 text-center"
         >
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -117,7 +126,8 @@ const ApplicationForm = () => {
             Başvurunuz Alındı!
           </h2>
           <p className="text-gray-600 mb-6">
-            Maratona başvurunuz başarıyla gönderildi. Değerlendirme sonuçları e-posta ile bildirilecektir.
+            Maratona başvurunuz başarıyla gönderildi. Başvurunuz incelenecek ve sonuç e-posta adresinize ({formData.email}) bildirilecektir. 
+            Onaylanan başvurular için giriş şifreniz mail ile gönderilecektir.
           </p>
           <button
             onClick={() => window.location.href = '/'}
@@ -187,7 +197,7 @@ const ApplicationForm = () => {
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.fullName ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="Adınız ve soyadınız"
@@ -197,6 +207,34 @@ const ApplicationForm = () => {
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <span className="mr-1">⚠</span>
                     {errors.fullName}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  E-posta *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
+                      errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                    }`}
+                    placeholder="ornek@email.com"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <span className="mr-1">⚠</span>
+                    {errors.email}
                   </p>
                 )}
               </div>
@@ -215,7 +253,7 @@ const ApplicationForm = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="+90 5XX XXX XX XX"
@@ -246,7 +284,7 @@ const ApplicationForm = () => {
                     type="text"
                     value={formData.university}
                     onChange={(e) => handleInputChange('university', e.target.value)}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.university ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="Üniversite adınız"
@@ -274,7 +312,7 @@ const ApplicationForm = () => {
                     type="text"
                     value={formData.department}
                     onChange={(e) => handleInputChange('department', e.target.value)}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 ${
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                       errors.department ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="Bölüm adınız"
@@ -287,6 +325,34 @@ const ApplicationForm = () => {
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Team Role */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Rol (Takımdaki Görev) *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { key: 'LIDER', label: 'Lider' },
+                  { key: 'TEKNIK_SORUMLU', label: 'Teknik Sorumlu' },
+                  { key: 'TASARIMCI', label: 'Tasarımcı' },
+                ].map((r) => (
+                  <button
+                    type="button"
+                    key={r.key}
+                    onClick={() => handleInputChange('teamRole', r.key as any)}
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition ${
+                      formData.teamRole === r.key ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              {errors.teamRole && (
+                <p className="mt-1 text-sm text-red-600">{errors.teamRole}</p>
+              )}
             </div>
 
             {/* Project Idea */}
@@ -303,7 +369,7 @@ const ApplicationForm = () => {
                   rows={4}
                   value={formData.projectIdea}
                   onChange={(e) => handleInputChange('projectIdea', e.target.value)}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 resize-none ${
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 resize-none ${
                     errors.projectIdea ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                   }`}
                   placeholder="Proje fikrinizi detaylı bir şekilde açıklayın..."
@@ -331,7 +397,7 @@ const ApplicationForm = () => {
                   type="url"
                   value={formData.youtubeVideo}
                   onChange={(e) => handleInputChange('youtubeVideo', e.target.value)}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 ${
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 ${
                     errors.youtubeVideo ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                   }`}
                   placeholder="https://www.youtube.com/watch?v=..."
@@ -371,7 +437,7 @@ const ApplicationForm = () => {
                   rows={3}
                   value={formData.logicQuestion1}
                   onChange={(e) => handleInputChange('logicQuestion1', e.target.value)}
-                  className={`block w-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 resize-none ${
+                  className={`block w-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 resize-none ${
                     errors.logicQuestion1 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                   }`}
                   placeholder="Cevabınızı buraya yazın..."
@@ -401,7 +467,7 @@ const ApplicationForm = () => {
                   rows={3}
                   value={formData.logicQuestion2}
                   onChange={(e) => handleInputChange('logicQuestion2', e.target.value)}
-                  className={`block w-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 placeholder-opacity-100 resize-none ${
+                  className={`block w-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 placeholder-opacity-100 resize-none ${
                     errors.logicQuestion2 ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
                   }`}
                   placeholder="Cevabınızı buraya yazın..."

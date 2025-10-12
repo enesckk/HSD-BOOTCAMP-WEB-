@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-30">
+    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-36">
              {/* Dynamic Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-red-800 to-blue-900">
         {/* Animated Grid */}

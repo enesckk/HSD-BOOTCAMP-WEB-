@@ -55,9 +55,9 @@ class ApiClient {
 
   private handleUnauthorized() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      window.location.href = '/login';
+      // 401 hatası geldi ama localStorage'ı temizlemiyoruz
+      // Kullanıcı manuel çıkış yapana kadar bilgileri koruyoruz
+      console.log('API: 401 Unauthorized - but keeping user data');
     }
   }
 

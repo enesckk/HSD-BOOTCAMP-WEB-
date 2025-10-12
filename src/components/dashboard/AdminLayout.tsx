@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { STORAGE_KEYS } from '@/utils/constants';
 import {
   Menu,
-  X,
   Home,
   User,
   Users,
@@ -16,10 +16,14 @@ import {
   Presentation,
   Bell,
   MessageSquare,
+  FileText,
   Settings,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  UsersRound,
+  CheckSquare
 } from 'lucide-react';
+import AdminNotificationCenter from './AdminNotificationCenter';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -28,29 +32,43 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+  const { user, logout, isLoading, isAuthenticated } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Client-side kontrolü
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Sidebar state'i localStorage'dan yükle
   useEffect(() => {
-    const savedSidebarState = localStorage.getItem('adminSidebarOpen');
-    if (savedSidebarState !== null) {
-      setSidebarOpen(JSON.parse(savedSidebarState));
+    if (isClient) {
+      const savedSidebarState = localStorage.getItem('adminSidebarOpen');
+      if (savedSidebarState !== null) {
+        setSidebarOpen(JSON.parse(savedSidebarState));
+      }
     }
-  }, []);
+  }, [isClient]);
 
   // Sidebar state'i localStorage'a kaydet
   useEffect(() => {
-    localStorage.setItem('adminSidebarOpen', JSON.stringify(sidebarOpen));
-  }, [sidebarOpen]);
+    if (isClient) {
+      localStorage.setItem('adminSidebarOpen', JSON.stringify(sidebarOpen));
+    }
+  }, [sidebarOpen, isClient]);
+
+  // Authentication kontrolü kaldırıldı - middleware ile yapılacak
 
   const menuItems = [
     { name: 'Anasayfa', href: '/admin', icon: Home },
     { name: 'Profil', href: '/admin/profile', icon: User },
+    { name: 'Başvurular', href: '/admin/applications', icon: FileText },
     { name: 'Katılımcılar', href: '/admin/participants', icon: Users },
     { name: 'Takımlar', href: '/admin/teams', icon: UserCheck },
-    { name: 'Takım Eşleştirme', href: '/admin/team-matching', icon: Target },
-    { name: 'Görevler', href: '/admin/tasks', icon: Target },
+    { name: 'Takım Eşleştirme', href: '/admin/team-matching', icon: UsersRound },
+    { name: 'Görevler', href: '/admin/tasks', icon: CheckSquare },
     { name: 'Sunumlar', href: '/admin/presentations', icon: Presentation },
     { name: 'Duyurular', href: '/admin/announcements', icon: Bell },
     { name: 'Mesajlar', href: '/admin/messages', icon: MessageSquare },
@@ -58,7 +76,20 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const handleLogout = () => {
     logout();
+    router.push('/login');
   };
+
+  // Loading durumunda loading göster
+  if (!isClient || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -74,7 +105,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           >
             <div className="flex flex-col h-full">
               {/* Logo */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-sm">A</span>
@@ -84,12 +115,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                     <p className="text-xs text-gray-500">Afet Yönetimi Maratonu</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
               </div>
 
               {/* Navigation */}
@@ -102,6 +127,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                     <Link
                       key={item.name}
                       href={item.href}
+                      onClick={() => setSidebarOpen(false)}
                       className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                         isActive
                           ? 'bg-red-50 text-red-600 border-r-2 border-red-600'
@@ -154,23 +180,28 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               </div>
             </div>
 
-            {/* User Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-red-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">
-                    {user?.fullName || 'Admin'}
-                  </p>
-                  <p className="text-xs text-gray-500">Sistem Yöneticisi</p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              </button>
+            {/* Header Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Bildirim Merkezi */}
+              <AdminNotificationCenter />
+              
+              {/* User Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-900">
+                      {user?.fullName || 'Admin'}
+                    </p>
+                    <p className="text-xs text-gray-500">Sistem Yöneticisi</p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                </button>
 
               <AnimatePresence>
                 {userDropdownOpen && (
@@ -190,6 +221,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   </motion.div>
                 )}
               </AnimatePresence>
+              </div>
             </div>
           </div>
         </header>
@@ -200,20 +232,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </main>
       </div>
 
-      {/* Overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      
     </div>
   );
 };
 
 export default AdminLayout;
+
+

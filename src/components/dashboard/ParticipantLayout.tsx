@@ -28,6 +28,7 @@ interface ParticipantLayoutProps {
 
 const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
   const { user, logout } = useAuth();
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -83,14 +84,14 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
     const fetchData = async () => {
       try {
         // Bildirimleri yükle
-        const notificationsRes = await fetch('/api/announcements');
+        const notificationsRes = await fetch('/api/notifications?panel=participant');
         const notificationsData = await notificationsRes.json();
-        setNotifications(notificationsData.items || []);
+        setNotifications(notificationsData.notifications || []);
 
         // Mesajları yükle
         const token = localStorage.getItem('afet_maratonu_token');
         const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const messagesRes = await fetch('/api/messages?box=inbox', { headers });
+        const messagesRes = await fetch('/api/messages/participant?box=inbox', { headers });
         const messagesData = await messagesRes.json();
         setMessages(messagesData.items || []);
       } catch (error) {
@@ -194,8 +195,24 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
     window.location.href = '/login';
   };
 
-  const markNotificationAsRead = (notificationId: string) => {
+  const markNotificationAsRead = async (notificationId: string) => {
     setReadNotifications(prev => new Set([...prev, notificationId]));
+    
+    // API'ye okundu olarak işaretle
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notificationId,
+          read: true
+        })
+      });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
   const markMessageAsRead = async (messageId: string) => {
@@ -203,9 +220,9 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
     
     // API'ye okundu olarak işaretle
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('afet_maratonu_token');
       const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-      await fetch('/api/messages', {
+      await fetch('/api/messages/participant', {
         method: 'PUT',
         headers,
         body: JSON.stringify({
@@ -332,10 +349,28 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                       className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
                     >
                       <div className="p-4 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Bildirimler</h3>
-                        <p className="text-sm text-gray-500">
-                          {notifications.filter((n: any) => !readNotifications.has(n.id)).length} yeni bildirim
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Bildirimler</h3>
+                            <p className="text-sm text-gray-500">
+                              {notifications.filter((n: any) => !readNotifications.has(n.id)).length} yeni bildirim
+                            </p>
+                          </div>
+                          {notifications.filter((n: any) => !readNotifications.has(n.id)).length > 0 && (
+                            <button
+                              onClick={() => {
+                                notifications.forEach((n: any) => {
+                                  if (!readNotifications.has(n.id)) {
+                                    markNotificationAsRead(n.id);
+                                  }
+                                });
+                              }}
+                              className="text-sm text-red-600 hover:text-red-700 font-medium"
+                            >
+                              Tümünü Okundu İşaretle
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
                         {notifications.length === 0 ? (
@@ -349,19 +384,24 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                               key={notification.id} 
                               onClick={() => {
                                 markNotificationAsRead(notification.id);
-                                window.location.href = '/dashboard/announcements';
+                                if (notification.actionUrl) {
+                                  window.location.href = notification.actionUrl;
+                                }
                               }}
                               className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                             >
                               <div className="flex items-start space-x-3">
                                 <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                                  readNotifications.has(notification.id) ? 'bg-gray-300' : 'bg-red-500'
+                                  notification.read ? 'bg-gray-300' : 'bg-red-500'
                                 }`} />
                                 <div className="flex-1 min-w-0">
                                   <p className={`text-sm font-medium truncate ${
-                                    readNotifications.has(notification.id) ? 'text-gray-500' : 'text-gray-900'
+                                    notification.read ? 'text-gray-500' : 'text-gray-900'
                                   }`}>
                                     {notification.title}
+                                  </p>
+                                  <p className="text-xs text-gray-600 mt-1">
+                                    {notification.message}
                                   </p>
                                   <p className="text-xs text-gray-500 mt-1">
                                     {new Date(notification.createdAt).toLocaleDateString('tr-TR')}
@@ -378,7 +418,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                             href="/dashboard/announcements"
                             className="text-sm text-red-600 hover:text-red-700 font-medium"
                           >
-                            Tümünü Gör
+                            Tüm Bildirimleri Gör
                           </a>
                         </div>
                       )}
@@ -412,10 +452,28 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                       className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
                     >
                       <div className="p-4 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Mesajlar</h3>
-                        <p className="text-sm text-gray-500">
-                          {messages.filter((m: any) => m.unread && !readMessages.has(m.id)).length} okunmamış mesaj
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Mesajlar</h3>
+                            <p className="text-sm text-gray-500">
+                              {messages.filter((m: any) => m.unread && !readMessages.has(m.id)).length} okunmamış mesaj
+                            </p>
+                          </div>
+                          {messages.filter((m: any) => m.unread && !readMessages.has(m.id)).length > 0 && (
+                            <button
+                              onClick={() => {
+                                messages.forEach((m: any) => {
+                                  if (m.unread && !readMessages.has(m.id)) {
+                                    markMessageAsRead(m.id);
+                                  }
+                                });
+                              }}
+                              className="text-sm text-red-600 hover:text-red-700 font-medium"
+                            >
+                              Tümünü Okundu İşaretle
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
                         {messages.length === 0 ? (
@@ -475,9 +533,6 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                 <div className="hidden md:block">
                   <p className="text-sm font-medium text-gray-900">
                     {user?.fullName || 'Katılımcı'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {user?.marathonId || 'MAR000'}
                   </p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-400" />

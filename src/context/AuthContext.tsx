@@ -32,6 +32,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
 
   useEffect(() => {
     const initAuth = async () => {
@@ -39,29 +40,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
         const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
         
-        if (token) {
-          const response = await authService.verifyToken();
-          
-          if (response.valid && response.user) {
-            setUser(response.user);
-          } else {
-            localStorage.removeItem(STORAGE_KEYS.TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.USER);
-          }
-        } else if (storedUser) {
-          // Token yoksa stored user'ı kullan
+        console.log('Auth init - Token:', token ? 'Present' : 'Missing');
+        console.log('Auth init - StoredUser:', storedUser ? 'Present' : 'Missing');
+        
+        if (token && storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
+            console.log('Auth init - Parsed user:', parsedUser);
             setUser(parsedUser);
-          } catch (e) {
-            console.error('Error parsing stored user:', e);
-            localStorage.removeItem(STORAGE_KEYS.USER);
+            // Token verification yapmıyoruz, sadece stored user ile devam ediyoruz
+          } catch (error) {
+            // Stored user bozuksa yalnızca user'ı resetle, storage'ı temizleme
+            console.log('Failed to parse stored user:', error);
+            setUser(null);
           }
+        } else {
+          console.log('No token or stored user found');
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        localStorage.removeItem(STORAGE_KEYS.TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER);
       } finally {
         setIsLoading(false);
       }
@@ -79,10 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       setUser(response.user);
       
-      // Kullanıcı bilgilerini döndür
       return response.user;
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +88,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       setUser(response.user);
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
     setUser(null);
-    authService.logout().catch(console.error);
+    authService.logout().catch(() => {});
   };
 
   const checkMarathonId = async (marathonId: string) => {

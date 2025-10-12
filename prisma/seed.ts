@@ -6,28 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 100 adet Marathon ID oluştur (eğer yoksa)
-  const existingIds = await prisma.marathonId.count();
-  if (existingIds === 0) {
-    const marathonIds = [];
-    for (let i = 1; i <= 100; i++) {
-      const marathonId = `MAR${i.toString().padStart(3, '0')}`;
-      marathonIds.push({
-        marathonId,
-        isUsed: false,
-      });
-    }
-
-    await prisma.marathonId.createMany({
-      data: marathonIds,
-    });
-
-    console.log('✅ Created 100 Marathon IDs');
-  } else {
-    console.log(`✅ Marathon IDs already exist (${existingIds} found)`);
-  }
-
-  // Admin kullanıcı oluştur
+  // Admin kullanıcı oluştur (admins tablosu)
   const adminPassword = await bcrypt.hash('admin123', 10);
   const admin = await prisma.admin.upsert({
     where: { email: 'admin@huawei.com' },
@@ -41,16 +20,37 @@ async function main() {
     },
   });
 
-  console.log('✅ Created admin user');
+  console.log('✅ Created admin record (admins table)');
+
+  // Admin kullanıcı oluştur (users tablosu - giriş için gereklidir)
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@huawei.com' },
+    update: {
+      role: UserRole.ADMIN,
+      isActive: true,
+    },
+    create: {
+      email: 'admin@huawei.com',
+      password: adminPassword,
+      fullName: 'Huawei Admin',
+      phone: '+905551234567',
+      university: 'Admin University',
+      department: 'Administration',
+      role: UserRole.ADMIN,
+      isActive: true,
+    },
+  });
+
+  console.log('✅ Created admin user (users table) - email: admin@huawei.com, password: admin123');
 
   // Test katılımcı oluştur
-  const testPassword = await bcrypt.hash('admin123', 10);
+  const testPassword = await bcrypt.hash('test123', 10);
   const testUser = await prisma.user.upsert({
     where: { email: 'test@example.com' },
     update: {},
     create: {
-      marathonId: 'MAR001',
       email: 'test@example.com',
+      password: testPassword,
       fullName: 'Test User',
       phone: '+905551234567',
       university: 'Test University',
@@ -61,17 +61,7 @@ async function main() {
     },
   });
 
-  // MAR001'i kullanılmış olarak işaretle
-  await prisma.marathonId.update({
-    where: { marathonId: 'MAR001' },
-    data: {
-      isUsed: true,
-      usedAt: new Date(),
-      usedBy: testUser.id,
-    },
-  });
-
-  console.log('✅ Created test participant user');
+  console.log('✅ Created test participant user (email: test@example.com, password: test123)');
 
   // Örnek duyurular oluştur
   const announcements = [
@@ -115,14 +105,14 @@ async function main() {
   // Örnek mesajlar oluştur
   const messages = [
     {
-      fromUserId: 'admin-user-id',
+      fromUserId: adminUser.id,
       toRole: 'participant',
       subject: 'Mentorluk Oturumu',
       body: 'Merhaba, mentorluk için uygun saatlerinizi iletir misiniz?',
       unread: true
     },
     {
-      fromUserId: 'admin-user-id',
+      fromUserId: adminUser.id,
       toRole: 'participant',
       subject: 'Sunum Şablonu',
       body: 'Final sunumu için şablon ekte.',
@@ -141,10 +131,13 @@ async function main() {
   // Test takımı oluştur
   const testTeam = await prisma.team.upsert({
     where: { leaderId: testUser.id },
-    update: {},
+    update: {
+      capacity: 3,
+    },
     create: {
       name: 'Test Takımı',
-      leaderId: testUser.id
+      leaderId: testUser.id,
+      capacity: 3
     }
   });
 
@@ -165,7 +158,7 @@ async function main() {
       huaweiCloudAccount: 'test_user',
       uploadType: 'file',
       fileUrl: 'https://example.com/project-plan.pdf',
-      status: 'pending'
+      status: 'PENDING'
     }
   });
 
@@ -186,6 +179,35 @@ async function main() {
   });
 
   console.log('✅ Created sample presentation');
+
+  // Örnek bildirimler oluştur
+  await prisma.notification.createMany({
+    data: [
+      {
+        type: 'APPLICATION',
+        title: 'Yeni Başvuru',
+        message: 'Ahmet Yılmaz adlı kullanıcı başvuru yaptı',
+        read: false,
+        actionUrl: '/admin/applications'
+      },
+      {
+        type: 'MESSAGE',
+        title: 'Yeni Mesaj',
+        message: 'Test Takımı size mesaj gönderdi',
+        read: false,
+        actionUrl: '/admin/messages'
+      },
+      {
+        type: 'TEAM',
+        title: 'Takım Oluşturuldu',
+        message: 'Yeni takım "Maraton Takımı" oluşturuldu',
+        read: true,
+        actionUrl: '/admin/teams'
+      }
+    ]
+  });
+
+  console.log('✅ Created sample notifications');
 
   console.log('🎉 Database seeded successfully!');
 }

@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { TaskStatus } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const task = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id },
     });
 
     if (!task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     return NextResponse.json(task);
@@ -34,23 +31,74 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const { title, description, huaweiCloudAccount, uploadType, fileUrl, linkUrl, status } = body;
+    const { id } = params;
+    const { status } = await request.json();
+    
+    console.log('Task update request:', { id, status });
 
-    const task = await prisma.task.update({
-      where: { id: params.id },
-      data: {
-        title,
-        description,
-        huaweiCloudAccount,
-        uploadType,
-        fileUrl,
-        linkUrl,
-        status
+    // Convert lowercase status to uppercase enum
+    let taskStatus: TaskStatus;
+    if (status === 'pending') {
+      taskStatus = TaskStatus.PENDING;
+    } else if (status === 'completed') {
+      taskStatus = TaskStatus.COMPLETED;
+    } else if (status === 'rejected') {
+      taskStatus = TaskStatus.REJECTED;
+    } else {
+      console.log('Invalid status received:', status);
+      return NextResponse.json(
+        { error: 'Invalid status. Must be pending, completed, or rejected' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Updating task with status:', taskStatus);
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: { status: taskStatus },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            teamMembers: {
+              include: {
+                members: true
+              }
+            }
+          }
+        }
       }
     });
 
-    return NextResponse.json(task);
+    // Eğer görev onaylandıysa (COMPLETED), takım üyelerine bildirim gönder
+    try {
+      if (taskStatus === TaskStatus.COMPLETED && updatedTask.user?.teamMembers) {
+        const teamMembers = updatedTask.user.teamMembers.members;
+        
+        // Her takım üyesi için bildirim oluştur
+        for (const member of teamMembers) {
+          if (member.id !== updatedTask.userId) { // Görev sahibi hariç
+            await prisma.notification.create({
+              data: {
+                type: 'TASK',
+                title: 'Görev Onaylandı',
+                message: `${updatedTask.user.fullName} tarafından yüklenen "${updatedTask.title}" görevi onaylandı`,
+                actionUrl: '/dashboard/tasks',
+                read: false
+              }
+            });
+          }
+        }
+      }
+    } catch (notificationError) {
+      console.error('Error creating notifications:', notificationError);
+      // Bildirim hatası görev güncellemeyi engellemez
+    }
+
+    console.log('Task updated successfully:', updatedTask);
+    return NextResponse.json(updatedTask);
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json(
@@ -65,11 +113,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     await prisma.task.delete({
-      where: { id: params.id }
+      where: { id },
     });
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error('Error deleting task:', error);
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { decrypt } from '@/utils/crypto';
 import { ApplicationStatus } from '@prisma/client';
 
 // GET - Tüm başvuruları getir (admin için)
@@ -23,8 +24,14 @@ export async function GET(request: NextRequest) {
       prisma.application.count({ where }),
     ]);
 
+    // initialPasswordEnc alanını admin arayüzü için çözüp initialPassword olarak dön
+    const appsWithPassword = applications.map((a: any) => ({
+      ...a,
+      initialPassword: a.initialPasswordEnc ? decrypt(a.initialPasswordEnc) : undefined,
+    }));
+
     return NextResponse.json({
-      applications,
+      applications: appsWithPassword,
       pagination: {
         page,
         limit,
@@ -47,9 +54,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       fullName,
+      email,
       phone,
       university,
       department,
+      teamRole,
       projectIdea,
       youtubeVideo,
       logicQuestion1,
@@ -57,9 +66,17 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validasyon
-    if (!fullName || !phone || !university || !department || !projectIdea || !youtubeVideo || !logicQuestion1 || !logicQuestion2) {
+    if (!fullName || !email || !phone || !university || !department || !projectIdea || !youtubeVideo || !logicQuestion1 || !logicQuestion2 || !teamRole) {
       return NextResponse.json(
         { error: 'Tüm alanlar doldurulmalıdır' },
+        { status: 400 }
+      );
+    }
+
+    // Email validasyonu
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return NextResponse.json(
+        { error: 'Geçerli bir e-posta adresi giriniz' },
         { status: 400 }
       );
     }
@@ -72,13 +89,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Aynı email ile daha önce başvuru yapılmış mı kontrol et
+    const existingApplication = await prisma.application.findFirst({
+      where: { email }
+    });
+
+    if (existingApplication) {
+      return NextResponse.json(
+        { error: 'Bu e-posta adresi ile zaten başvuru yapılmış' },
+        { status: 400 }
+      );
+    }
+
     const application = await prisma.application.create({
       data: {
         fullName,
+        email,
         phone,
         university,
         department,
         projectIdea,
+        teamRole,
         youtubeVideo,
         logicQuestion1,
         logicQuestion2,
@@ -101,3 +132,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
