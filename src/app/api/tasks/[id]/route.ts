@@ -86,11 +86,24 @@ export async function PUT(
                 title: 'Görev Onaylandı',
                 message: `${updatedTask.user.fullName} tarafından yüklenen "${updatedTask.title}" görevi onaylandı`,
                 actionUrl: '/dashboard/tasks',
+                userId: member.id, // Kişiye özel bildirim
                 read: false
               }
             });
           }
         }
+        
+        // Görev sahibine de bildirim gönder
+        await prisma.notification.create({
+          data: {
+            type: 'TASK',
+            title: 'Göreviniz Onaylandı',
+            message: `"${updatedTask.title}" göreviniz onaylandı`,
+            actionUrl: '/dashboard/tasks',
+            userId: updatedTask.userId, // Görev sahibine özel bildirim
+            read: false
+          }
+        });
       }
     } catch (notificationError) {
       console.error('Error creating notifications:', notificationError);

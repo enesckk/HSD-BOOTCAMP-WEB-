@@ -117,6 +117,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Admin için bildirim oluştur
+    try {
+      await prisma.notification.create({
+        data: {
+          type: 'APPLICATION',
+          title: 'Yeni Başvuru',
+          message: `${fullName} tarafından yeni başvuru yapıldı`,
+          actionUrl: '/admin/applications',
+          read: false
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error creating admin notification:', notificationError);
+    }
+
     return NextResponse.json(
       { 
         message: 'Başvurunuz başarıyla gönderildi',

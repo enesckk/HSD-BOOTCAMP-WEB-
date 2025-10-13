@@ -116,6 +116,10 @@ export default function AdminNotificationCenter() {
         return <AlertCircle className="w-5 h-5 text-orange-600" />;
       case 'TEAM':
         return <Users className="w-5 h-5 text-purple-600" />;
+      case 'ADMIN_TASK':
+        return <CheckCircle className="w-5 h-5 text-red-600" />;
+      case 'ADMIN_PRESENTATION':
+        return <FileText className="w-5 h-5 text-red-600" />;
       default:
         return <Bell className="w-5 h-5 text-gray-600" />;
     }

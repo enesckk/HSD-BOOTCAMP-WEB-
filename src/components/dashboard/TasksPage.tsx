@@ -50,7 +50,7 @@ const TasksPage = () => {
       if (!user) return;
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/tasks?userId=${user.id}&includeTeam=true`);
+        const res = await fetch(`/api/tasks?userId=${user.id}`);
         const json = await res.json();
         console.log('Tasks API response:', json);
         

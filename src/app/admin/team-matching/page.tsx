@@ -729,7 +729,7 @@ export default function AdminTeamMatchingPage() {
                     <p className="font-semibold text-sm">{messageModal.type}</p>
                     <p className="text-sm opacity-90">{messageModal.message}</p>
                   </div>
-                </div>
+        </div>
               </div>
             </motion.div>
           )}

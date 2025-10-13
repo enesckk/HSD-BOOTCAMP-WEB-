@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
       // Kullanıcının takımını bul
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: { team: { include: { members: true } } }
+        include: { teamMembers: { include: { members: true } } }
       });
       
-      if (user?.team) {
+      if (user?.teamMembers) {
         // Takım üyelerinin ID'lerini al
-        const teamMemberIds = user.team.members.map(member => member.id);
+        const teamMemberIds = user.teamMembers.members.map(member => member.id);
         
         // Takım üyelerinin sunumlarını getir
         presentations = await prisma.presentation.findMany({
@@ -203,6 +203,7 @@ export async function POST(request: NextRequest) {
                 title: 'Yeni Sunum Yüklendi',
                 message: `${user.fullName} tarafından "${title}" sunumu yüklendi`,
                 actionUrl: '/dashboard/presentation',
+                userId: member.id, // Kişiye özel bildirim
                 read: false
               }
             });

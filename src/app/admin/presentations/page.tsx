@@ -352,7 +352,7 @@ export default function AdminPresentationsPage() {
                     </div>
                   )}
                   
-                  <div>
+        <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Durum</label>
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                       selectedPresentation.status === 'approved' 
@@ -364,8 +364,8 @@ export default function AdminPresentationsPage() {
                       {selectedPresentation.status === 'approved' ? 'Onaylandı' : 
                        selectedPresentation.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
                     </span>
-                  </div>
-                  
+        </div>
+        
                   {selectedPresentation.fileUrl && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Ek Dosya/Bağlantı</label>

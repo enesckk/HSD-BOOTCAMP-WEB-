@@ -59,7 +59,7 @@ const PresentationPage = () => {
         setIsLoading(true);
         
         // Fetch presentations
-        const presentationsRes = await fetch(`/api/presentations?userId=${user.id}&includeTeam=true`);
+        const presentationsRes = await fetch(`/api/presentations?userId=${user.id}`);
         const presentationsData = await presentationsRes.json();
         console.log('Presentations API response:', presentationsData);
         

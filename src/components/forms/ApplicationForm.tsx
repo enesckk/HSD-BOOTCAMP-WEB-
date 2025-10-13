@@ -23,7 +23,7 @@ interface ApplicationFormData {
   phone: string;
   university: string;
   department: string;
-  teamRole: 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI' | '';
+  teamRole: 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI' | undefined;
   projectIdea: string;
   youtubeVideo: string;
   logicQuestion1: string;
@@ -37,7 +37,7 @@ const ApplicationForm = () => {
     phone: '',
     university: '',
     department: '',
-    teamRole: '',
+    teamRole: undefined,
     projectIdea: '',
     youtubeVideo: '',
     logicQuestion1: '',
@@ -45,19 +45,23 @@ const ApplicationForm = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<ApplicationFormData>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handleInputChange = (field: keyof ApplicationFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
   const validateForm = () => {
-    const newErrors: Partial<ApplicationFormData> = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.fullName.trim()) newErrors.fullName = 'Ad soyad gereklidir';
     if (!formData.email.trim()) newErrors.email = 'E-posta gereklidir';
@@ -66,7 +70,7 @@ const ApplicationForm = () => {
     if (!formData.university.trim()) newErrors.university = 'Üniversite adı gereklidir';
     if (!formData.department.trim()) newErrors.department = 'Bölüm adı gereklidir';
     if (!formData.projectIdea.trim()) newErrors.projectIdea = 'Proje fikri gereklidir';
-    if (!formData.teamRole) newErrors.teamRole = 'Rol seçiniz';
+    if (!formData.teamRole) newErrors.teamRole = 'Lütfen bir rol seçiniz';
     if (!formData.youtubeVideo.trim()) newErrors.youtubeVideo = 'YouTube video linki gereklidir';
     else if (!formData.youtubeVideo.includes('youtube.com') && !formData.youtubeVideo.includes('youtu.be')) {
       newErrors.youtubeVideo = 'Geçerli bir YouTube linki giriniz';
@@ -113,7 +117,7 @@ const ApplicationForm = () => {
   if (submitSuccess) {
     return (
       <div className="fixed inset-0 z-50">
-        <div className="absolute inset-0 bg-white/10" />
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-md" />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

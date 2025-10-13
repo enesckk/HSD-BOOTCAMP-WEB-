@@ -48,6 +48,21 @@ export default function AdminApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+
+  // Rol yazımını düzelt
+  const getRoleDisplayName = (role: string | undefined) => {
+    if (!role) return 'Belirtilmemiş';
+    switch (role) {
+      case 'LIDER':
+        return 'Lider';
+      case 'TEKNIK_SORUMLU':
+        return 'Teknik Sorumlu';
+      case 'TASARIMCI':
+        return 'Tasarımcı';
+      default:
+        return role;
+    }
+  };
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<'approve' | 'reject' | 'view'>('view');
@@ -343,7 +358,7 @@ export default function AdminApplicationsPage() {
                       </div>
                       <div className="flex items-center space-x-2 text-gray-600">
                         <User className="w-4 h-4 text-gray-900" />
-                        <span>{app.teamRole || 'Belirtilmemiş'}</span>
+                        <span>{getRoleDisplayName(app.teamRole)}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-gray-600">
                         <Calendar className="w-4 h-4 text-gray-900" />
@@ -442,7 +457,7 @@ export default function AdminApplicationsPage() {
                   <strong className="text-gray-900">Bölüm:</strong> <span className="text-gray-800">{selectedApp.department}</span>
                 </div>
                 <div>
-                  <strong className="text-gray-900">Tercih Edilen Rol:</strong> <span className="text-gray-800">{selectedApp.teamRole || 'Belirtilmemiş'}</span>
+                  <strong className="text-gray-900">Tercih Edilen Rol:</strong> <span className="text-gray-800">{getRoleDisplayName(selectedApp.teamRole)}</span>
                 </div>
                 <div>
                   <strong className="text-gray-900">Başvuru Tarihi:</strong> <span className="text-gray-800">{new Date(selectedApp.createdAt).toLocaleString('tr-TR')}</span>

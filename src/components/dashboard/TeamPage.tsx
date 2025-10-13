@@ -28,6 +28,8 @@ import {
 const TeamPage = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  const [selectedPresentation, setSelectedPresentation] = useState<any | null>(null);
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [team, setTeam] = useState<any | null>(null);
@@ -118,6 +120,11 @@ const TeamPage = () => {
 
   const [activities, setActivities] = useState<any[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
+
+  const openPresentationModal = (presentation: any) => {
+    setSelectedPresentation(presentation);
+    setShowPresentationModal(true);
+  };
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -732,7 +739,11 @@ const TeamPage = () => {
                       {member.presentations && member.presentations.length > 0 ? (
                         <div className="space-y-3">
                           {member.presentations.map((presentation: any) => (
-                            <div key={presentation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div 
+                              key={presentation.id} 
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                              onClick={() => openPresentationModal(presentation)}
+                            >
                               <div className="flex-1">
                                 <h4 className="font-medium text-gray-900">{presentation.title}</h4>
                                 <p className="text-sm text-gray-600 mt-1">{presentation.description}</p>
@@ -755,6 +766,7 @@ const TeamPage = () => {
                                   {presentation.status === 'approved' ? 'Onaylandı' : 
                                    presentation.status === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
                                 </span>
+                                <Eye className="w-4 h-4 text-gray-400" />
                               </div>
                             </div>
                           ))}
@@ -838,7 +850,91 @@ const TeamPage = () => {
         </div>
       )}
 
-    </div>
+    {/* Sunum Detay Modalı */}
+    {showPresentationModal && selectedPresentation && (
+      <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900">Sunum Detayları</h3>
+            <button
+              onClick={() => setShowPresentationModal(false)}
+              className="p-2 rounded-lg hover:bg-gray-100"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Başlık</label>
+              <p className="text-gray-900 font-semibold">{selectedPresentation.title}</p>
+            </div>
+            
+            {selectedPresentation.description && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                <p className="text-gray-900">{selectedPresentation.description}</p>
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                selectedPresentation.status === 'approved' 
+                  ? 'bg-green-100 text-green-800' 
+                  : selectedPresentation.status === 'PENDING'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {selectedPresentation.status === 'approved' ? 'Onaylandı' : 
+                 selectedPresentation.status === 'PENDING' ? 'Beklemede' : 'Reddedildi'}
+              </span>
+            </div>
+            
+            {selectedPresentation.fileUrl && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ek Dosya/Bağlantı</label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    {selectedPresentation.uploadType === 'LINK' ? (
+                      <Download className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <Download className="w-4 h-4 text-gray-500" />
+                    )}
+                    <a
+                      href={selectedPresentation.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      {selectedPresentation.uploadType === 'LINK' ? 'Bağlantıyı Aç' : 'Dosyayı İndir'}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div className="text-sm text-gray-500">
+                Yüklenme: {new Date(selectedPresentation.createdAt).toLocaleDateString('tr-TR')}
+              </div>
+              <button
+                onClick={() => setShowPresentationModal(false)}
+                className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 rounded-lg font-medium"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    )}
+  </div>
   );
 };
 

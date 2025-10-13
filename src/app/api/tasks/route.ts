@@ -10,18 +10,20 @@ export async function GET(request: NextRequest) {
     const userId = request.nextUrl.searchParams.get('userId');
     const includeTeam = request.nextUrl.searchParams.get('includeTeam') === 'true';
     
+    console.log('Tasks API - userId:', userId, 'includeTeam:', includeTeam);
+    
     let tasks;
     
     if (includeTeam && userId) {
       // Kullanıcının takımını bul
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: { team: { include: { members: true } } }
+        include: { teamMembers: { include: { members: true } } }
       });
       
-      if (user?.team) {
+      if (user?.teamMembers) {
         // Takım üyelerinin ID'lerini al
-        const teamMemberIds = user.team.members.map(member => member.id);
+        const teamMemberIds = user.teamMembers.members.map(member => member.id);
         
         // Takım üyelerinin görevlerini getir
         tasks = await prisma.task.findMany({
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
       }
     } else {
       // Normal kullanıcı görevleri
+      console.log('Fetching tasks for userId:', userId);
       tasks = await prisma.task.findMany({
         where: userId ? { userId } : undefined,
         include: {
@@ -68,6 +71,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' }
       });
+      console.log('Found tasks:', tasks.length);
     }
     
     return NextResponse.json({ items: tasks });

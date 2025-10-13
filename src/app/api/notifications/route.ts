@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const panel = searchParams.get('panel'); // 'admin' or 'participant'
+    const userId = searchParams.get('userId'); // Katılımcı için userId
     
     let whereClause = {};
     
@@ -24,13 +25,24 @@ export async function GET(request: NextRequest) {
       };
     } else if (panel === 'participant') {
       // Katılımcı paneli için kişisel bildirimler
-      whereClause = {
-        OR: [
-          { type: 'TASK' },
-          { type: 'PRESENTATION' },
-          { type: 'ANNOUNCEMENT' }
-        ]
-      };
+      if (userId) {
+        whereClause = {
+          OR: [
+            { type: 'ANNOUNCEMENT' }, // Duyurular herkese
+            { 
+              AND: [
+                { type: { in: ['TASK', 'PRESENTATION'] } },
+                { userId: userId } // Kişisel bildirimler
+              ]
+            }
+          ]
+        };
+      } else {
+        // userId yoksa sadece duyurular
+        whereClause = {
+          type: 'ANNOUNCEMENT'
+        };
+      }
     }
     
     // Veritabanından bildirimleri çek
@@ -62,6 +74,7 @@ export async function POST(request: NextRequest) {
         title,
         message,
         actionUrl,
+        userId,
         read: false
       }
     });

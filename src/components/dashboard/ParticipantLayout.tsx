@@ -82,9 +82,10 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
   // Bildirimleri ve mesajları yükle
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
       try {
         // Bildirimleri yükle
-        const notificationsRes = await fetch('/api/notifications?panel=participant');
+        const notificationsRes = await fetch(`/api/notifications?panel=participant&userId=${user.id}`);
         const notificationsData = await notificationsRes.json();
         setNotifications(notificationsData.notifications || []);
 
@@ -100,7 +101,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
     };
 
     fetchData();
-  }, []);
+  }, [user]); // user değiştiğinde tekrar çalış
 
   // Menü durumunu localStorage'dan yükle
   useEffect(() => {
@@ -109,6 +110,34 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       setSidebarOpen(JSON.parse(savedSidebarState));
     }
   }, []);
+
+  // Window focus olduğunda verileri yenile
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        // Bildirimleri ve mesajları yenile
+        const fetchData = async () => {
+          try {
+            const notificationsRes = await fetch(`/api/notifications?panel=participant&userId=${user.id}`);
+            const notificationsData = await notificationsRes.json();
+            setNotifications(notificationsData.notifications || []);
+
+            const token = localStorage.getItem('afet_maratonu_token');
+            const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const messagesRes = await fetch('/api/messages/participant?box=inbox', { headers });
+            const messagesData = await messagesRes.json();
+            setMessages(messagesData.items || []);
+          } catch (error) {
+            console.error('Error refreshing data:', error);
+          }
+        };
+        fetchData();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
 
   // Menü durumu değiştiğinde localStorage'a kaydet
   useEffect(() => {
@@ -392,11 +421,11 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                             >
                               <div className="flex items-start space-x-3">
                                 <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                                  notification.read ? 'bg-gray-300' : 'bg-red-500'
+                                  readNotifications.has(notification.id) ? 'bg-gray-300' : 'bg-red-500'
                                 }`} />
                                 <div className="flex-1 min-w-0">
                                   <p className={`text-sm font-medium truncate ${
-                                    notification.read ? 'text-gray-500' : 'text-gray-900'
+                                    readNotifications.has(notification.id) ? 'text-gray-500' : 'text-gray-900'
                                   }`}>
                                     {notification.title}
                                   </p>

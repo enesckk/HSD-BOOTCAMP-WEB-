@@ -63,9 +63,10 @@ export async function PUT(
       }
     });
 
-    // Sunum onaylandığında veya reddedildiğinde sunum sahibine bildirim gönder
+    // Sunum onaylandığında veya reddedildiğinde sunum sahibine ve takım üyelerine bildirim gönder
     try {
       if ((status === 'approved' || status === 'rejected') && updatedPresentation.user) {
+        // Sunum sahibine bildirim gönder
         const title = status === 'approved' ? 'Sunum Onaylandı' : 'Sunum Reddedildi';
         const message = status === 'approved' 
           ? `"${updatedPresentation.title}" sunumunuz onaylandı`
@@ -77,9 +78,31 @@ export async function PUT(
             title,
             message,
             actionUrl: '/dashboard/presentation',
+            userId: updatedPresentation.userId, // Sunum sahibine özel bildirim
             read: false
           }
         });
+
+        // Eğer sunum onaylandıysa, takım üyelerine de bildirim gönder
+        if (status === 'approved' && updatedPresentation.user?.teamMembers) {
+          const teamMembers = updatedPresentation.user.teamMembers.members;
+          
+          // Her takım üyesi için bildirim oluştur
+          for (const member of teamMembers) {
+            if (member.id !== updatedPresentation.userId) { // Sunum sahibi hariç
+              await prisma.notification.create({
+                data: {
+                  type: 'PRESENTATION',
+                  title: 'Sunum Onaylandı',
+                  message: `${updatedPresentation.user.fullName} tarafından yüklenen "${updatedPresentation.title}" sunumu onaylandı`,
+                  actionUrl: '/dashboard/presentation',
+                  userId: member.id, // Kişiye özel bildirim
+                  read: false
+                }
+              });
+            }
+          }
+        }
       }
     } catch (notificationError) {
       console.error('Error creating notification:', notificationError);
