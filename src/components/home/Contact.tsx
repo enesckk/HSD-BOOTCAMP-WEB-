@@ -32,27 +32,6 @@ const Contact: React.FC = () => {
       description: "Genel sorularınız için",
       color: "from-red-500 to-red-600"
     },
-    {
-      icon: <Phone className="w-6 h-6" />,
-      title: "Telefon",
-      value: "+90 (212) 318 18 00",
-      description: "Pazartesi - Cuma, 09:00-18:00",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      icon: <MapPin className="w-6 h-6" />,
-      title: "Adres",
-      value: "Gaziantep Şehitkamil Kongre ve Sanat Merkezi",
-      description: "Gaziantep, Türkiye",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      icon: <Clock className="w-6 h-6" />,
-      title: "Çalışma Saatleri",
-      value: "Pazartesi - Cuma",
-      description: "09:00 - 18:00",
-      color: "from-purple-500 to-purple-600"
-    }
   ];
 
   const socialMedia = [
@@ -63,10 +42,10 @@ const Contact: React.FC = () => {
       color: "from-blue-600 to-blue-700"
     },
     {
-      name: "Twitter",
+      name: "X",
       icon: <Twitter className="w-5 h-5" />,
       url: "https://twitter.com/HuaweiTurkey",
-      color: "from-blue-400 to-blue-500"
+      color: "from-gray-600 to-gray-700"
     },
     {
       name: "Instagram",
@@ -75,16 +54,16 @@ const Contact: React.FC = () => {
       color: "from-pink-500 to-pink-600"
     },
     {
-      name: "Facebook",
-      icon: <Facebook className="w-5 h-5" />,
-      url: "https://www.facebook.com/HuaweiTurkey",
-      color: "from-blue-600 to-blue-700"
-    },
-    {
       name: "YouTube",
       icon: <Youtube className="w-5 h-5" />,
-      url: "https://www.youtube.com/c/HuaweiTurkey",
+      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye",
       color: "from-red-500 to-red-600"
+    },
+    {
+      name: "Medium",
+      icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.54 12a6.8 6.8 0 1 1-6.8-6.8 6.8 6.8 0 0 1 6.8 6.8zM20.96 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9zM2.5 12c0 4.97 4.03 9 9 9s9-4.03 9-9-4.03-9-9-9-9 4.03-9 9z"/></svg>,
+      url: "https://medium.com/@huaweiturkey",
+      color: "from-green-600 to-green-700"
     }
   ];
 
@@ -121,99 +100,10 @@ const Contact: React.FC = () => {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Sorularınız için bizimle iletişime geçebilir, sosyal medya hesaplarımızı takip edebilir 
-              ve etkinlik hakkında güncel bilgiler alabilirsiniz
+              ve bootcamp programları hakkında güncel bilgiler alabilirsiniz
             </p>
           </motion.div>
 
-          {/* Etkinlik Lokasyonu */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden relative">
-              {/* Top Accent Line */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-              <div className="p-8 lg:p-12">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                  {/* Location Info */}
-                  <div>
-                    <div className="flex items-center space-x-3 mb-6">
-                      <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <Navigation className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900">Etkinlik Lokasyonu</h3>
-                        <p className="text-gray-600">Maraton nerede düzenlenecek?</p>
-                      </div>
-                    </div>
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-xl font-bold text-gray-900 mb-2">
-                          Gaziantep Şehitkamil Kongre ve Sanat Merkezi
-                        </h4>
-                        <p className="text-gray-600 leading-relaxed">
-                          Maratonumuz Gaziantep'in prestijli kongre merkezinde düzenlenecek.
-                          Modern tesisler ve teknolojik altyapı ile donatılmış bu merkez,
-                          katılımcılarımıza en iyi deneyimi sunacak.
-                        </p>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-3">
-                          <MapPin className="w-5 h-5 text-red-500" />
-                          <span className="text-gray-700">Şehitkamil, Gaziantep, Türkiye</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Clock className="w-5 h-5 text-red-500" />
-                          <span className="text-gray-700">19-20 Şubat 2026</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Globe className="w-5 h-5 text-red-500" />
-                          <span className="text-gray-700">Kolay ulaşım imkanları</span>
-                        </div>
-                      </div>
-                      <div className="pt-4">
-                        <a
-                          href="https://maps.google.com/?q=Gaziantep+Şehitkamil+Kongre+ve+Sanat+Merkezi"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                        >
-                          <Navigation className="w-4 h-4" />
-                          <span>Haritada Aç</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Map */}
-                  <div className="relative">
-                    <div className="bg-gray-100 rounded-2xl overflow-hidden shadow-lg h-80 lg:h-96">
-                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3189.1234567890123!2d37.3789!3d37.0662!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDAzJzU4LjMiTiAzN8KwMjInNDQuMCJF!5e0!3m2!1str!2str!4v1234567890123"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Gaziantep Şehitkamil Kongre ve Sanat Merkezi"
-                        className="w-full h-full"
-                      ></iframe>
-                    </div>
-                    {/* Map Overlay Info */}
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-800">Etkinlik Lokasyonu</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Contact Content */}
           <div className="max-w-4xl mx-auto">
@@ -288,46 +178,6 @@ const Contact: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quick Info */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden">
-                {/* Top Accent Line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-                <div className="text-center mb-8">
-                  <h3 className="text-3xl font-bold text-gray-900 mb-4">Hızlı Bilgi</h3>
-                  <p className="text-gray-600 text-lg">Önemli bilgiler</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300">
-                    <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                      <Clock className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-2">Son Başvuru</h4>
-                    <p className="text-red-600 font-semibold text-xl">15 Şubat 2026</p>
-                  </div>
-                  <div className="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300">
-                    <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                      <Calendar className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-2">Etkinlik Tarihi</h4>
-                    <p className="text-gray-900 font-semibold text-xl">19-20 Şubat 2026</p>
-                  </div>
-                  <div className="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300">
-                    <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                      <MapPin className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-2">Lokasyon</h4>
-                    <p className="text-gray-900 font-semibold">Gaziantep Şehitkamil Kongre ve Sanat Merkezi</p>
-                  </div>
-                  <div className="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300">
-                    <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-2">Katılımcı Sayısı</h4>
-                    <p className="text-gray-900 font-semibold text-xl">30 Kişi</p>
-                  </div>
-                </div>
-              </div>
             </motion.div>
           </div>
           {/* Final Call to Action */}
@@ -361,8 +211,8 @@ const Contact: React.FC = () => {
                 </h2>
                 
                 <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto leading-relaxed">
-                Afet yönetimi teknolojileri alanında yenilikçi fikirlerinizi paylaşın, 
-                takım çalışması deneyimi kazanın ve değerli ödüller kazanın.
+                Teknoloji alanında kendinizi geliştirin, 
+                takım çalışması deneyimi kazanın ve modern teknolojilerle tanışın.
               </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">

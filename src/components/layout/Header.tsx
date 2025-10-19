@@ -61,9 +61,6 @@ const Header: React.FC = () => {
     window.location.href = '/login';
   };
 
-  const handleRegisterClick = () => {
-    window.location.href = '/register';
-  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -128,13 +125,6 @@ const Header: React.FC = () => {
               >
                 <LogIn className="w-5 h-5" />
                 <span>Giriş Yap</span>
-              </button>
-              
-              <button
-                onClick={handleRegisterClick}
-                className="group relative bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl text-base transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center space-x-3 shadow-lg"
-              >
-                <span>Maratona Başvur</span>
               </button>
             </div>
           </div>
@@ -239,13 +229,6 @@ const Header: React.FC = () => {
                     >
                       <LogIn className="w-5 h-5" />
                       <span>Giriş Yap</span>
-                    </button>
-                    
-                    <button
-                      onClick={handleRegisterClick}
-                      className="w-full mt-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300"
-                    >
-                      Maratona Başvur
                     </button>
                   </div>
                 </nav>

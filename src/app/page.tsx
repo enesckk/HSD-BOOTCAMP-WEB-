@@ -1,10 +1,9 @@
 import Header from '@/components/layout/Header';
 import Hero from '@/components/home/Hero';
-import Countdown from '@/components/home/Countdown';
 import About from '@/components/home/About';
+import ActiveBootcamp from '@/components/home/ActiveBootcamp';
 import Timeline from '@/components/home/Timeline';
 import Requirements from '@/components/home/Requirements';
-import Prizes from '@/components/home/Prizes';
 import PreviousMarathons from '@/components/home/PreviousMarathons';
 import FAQ from '@/components/home/FAQ';
 import Contact from '@/components/home/Contact';
@@ -15,12 +14,11 @@ export default function HomePage() {
     <main className="min-h-screen">
       <Header />
       <Hero />
-      <Countdown />
       <About />
+      <PreviousMarathons />
+      <ActiveBootcamp />
       <Timeline />
       <Requirements />
-      <Prizes />
-      <PreviousMarathons />
       <FAQ />
       <Contact />
       <Footer />

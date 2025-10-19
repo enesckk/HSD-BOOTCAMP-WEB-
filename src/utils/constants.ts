@@ -1,8 +1,6 @@
-export const APP_NAME = 'Afet Yönetimi Teknolojileri Fikir Maratonu';
-export const APP_DESCRIPTION = 'Gaziantep Şehitkamil\'de Teknoloji ve İnovasyon Buluşuyor';
+export const APP_NAME = 'HSD Türkiye Bootcamp';
+export const APP_DESCRIPTION = 'HSD Türkiye - Teknoloji ve İnovasyon Eğitimleri';
 
-export const EVENT_DATE = '19-20 Şubat 2026';
-export const EVENT_LOCATION = 'Gaziantep Şehitkamil';
 
 export const TEAM_ROLES = {
   LEADER: 'Lider',
@@ -41,12 +39,6 @@ export const API_ENDPOINTS = {
   USERS: {
     BASE: '/api/users',
     PROFILE: '/api/users/profile',
-  },
-  TEAMS: {
-    BASE: '/api/teams',
-    MY_TEAM: '/api/teams/my-team',
-    JOIN: '/api/teams/join',
-    LEAVE: '/api/teams/leave',
   },
   APPLICATIONS: {
     BASE: '/api/applications',

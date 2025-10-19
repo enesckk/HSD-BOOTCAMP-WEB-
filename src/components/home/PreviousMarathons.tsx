@@ -25,46 +25,90 @@ const PreviousMarathons: React.FC = () => {
     {
       id: 1,
       year: "2024",
-      title: "Kahramanmaraş Afet Fikir Maratonu",
-      subtitle: "Afet Yönetimi Teknolojileri",
-      location: "Kahramanmaraş",
-      participants: "30+",
-      projects: "10+",
-      description: "6 Şubat 2023 Kahramanmaraş depremlerinin ardından düzenlenen maratonda, genç yetenekler afet yönetimi teknolojilerinde fikir geliştirmek için yarıştı.",
+      title: "Huawei Cloud AI Bootcamp",
+      subtitle: "Yapay Zeka ve Makine Öğrenmesi",
+      location: "Online",
+      participants: "50+",
+      projects: "15+",
+      description: "Huawei Cloud AI teknolojileri üzerine kapsamlı eğitim programı. Katılımcılar AI/ML servisleri ile pratik deneyim kazandı.",
       achievements: [
-        "30+ genç yetenek katıldı",
-        "10+ dijital proje geliştirildi",
-        "Huawei teknolojileri kullanıldı",
-        "3 kazanan takım seçildi"
+        "50+ katılımcı eğitim aldı",
+        "15+ AI projesi geliştirildi",
+        "Huawei Cloud AI servisleri kullanıldı",
+        "Sertifikasyon programı tamamlandı"
       ],
       images: [
-        "/images/marathon-kahramanmaras-2024-1.jpg",
-        "/images/marathon-kahramanmaras-2024-2.jpg",
-        "/images/marathon-kahramanmaras-2024-3.jpg"
+        "/images/bootcamp-ai-2024-1.jpg",
+        "/images/bootcamp-ai-2024-2.jpg",
+        "/images/bootcamp-ai-2024-3.jpg"
       ],
-      link: "https://www.huawei.com/tr/news/tr/2024/huawei-fikir-maratonunda-afetlere-karsi-dijital-projeler-gelistirdi"
+      link: "https://developer.huawei.com/tr/activity/ai-bootcamp-2024"
     },
     {
       id: 2,
       year: "2023",
-      title: "Hatay Afet Fikir Maratonu",
-      subtitle: "Afet Yönetimi Teknolojileri",
-      location: "Hatay",
-      participants: "27+",
-      projects: "7+",
-      description: "Hatay'da düzenlenen maratonda, genç yeteneklerin afet yönetimi teknolojilerinde yenilikçi fikirler geliştirdiği etkinlikte Huawei'nin teknoloji desteğiyle çözümler üretildi.",
+      title: "Huawei Cloud DevOps Bootcamp",
+      subtitle: "DevOps ve CI/CD",
+      location: "Online",
+      participants: "40+",
+      projects: "12+",
+      description: "DevOps metodolojileri ve sürekli entegrasyon süreçleri üzerine yoğun eğitim programı. Huawei Cloud DevOps araçları ile pratik deneyim.",
       achievements: [
-        "27+ genç yetenek katıldı",
-        "7+ yenilikçi proje",
-        "Huawei mentorluk desteği",
-        "3 başarılı takım"
+        "40+ DevOps uzmanı yetiştirildi",
+        "12+ CI/CD pipeline geliştirildi",
+        "Huawei Cloud DevOps araçları kullanıldı",
+        "Sertifikasyon programı tamamlandı"
       ],
       images: [
-        "/images/marathon-hatay-2023-1.jpg",
-        "/images/marathon-hatay-2023-2.jpg",
-        "/images/marathon-hatay-2023-3.jpg"
+        "/images/bootcamp-devops-2023-1.jpg",
+        "/images/bootcamp-devops-2023-2.jpg",
+        "/images/bootcamp-devops-2023-3.jpg"
       ],
-      link: "https://www.huawei.com/tr/news/tr/2023/huawei-fikir-maratonunda-hatay-afet-yonetimi"
+      link: "https://developer.huawei.com/tr/activity/devops-bootcamp-2023"
+    },
+    {
+      id: 3,
+      year: "2023",
+      title: "Afet Yönetimi Teknolojileri Fikir Maratonu",
+      subtitle: "Afet Yönetimi ve Dijital Çözümler",
+      location: "Gaziantep",
+      participants: "30+",
+      projects: "8+",
+      description: "Afet yönetimi alanında yenilikçi teknoloji çözümleri geliştirmek için düzenlenen 48 saatlik yoğun maraton. Genç yetenekler afet öncesi, sırası ve sonrası süreçlerde teknoloji destekli çözümler üretti.",
+      achievements: [
+        "30+ genç yetenek katıldı",
+        "8+ afet yönetimi projesi geliştirildi",
+        "IoT ve AI teknolojileri kullanıldı",
+        "Gaziantep'te yerel çözümler üretildi"
+      ],
+      images: [
+        "/images/marathon-disaster-2023-1.jpg",
+        "/images/marathon-disaster-2023-2.jpg",
+        "/images/marathon-disaster-2023-3.jpg"
+      ],
+      link: "https://developer.huawei.com/tr/activity/disaster-management-marathon-2023"
+    },
+    {
+      id: 4,
+      year: "2022",
+      title: "Afet Yönetimi Teknolojileri Fikir Maratonu",
+      subtitle: "Deprem ve Doğal Afet Yönetimi",
+      location: "İstanbul",
+      participants: "25+",
+      projects: "6+",
+      description: "Deprem ve doğal afetlerin teknoloji ile yönetimi konusunda fikir maratonu. Katılımcılar erken uyarı sistemleri, hasar tespiti ve koordinasyon çözümleri geliştirdi.",
+      achievements: [
+        "25+ katılımcı ile başarılı maraton",
+        "6+ afet yönetimi projesi",
+        "Deprem erken uyarı sistemleri geliştirildi",
+        "Huawei Cloud teknolojileri kullanıldı"
+      ],
+      images: [
+        "/images/marathon-disaster-2022-1.jpg",
+        "/images/marathon-disaster-2022-2.jpg",
+        "/images/marathon-disaster-2022-3.jpg"
+      ],
+      link: "https://developer.huawei.com/tr/activity/disaster-management-marathon-2022"
     }
   ];
 
@@ -72,14 +116,14 @@ const PreviousMarathons: React.FC = () => {
     {
       icon: <Users className="w-6 h-6" />,
       title: "Toplam Katılımcı",
-      number: "57+",
-      description: "Genç yetenekler maratonlarda yarıştı"
+      number: "145+",
+      description: "Teknoloji uzmanları eğitim aldı"
     },
     {
       icon: <Award className="w-6 h-6" />,
       title: "Geliştirilen Proje",
-      number: "17+",
-      description: "Dijital çözümler üretildi"
+      number: "41+",
+      description: "Pratik projeler tamamlandı"
     },
     {
       icon: <Star className="w-6 h-6" />,
@@ -89,9 +133,9 @@ const PreviousMarathons: React.FC = () => {
     },
     {
       icon: <Trophy className="w-6 h-6" />,
-      title: "Kazanan Takım",
-      number: "6",
-      description: "Başarılı projeler ödüllendirildi"
+      title: "Sertifikasyon",
+      number: "90+",
+      description: "Başarılı sertifikasyon programı"
     }
   ];
 
@@ -154,10 +198,10 @@ const PreviousMarathons: React.FC = () => {
               <span>Geçmiş Başarılar</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Önceki <span className="text-red-600">Maratonlar</span>
+              Geçmiş <span className="text-red-600">Bootcamp ve Maratonlar</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Huawei Türkiye tarafından düzenlenen geçmiş maratonların başarıları ve 
+              Huawei Türkiye tarafından düzenlenen geçmiş bootcamp ve maratonların başarıları ve 
               genç yeteneklerin geliştirdiği dijital çözümler.
             </p>
           </motion.div>

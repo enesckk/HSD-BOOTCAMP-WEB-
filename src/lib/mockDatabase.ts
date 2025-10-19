@@ -21,7 +21,6 @@ export const mockUsers: (User | Admin)[] = [
     phone: '+905551234567',
     university: 'Test University',
     department: 'Computer Science',
-    teamRole: 'Lider',
     role: 'participant',
     isActive: true,
     createdAt: new Date().toISOString(),

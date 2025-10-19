@@ -22,54 +22,54 @@ import {
 const About: React.FC = () => {
   const coreValues = [
     {
-      icon: <Shield className="w-6 h-6" />,
-      title: "Afet Yönetimi",
-      description: "6 Şubat 2023 depremlerinin ardından teknolojik çözümler geliştiriyoruz"
+      icon: <Zap className="w-6 h-6" />,
+      title: "Cloud Teknolojileri",
+      description: "Huawei Cloud platformları ile modern bulut çözümleri geliştiriyoruz"
     },
     {
       icon: <Lightbulb className="w-6 h-6" />,
-      title: "İnovasyon",
-      description: "Yaratıcı fikirlerinizi hayata geçirerek geleceği şekillendiriyoruz"
+      title: "Yapay Zeka",
+      description: "AI/ML teknolojileri ile akıllı uygulamalar oluşturuyoruz"
     },
     {
       icon: <Users className="w-6 h-6" />,
-      title: "İş Birliği",
-      description: "Farklı disiplinlerden öğrencilerle takım çalışması deneyimi"
+      title: "Pratik Eğitim",
+      description: "Gerçek projeler üzerinde hands-on deneyim kazanıyorsunuz"
     },
     {
       icon: <Award className="w-6 h-6" />,
-      title: "Ödüller",
-      description: "Huawei ürünleri ve kariyer fırsatları kazanma şansı"
+      title: "Sertifikasyon",
+      description: "Huawei Cloud sertifikaları ve kariyer fırsatları"
     }
   ];
 
   const stats = [
-    { number: "300+", label: "Başvuru", icon: <Target className="w-5 h-5" /> },
-    { number: "57+", label: "Katılımcı", icon: <Users className="w-5 h-5" /> },
-    { number: "17", label: "Takım", icon: <Lightbulb className="w-5 h-5" /> },
-    { number: "100K+", label: "TL Ödül", icon: <Award className="w-5 h-5" /> }
+    { number: "50+", label: "Katılımcı", icon: <Users className="w-5 h-5" /> },
+    { number: "40+", label: "Saat Eğitim", icon: <Target className="w-5 h-5" /> },
+    { number: "5", label: "Modül", icon: <Lightbulb className="w-5 h-5" /> },
+    { number: "100%", label: "Pratik", icon: <Award className="w-5 h-5" /> }
   ];
 
   const eventDetails = [
     {
       icon: <Calendar className="w-5 h-5" />,
-      title: "Tarih",
-      value: "19-20 Şubat 2026"
+      title: "Süre",
+      value: "Değişken Program Süreleri"
     },
     {
       icon: <MapPin className="w-5 h-5" />,
-      title: "Lokasyon",
-      value: "Gaziantep Şehitkamil"
+      title: "Format",
+      value: "Online & Hibrit Eğitim"
     },
     {
       icon: <Users className="w-5 h-5" />,
       title: "Katılımcı",
-      value: "Üniversite Öğrencileri"
+      value: "Kendini Geliştirmek İsteyen Teknoloji Tutkunları"
     },
     {
       icon: <Target className="w-5 h-5" />,
       title: "Odak",
-      value: "Afet Yönetimi & Cloud Teknolojileri"
+      value: "Modern Teknoloji & İnovasyon"
     }
   ];
 
@@ -105,13 +105,85 @@ const About: React.FC = () => {
               <span>Hakkımızda</span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              <span className="text-red-600">Afet Yönetimi Teknolojileri</span><br />
-              Fikir Maratonu
+              <span className="text-red-600">HSD Türkiye</span><br />
+              Bootcamp Platformu
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Huawei Türkiye tarafından düzenlenen bu maraton, 6 Şubat 2023 Kahramanmaraş depremlerinin ardından 
-              afet yönetimi alanında yenilikçi teknoloji çözümleri geliştirmeyi hedefliyor.
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-8">
+              HSD Türkiye Bootcamp, teknoloji ve inovasyon alanında kendini geliştirmek isteyen katılımcılar için özel olarak tasarlanmış teknik ve kişisel gelişim odaklı bir eğitim platformudur. Bu platform, yeni nesil teknolojileri tanıtmak, katılımcıların pratik projelerle deneyim kazanmasını sağlamak ve sektörel farkındalıklarını artırmak amacıyla oluşturulmuştur.
             </p>
+            
+            {/* YouTube Channel Info */}
+            <div className="bg-gradient-to-r from-red-50 to-blue-50 rounded-2xl p-6 max-w-4xl mx-auto mb-8 border border-red-200">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Huawei Developer Groups Türkiye</h3>
+                    <p className="text-gray-600 text-sm">Bootcamp'lerimiz YouTube kanalımızda canlı olarak yayınlanmaktadır</p>
+                  </div>
+                </div>
+                <a 
+                  href="https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center space-x-2"
+                >
+                  <span>Kanalı Ziyaret Et</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            <div className="bg-gradient-to-r from-red-50 to-blue-50 rounded-2xl p-8 max-w-5xl mx-auto">
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <Target className="w-5 h-5 text-red-600 mr-2" />
+                    Program Süresince Katılımcılar:
+                  </h4>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                      <span>Gerçek dünya problemlerini çözen projeler üretir</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                      <span>Huawei Cloud altyapısı üzerinde uygulamalı deneyim kazanır</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                      <span>Mentor desteği ile bireysel gelişimlerini destekler</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                      <span>Haftalık görevler, videolar ve kaynaklarla düzenli ilerleme sağlar</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <Award className="w-5 h-5 text-red-600 mr-2" />
+                    Vizyon & Misyon:
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">🎯 Vizyonumuz</h5>
+                      <p className="text-gray-700 text-sm">Geleceğin teknoloji liderlerini bulut ve yapay zekâ alanında yetkin bireyler olarak yetiştirmek.</p>
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-900 mb-2">🚀 Misyonumuz</h5>
+                      <p className="text-gray-700 text-sm">Erişilebilir, kaliteli ve uygulamalı bir eğitim ortamı sunarak, bilgiye dayalı üretkenliği ve ekip çalışmasını teşvik etmek.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 text-center">
+                <p className="text-gray-600 italic">
+                  Bu platform, sadece bir eğitim alanı değil; aynı zamanda bir topluluk, bir üretim ortamı ve yeni yeteneklerin keşfedildiği bir yolculuktur.
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Event Details - Professional Cards */}
@@ -154,10 +226,10 @@ const About: React.FC = () => {
           >
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Temel Değerlerimiz
+                Eğitim Programımız
               </h3>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Maratonumuzun temelini oluşturan değerler ve hedeflerimiz
+                Bootcamp'imizin temelini oluşturan eğitim modülleri ve hedeflerimiz
               </p>
             </div>
             
@@ -196,10 +268,10 @@ const About: React.FC = () => {
           >
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Maraton İstatistikleri
+                Bootcamp İstatistikleri
               </h3>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Geçmiş etkinliklerimizden elde ettiğimiz başarılı sonuçlar
+                Eğitim programımızın kapsamı ve başarı metrikleri
               </p>
             </div>
             

@@ -21,40 +21,40 @@ import {
 const Timeline: React.FC = () => {
   const timelineEvents = [
     {
-      date: "15 Şubat 2026",
-      time: "23:59",
-      title: "Son Başvuru Tarihi",
-      description: "Maratona katılmak için son başvuru tarihi. Başvurunuzu tamamlayın ve bu heyecan verici yolculuğa katılın!",
-      icon: <CheckCircle className="w-5 h-5" />,
-      status: "deadline",
-      badge: "Son Başvuru"
+      date: "Hafta 1",
+      time: "Salı & Perşembe 15:00",
+      title: "Kubernetes Temelleri",
+      description: "Deployment, Pod, Service, Namespace gibi temel Kubernetes kaynakları ve CCE platformu tanıtımı.",
+      icon: <Zap className="w-5 h-5" />,
+      status: "training",
+      badge: "Eğitim Haftası"
     },
     {
-      date: "16-18 Şubat 2026",
-      time: "Değerlendirme",
-      title: "Başvuru Değerlendirmesi",
-      description: "Başvuruların değerlendirilmesi ve katılımcı seçimi. Seçilen katılımcılar e-posta ile bilgilendirilecek.",
-      icon: <Users className="w-5 h-5" />,
-      status: "evaluation",
-      badge: "Değerlendirme"
+      date: "Hafta 2",
+      time: "Salı & Perşembe 15:00",
+      title: "Konfigürasyon & Veri Yönetimi",
+      description: "ConfigMap, Secret, Persistent Volume ve Huawei OBS entegrasyonu ile veri yönetimi.",
+      icon: <Target className="w-5 h-5" />,
+      status: "training",
+      badge: "Eğitim Haftası"
     },
     {
-      date: "19 Şubat 2026",
-      time: "09:00 - 18:00",
-      title: "Maraton Günü 1",
-      description: "Açılış töreni, takım oluşturma, mentor eşleştirme ve proje geliştirme sürecinin başlangıcı.",
+      date: "Hafta 3",
+      time: "Salı & Perşembe 15:00",
+      title: "İzleme & Container Yönetimi",
+      description: "AOM servisi ile monitoring, SWR ile container imaj yönetimi ve CCE deployment.",
       icon: <Play className="w-5 h-5" />,
-      status: "event",
-      badge: "Etkinlik Günü"
+      status: "training",
+      badge: "Eğitim Haftası"
     },
     {
-      date: "20 Şubat 2026",
-      time: "09:00 - 18:00",
-      title: "Maraton Günü 2",
-      description: "Proje tamamlama, sunum hazırlıkları, jüri değerlendirmesi ve ödül töreni.",
+      date: "Hafta 4",
+      time: "Salı & Perşembe 15:00",
+      title: "Ağ Yönetimi & Sertifikasyon",
+      description: "Ingress ile ağ yönetimi, proje geliştirme ve HCCDA-Cloud Native sertifikasyon hazırlığı.",
       icon: <Flag className="w-5 h-5" />,
-      status: "event",
-      badge: "Etkinlik Günü"
+      status: "project",
+      badge: "Sertifikasyon Haftası"
     }
   ];
 
@@ -86,11 +86,11 @@ const Timeline: React.FC = () => {
               <span>Etkinlik Takvimi</span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              Maraton <span className="text-red-600">Takvimi</span>
+              Eğitim <span className="text-red-600">Programı</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              19-20 Şubat 2026 tarihlerinde <span className="font-semibold text-red-600">Gaziantep Şehitkamil Kongre ve Sanat Merkezi</span>'nde gerçekleşecek 
-              Afet Yönetimi Teknolojileri Fikir Maratonu'nun detaylı programı
+              4 haftalık online eğitim programı ile <span className="font-semibold text-red-600">Kubernetes ve container yönetimi</span> konusunda 
+              uzmanlaşın ve HCCDA sertifikası kazanın
             </p>
           </motion.div>
 
@@ -155,11 +155,11 @@ const Timeline: React.FC = () => {
                           <div className="flex items-center space-x-2 text-red-600 group">
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                             <span className="text-xs font-semibold">
-                              {event.status === 'deadline' 
-                                ? 'Başvurunuzu tamamlayın' 
-                                : event.status === 'event' 
-                                ? 'Etkinlik günü' 
-                                : 'Değerlendirme süreci'
+                              {event.status === 'training' 
+                                ? 'Eğitim modülü' 
+                                : event.status === 'project' 
+                                ? 'Proje geliştirme' 
+                                : 'Eğitim süreci'
                               }
                             </span>
                           </div>
@@ -219,11 +219,11 @@ const Timeline: React.FC = () => {
                           <div className="flex items-center space-x-2 text-red-600 group">
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                             <span className="text-xs font-semibold">
-                              {event.status === 'deadline' 
-                                ? 'Başvurunuzu tamamlayın' 
-                                : event.status === 'event' 
-                                ? 'Etkinlik günü' 
-                                : 'Değerlendirme süreci'
+                              {event.status === 'training' 
+                                ? 'Eğitim modülü' 
+                                : event.status === 'project' 
+                                ? 'Proje geliştirme' 
+                                : 'Eğitim süreci'
                               }
                             </span>
                           </div>

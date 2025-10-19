@@ -4,22 +4,26 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  Menu, 
-  X, 
-  Home, 
-  User, 
-  Users, 
-  Upload, 
-  Presentation, 
-  Bell, 
-  MessageSquare, 
-  Calendar, 
+import {
+  Menu,
+  X,
+  Home,
+  User,
+  Users,
+  Upload,
+  Presentation,
+  Bell,
+  MessageSquare,
+  Calendar,
   Phone,
   LogOut,
   ChevronDown,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Info,
+  BookOpen,
+  Award,
+  Cloud
 } from 'lucide-react';
 
 interface ParticipantLayoutProps {
@@ -160,27 +164,6 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       color: 'text-red-600'
     },
     {
-      id: 'team',
-      label: 'Takım Bilgileri',
-      icon: Users,
-      href: '/dashboard/team',
-      color: 'text-red-600'
-    },
-    {
-      id: 'tasks',
-      label: 'Görev Yükleme',
-      icon: Upload,
-      href: '/dashboard/tasks',
-      color: 'text-red-600'
-    },
-    {
-      id: 'presentation',
-      label: 'Sunum Yükleme',
-      icon: Presentation,
-      href: '/dashboard/presentation',
-      color: 'text-red-600'
-    },
-    {
       id: 'announcements',
       label: 'Duyurular',
       icon: Bell,
@@ -188,24 +171,59 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       color: 'text-red-600'
     },
     {
-      id: 'messages',
-      label: 'Mesajlar',
-      icon: MessageSquare,
-      href: '/dashboard/messages',
+      id: 'about',
+      label: 'Hakkımızda',
+      icon: Info,
+      href: '/dashboard/about',
       color: 'text-red-600'
     },
     {
-      id: 'calendar',
-      label: 'Takvim',
+      id: 'program',
+      label: 'Eğitim Programı',
       icon: Calendar,
-      href: '/dashboard/calendar',
+      href: '/dashboard/program',
       color: 'text-red-600'
     },
     {
-      id: 'contact',
-      label: 'İletişim',
-      icon: Phone,
-      href: '/dashboard/contact',
+      id: 'instructors',
+      label: 'Eğitmenler',
+      icon: Users,
+      href: '/dashboard/instructors',
+      color: 'text-red-600'
+    },
+    {
+      id: 'resources',
+      label: 'Eğitim Kaynağı',
+      icon: BookOpen,
+      href: '/dashboard/resources',
+      color: 'text-red-600'
+    },
+    {
+      id: 'channels',
+      label: 'Kanallar',
+      icon: MessageSquare,
+      href: '/dashboard/channels',
+      color: 'text-red-600'
+    },
+    {
+      id: 'tasks',
+      label: 'Haftalık Görevler',
+      icon: Upload,
+      href: '/dashboard/tasks',
+      color: 'text-red-600'
+    },
+    {
+      id: 'certificate',
+      label: 'Sertifika',
+      icon: Award,
+      href: '/dashboard/certificate',
+      color: 'text-red-600'
+    },
+    {
+      id: 'huawei-cloud',
+      label: 'Huawei Cloud Hesabı',
+      icon: Cloud,
+      href: '/dashboard/huawei-cloud',
       color: 'text-red-600'
     }
   ];
@@ -280,7 +298,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Katılımcı Paneli</h2>
-                <p className="text-xs text-gray-500">Afet Yönetimi</p>
+                <p className="text-xs text-gray-500">HSD Türkiye Bootcamp</p>
               </div>
             </div>
           </div>
@@ -347,7 +365,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                   {menuItems.find(item => item.id === activeMenu)?.label || 'Dashboard'}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Afet Yönetimi Teknolojileri Fikir Maratonu
+                  HSD Türkiye Bootcamp Programı
                 </p>
               </div>
             </div>

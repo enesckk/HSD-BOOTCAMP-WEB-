@@ -3,21 +3,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import CountdownTimer from './CountdownTimer';
-import { 
-  Calendar, 
-  Clock, 
-  Users, 
-  Upload, 
-  Presentation, 
-  Bell, 
+import {
+  Calendar,
+  Clock,
+  Users,
+  Upload,
+  Presentation,
+  Bell,
   MessageSquare,
   TrendingUp,
   Award,
   Target,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  Cloud
 } from 'lucide-react';
 
 const ParticipantDashboard = () => {
@@ -25,27 +25,23 @@ const ParticipantDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState<any[]>([]);
   const [presentations, setPresentations] = useState<any[]>([]);
-  const [team, setTeam] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
       try {
         setIsLoading(true);
-        const [tasksRes, presRes, teamRes] = await Promise.all([
+        const [tasksRes, presRes] = await Promise.all([
           fetch(`/api/tasks?userId=${user.id}`),
-          fetch(`/api/presentations?userId=${user.id}`),
-          fetch(`/api/teams?userId=${user.id}`)
+          fetch(`/api/presentations?userId=${user.id}`)
         ]);
         const tasksJson = await tasksRes.json();
         const presJson = await presRes.json();
-        const teamJson = await teamRes.json();
         
-        console.log('Dashboard data:', { tasksJson, presJson, teamJson });
+        console.log('Dashboard data:', { tasksJson, presJson });
         
         setTasks(tasksJson.items || []);
         setPresentations(presJson.items || []);
-        setTeam((teamJson.items && teamJson.items[0]) || null);
       } catch (e) {
         console.error('Dashboard data fetch error:', e);
       } finally {
@@ -84,21 +80,20 @@ const ParticipantDashboard = () => {
     completedItems, 
     progressPercent 
   });
-  const teamMembersCount = useMemo(() => team?.members?.length || 0, [team]);
 
   const stats = [
     {
-      title: 'Maraton Başlangıcı',
-      value: '19 Şubat 2026',
+      title: 'Bootcamp Başlangıcı',
+      value: '27 Ekim 2025',
       icon: Calendar,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
     },
     {
-      title: 'Takım Üyeleri',
-      value: team ? `${teamMembersCount}` : '-',
-      icon: Users,
+      title: 'Eğitim Modülü',
+      value: 'Kubernetes',
+      icon: Award,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
@@ -150,27 +145,27 @@ const ParticipantDashboard = () => {
 
   const upcomingEvents = [
     {
-      title: 'Proje Teslimi',
-      date: '15 Ekim 2024',
-      time: '23:59',
+      title: 'Hafta 1: Kubernetes Temelleri',
+      date: '27 Ekim 2025',
+      time: '20:00',
       type: 'deadline',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
     },
     {
-      title: 'Final Sunumu',
-      date: '20 Ekim 2024',
-      time: '14:00',
+      title: 'Hafta 2: Konfigürasyon & Veri Yönetimi',
+      date: '3 Kasım 2025',
+      time: '20:00',
       type: 'presentation',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
     },
     {
-      title: 'Ödül Töreni',
-      date: '25 Ekim 2024',
-      time: '16:00',
+      title: 'Sertifikasyon Sınavı',
+      date: '24 Kasım 2025',
+      time: '20:00',
       type: 'award',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
@@ -180,8 +175,8 @@ const ParticipantDashboard = () => {
 
   const quickActions = [
     {
-      title: 'Görev Yükle',
-      description: 'Yeni görev dosyalarını yükle',
+      title: 'Haftalık Görevler',
+      description: 'Haftalık görevlerinizi görüntüleyin',
       icon: Upload,
       href: '/dashboard/tasks',
       color: 'text-red-600',
@@ -189,28 +184,46 @@ const ParticipantDashboard = () => {
       hoverColor: 'hover:bg-red-100'
     },
     {
-      title: 'Sunum Hazırla',
-      description: 'Final sunumu için hazırlık yap',
-      icon: Presentation,
-      href: '/dashboard/presentation',
+      title: 'Eğitim Kaynağı',
+      description: 'Eğitim materyallerini görüntüle',
+      icon: Award,
+      href: '/dashboard/resources',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       hoverColor: 'hover:bg-red-100'
     },
     {
-      title: 'Takım Mesajı',
-      description: 'Takım üyeleriyle iletişim kur',
-      icon: MessageSquare,
-      href: '/dashboard/messages',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      hoverColor: 'hover:bg-red-100'
-    },
-    {
-      title: 'Duyuruları Gör',
+      title: 'Duyurular',
       description: 'Son duyuruları kontrol et',
       icon: Bell,
       href: '/dashboard/announcements',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      hoverColor: 'hover:bg-red-100'
+    },
+    {
+      title: 'Sertifika',
+      description: 'Sertifika durumunuzu görüntüleyin',
+      icon: Award,
+      href: '/dashboard/certificate',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      hoverColor: 'hover:bg-red-100'
+    },
+    {
+      title: 'Huawei Cloud',
+      description: 'Huawei Cloud hesabınızı yönetin',
+      icon: Cloud,
+      href: '/dashboard/huawei-cloud',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      hoverColor: 'hover:bg-red-100'
+    },
+    {
+      title: 'Kanallar',
+      description: 'LinkedIn, Medium ve sohbet kanalları',
+      icon: MessageSquare,
+      href: '/dashboard/channels',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       hoverColor: 'hover:bg-red-100'
@@ -231,10 +244,10 @@ const ParticipantDashboard = () => {
               Hoş Geldiniz{user?.fullName ? `, ${user.fullName}` : ''}! 👋
             </h1>
             <p className="text-red-100 text-lg">
-              Afet Yönetimi Teknolojileri Fikir Maratonu'na katıldığınız için teşekkürler.
+              HSD Türkiye Bootcamp programına katıldığınız için teşekkürler.
             </p>
             <p className="text-red-200 mt-2">
-              Projenizi geliştirmeye devam edin ve başarılar dileriz!
+              Eğitim programınızı takip edin ve teknoloji dünyasında uzmanlaşın!
             </p>
           </div>
           <div className="hidden md:block">
@@ -246,9 +259,9 @@ const ParticipantDashboard = () => {
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        {/* First card - Maraton Başlangıcı */}
-        {stats.slice(0, 1).map((stat, index) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* All stats cards */}
+        {stats.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
             <motion.div
@@ -256,38 +269,6 @@ const ParticipantDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`bg-white rounded-xl p-6 border ${stat.borderColor} shadow-sm hover:shadow-md transition-shadow`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
-                  <IconComponent className={`w-6 h-6 ${stat.color}`} />
-                </div>
-                <TrendingUp className="w-5 h-5 text-gray-900" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">{isLoading ? '...' : stat.value}</h3>
-              <p className="text-gray-600 text-sm">{stat.title}</p>
-            </motion.div>
-          );
-        })}
-        
-        {/* Countdown Timer as a card - positioned as 2nd card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <CountdownTimer />
-        </motion.div>
-        
-        {/* Remaining cards */}
-        {stats.slice(1).map((stat, index) => {
-          const IconComponent = stat.icon;
-          return (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (index + 2) * 0.1 }}
               className={`bg-white rounded-xl p-6 border ${stat.borderColor} shadow-sm hover:shadow-md transition-shadow`}
             >
               <div className="flex items-center justify-between mb-4">

@@ -77,13 +77,13 @@ const Countdown: React.FC = () => {
               className="inline-flex items-center space-x-2 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-8 shadow-sm"
             >
               <Clock className="w-4 h-4" />
-              <span>Başvuru Süresi</span>
+              <span>Eğitim Platformu</span>
             </motion.div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-              Başvuruya <span className="text-red-600">Kalan Süre</span>
+              HSD Türkiye <span className="text-red-600">Bootcamp</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Afet Yönetimi Teknolojileri Fikir Maratonu'na katılmak için başvurunuzu tamamlayın
+              Teknoloji ve inovasyon alanında kapsamlı eğitim programları
             </p>
           </motion.div>
 

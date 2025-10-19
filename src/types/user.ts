@@ -6,7 +6,6 @@ export interface User {
   phone: string;
   university: string;
   department: string;
-  teamRole: 'Lider' | 'Teknik Sorumlu' | 'Tasarımcı';
   role: 'PARTICIPANT' | 'ADMIN';
   isActive: boolean;
   createdAt: string;
@@ -35,7 +34,6 @@ export interface RegisterRequest {
   phone: string;
   university: string;
   department: string;
-  teamRole: 'Lider' | 'Teknik Sorumlu' | 'Tasarımcı';
   password: string;
 }
 

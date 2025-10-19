@@ -17,72 +17,73 @@ import {
   Star,
   User,
   Code,
-  Palette
+  Palette,
+  Zap
 } from 'lucide-react';
 
 const Requirements: React.FC = () => {
   const requirements = [
     {
-      icon: <Calendar className="w-6 h-6" />,
-      title: "Yaş Kriteri",
-      description: "18-30 yaş arasındaki öğrenciler katılım sağlayabilir",
+      icon: <User className="w-6 h-6" />,
+      title: "Yeni Başlayanlar",
+      description: "Kubernetes konusunda yeni başlayanlar için tasarlanmış eğitim programı",
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200"
     },
     {
-      icon: <MapPin className="w-6 h-6" />,
-      title: "Fiziksel Katılım",
-      description: "19-20 Şubat 2026 tarihlerinde Gaziantep'te etkinliğe katılım zorunludur",
+      icon: <Calendar className="w-6 h-6" />,
+      title: "Online Katılım",
+      description: "Salı ve Perşembe günleri 15:00'te online eğitimlere katılım zorunludur",
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200"
     },
     {
       icon: <Users className="w-6 h-6" />,
-      title: "Bireysel Başvuru",
-      description: "Başvurular bireysel olarak alınır, takımlar etkinlik sırasında oluşturulur",
+      title: "Ödev Tamamlama",
+      description: "Katılım belgesi için en az 2 ödev tamamlanması gereklidir",
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200"
     },
     {
-      icon: <Video className="w-6 h-6" />,
-      title: "Video Sunumu",
-      description: "Başvuru sürecinde kendinizi tanıtan bir video hazırlamanız gerekmektedir",
+      icon: <Award className="w-6 h-6" />,
+      title: "Sertifikasyon",
+      description: "3 yıl geçerliliği olan HCCDA-Cloud Native sertifikası alabilirsiniz",
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200"
     }
   ];
 
-  const teamStructure = [
+  const curriculumModules = [
     {
-      icon: <User className="w-6 h-6" />,
-      title: "Takım Lideri",
-      description: "Proje yönetimi ve koordinasyon sorumlusu",
+      icon: <Zap className="w-6 h-6" />,
+      title: "Kubernetes Temelleri",
+      description: "Deployment, Pod, Service, Namespace gibi temel Kubernetes kaynakları",
       color: "from-blue-500 to-blue-600"
     },
     {
-      icon: <Code className="w-6 h-6" />,
-      title: "Teknik Sorumlu",
-      description: "Teknoloji ve geliştirme alanında uzman",
+      icon: <Target className="w-6 h-6" />,
+      title: "Container Yönetimi",
+      description: "SWR ile container imajları build etme, push etme ve CCE deployment",
       color: "from-green-500 to-green-600"
     },
     {
-      icon: <Palette className="w-6 h-6" />,
-      title: "Tasarımcı",
-      description: "Kullanıcı deneyimi ve görsel tasarım uzmanı",
+      icon: <Code className="w-6 h-6" />,
+      title: "İzleme & Ağ Yönetimi",
+      description: "AOM servisi ile monitoring ve Ingress ile ağ yönetimi",
       color: "from-purple-500 to-purple-600"
     }
   ];
 
   const keyPoints = [
-    "Başvuru formunda yaratıcılığınızı göstereceğiniz sorular yer almaktadır",
-    "Örnek soru: 'Soğuk bir ülkede dondurma nasıl satarsınız?'",
-    "Afet yönetimi alanında yenilikçi proje fikirleri geliştirmeniz beklenir",
-    "Kendinizi tanıtan bir video hazırlayıp YouTube'a yüklemeniz gerekmektedir",
-    "Seçilen katılımcılar e-posta yoluyla bilgilendirilecektir"
+    "Huawei Cloud CCE platformunda hands-on deneyim kazanacaksınız",
+    "Kubernetes temel kavramlarını öğrenerek container yönetimi yapabileceksiniz",
+    "SWR ile container imajları build edip CCE üzerinde deploy edeceksiniz",
+    "AOM servisi ile monitoring ve logging çözümlerini öğreneceksiniz",
+    "Eğitim sonunda HCCDA-Cloud Native sertifikası alacaksınız"
   ];
 
   return (
@@ -113,10 +114,10 @@ const Requirements: React.FC = () => {
               <span>Katılım Kriterleri</span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              Katılım <span className="text-red-600">Kriterleri</span>
+              Eğitim <span className="text-red-600">Kriterleri</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Maratona katılmak için sağlamanız gereken kriterler ve başvuru süreci hakkında detaylar. 
+              Bootcamp'e katılmak için sağlamanız gereken kriterler ve eğitim süreci hakkında detaylar. 
               Tüm kriterleri karşıladığınızdan emin olun.
             </p>
           </motion.div>
@@ -157,48 +158,6 @@ const Requirements: React.FC = () => {
             ))}
           </motion.div>
 
-          {/* Team Structure Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                Takım <span className="text-red-600">Yapısı</span>
-              </h3>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                30 katılımcı 10 takıma ayrılacak. Her takım 3 kişiden oluşur ve farklı roller üstlenir.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {teamStructure.map((role, index) => (
-                <motion.div
-                  key={role.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 text-center relative overflow-hidden group"
-                >
-                  {/* Top Accent Line */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-                  
-                  <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <div className="text-white">
-                      {role.icon}
-                    </div>
-                  </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-3">{role.title}</h4>
-                  <p className="text-gray-600 leading-relaxed">{role.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Application Process Section */}
           <motion.div
@@ -210,10 +169,10 @@ const Requirements: React.FC = () => {
           >
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Başvuru <span className="text-red-600">Süreci</span>
+                Eğitim <span className="text-red-600">Süreci</span>
               </h3>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Maratona katılmak için takip etmeniz gereken adımlar
+                Bootcamp sürecinde neler öğreneceğiniz ve hangi becerileri kazanacağınız
               </p>
             </div>
             

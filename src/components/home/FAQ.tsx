@@ -21,58 +21,58 @@ const FAQ: React.FC = () => {
 
   const faqItems = [
     {
-      question: "Maraton ne zaman ve nerede düzenlenecek?",
-      answer: "Maraton 19-20 Şubat 2026 tarihlerinde Gaziantep Şehitkamil Kongre ve Sanat Merkezi'nde düzenlenecektir. Fiziksel katılım zorunludur. 24 saat boyunca kesintisiz proje geliştirme süreci yaşanacak.",
+      question: "Bootcamp programları ne zaman düzenleniyor?",
+      answer: "HSD Türkiye Bootcamp programları yıl boyunca farklı teknoloji alanlarında düzenlenmektedir. Aktif programlar için ana sayfadaki 'Aktif Bootcamp' bölümünü kontrol edebilirsiniz.",
       icon: <Calendar className="w-5 h-5" />,
-      category: "Etkinlik"
+      category: "Program"
     },
     {
-      question: "Maratona kimler katılabilir?",
-      answer: "18-30 yaş arasındaki üniversite öğrencileri katılabilir. Başvurular bireysel olarak alınır, takımlar etkinlik sırasında oluşturulur. Afet yönetimi teknolojileri alanında ilgi duyan, yenilikçi fikirler üretmeye istekli tüm öğrenciler başvurabilir.",
+      question: "Bootcamp programlarına kimler katılabilir?",
+      answer: "Teknoloji alanında ilgi duyan, öğrenmeye açık tüm katılımcılar başvurabilir. Program seviyesi ve ön koşullar her bootcamp için farklılık gösterebilir.",
       icon: <Users className="w-5 h-5" />,
       category: "Katılım"
     },
     {
-      question: "Son başvuru tarihi ne zaman?",
-      answer: "Son başvuru tarihi 15 Şubat 2026, 23:59'dur. Bu tarihten sonra başvuru alınmayacaktır. Başvurunuzu zamanında tamamlamanız önemlidir.",
+      question: "Başvuru süreci nasıl işliyor?",
+      answer: "Aktif bootcamp programları için verilen linkler üzerinden başvuru yapabilirsiniz. Her programın kendi başvuru süreci ve kriterleri bulunmaktadır.",
       icon: <Clock className="w-5 h-5" />,
       category: "Başvuru"
     },
     {
-      question: "Başvuru sürecinde ne yapmam gerekiyor?",
-      answer: "Başvuru formunu doldurmanız, yaratıcılığınızı göstereceğiniz soruları cevaplamanız ve kendinizi tanıtan bir video hazırlamanız gerekmektedir. Başvuru süreci yaklaşık 30 dakika sürmektedir.",
+      question: "Eğitim formatı nasıl?",
+      answer: "Bootcamp programları genellikle online formatında düzenlenmektedir. Bazı programlar hibrit (online + offline) formatında da olabilir. Detaylar her program için ayrı ayrı belirtilir.",
       icon: <Target className="w-5 h-5" />,
-      category: "Başvuru"
+      category: "Eğitim"
     },
     {
-      question: "Hangi ödüller verilecek?",
-      answer: "1. Takım: Huawei MatePad 11.5, 2. Takım: Huawei Watch GT4, 3. Takım: Huawei Watch Fit 3. Diğer takımlar için Huawei Band 9 ve tüm katılımcılara sertifika verilecektir.",
+      question: "Sertifikasyon var mı?",
+      answer: "Evet, başarıyla tamamlanan bootcamp programları için sertifikasyon verilmektedir. Huawei Cloud sertifikaları ve HSD Türkiye katılım belgeleri sunulmaktadır.",
       icon: <Award className="w-5 h-5" />,
-      category: "Ödüller"
+      category: "Sertifikasyon"
     },
     {
-      question: "Takım nasıl oluşturulacak?",
-      answer: "30 katılımcı 10 takıma ayrılacak. Her takım 3 kişiden oluşur: Takım Lideri, Teknik Sorumlu ve Tasarımcı. Takımlar etkinlik sırasında oluşturulur ve dengeli dağılım sağlanır.",
+      question: "Eğitim ücretli mi?",
+      answer: "HSD Türkiye Bootcamp programları tamamen ücretsizdir. Tüm eğitimler, materyaller ve sertifikasyonlar ücretsiz olarak sunulmaktadır.",
       icon: <Users className="w-5 h-5" />,
-      category: "Takım"
+      category: "Ücret"
     },
     {
-      question: "Maraton sırasında ne tür proje fikirleri geliştirilecek?",
-      answer: "Afet yönetimi teknolojileri alanında yenilikçi proje fikirleri geliştirilecek. Katılımcılar IoT sensörleri, mobil uygulamalar, web platformları, AI destekli sistemler gibi teknolojileri kullanarak sadece proje fikirlerini sunacaklar. Herhangi bir uygulama geliştirilmeyecek, sadece fikir ve konsept sunumu yapılacaktır.",
+      question: "Hangi teknoloji alanlarında eğitim veriliyor?",
+      answer: "Cloud Computing, Yapay Zeka, DevOps, Kubernetes, Container teknolojileri, IoT ve daha birçok alanda kapsamlı eğitim programları düzenlenmektedir.",
       icon: <Star className="w-5 h-5" />,
-      category: "Proje"
+      category: "Teknoloji"
     },
     {
-      question: "Maraton sırasında yemek desteği sağlanacak mı?",
-      answer: "Maraton süresince tüm yemekler ve içecekler ücretsiz olarak sağlanacaktır. Katılımcılarımızın enerjilerini korumaları için sağlıklı ve besleyici yemekler sunulacaktır.",
+      question: "Eğitim materyalleri nasıl sağlanıyor?",
+      answer: "Tüm eğitim materyalleri online platform üzerinden sağlanmaktadır. Video dersler, dokümantasyon, pratik projeler ve hands-on laboratuvarlar sunulmaktadır.",
       icon: <MapPin className="w-5 h-5" />,
-      category: "Etkinlik"
+      category: "Materyal"
     },
     {
-      question: "Ulaşım ve konaklama desteği sağlanacak mı?",
-      answer: "Ulaşım ve konaklama desteği sağlanmayacaktır. Katılımcılar kendi ulaşım ve konaklama ihtiyaçlarını karşılamalıdır. Gaziantep'e ulaşım ve konaklama konusunda öneriler için iletişime geçebilirsiniz.",
+      question: "Teknik destek nasıl alınır?",
+      answer: "Eğitim süresince mentorlar ve teknik destek ekibi tarafından sürekli destek sağlanmaktadır. Sorularınız için forum, chat ve canlı destek kanalları mevcuttur.",
       icon: <MapPin className="w-5 h-5" />,
-      category: "Etkinlik"
+      category: "Destek"
     }
   ];
 
