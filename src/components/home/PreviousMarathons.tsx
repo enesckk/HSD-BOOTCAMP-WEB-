@@ -67,28 +67,6 @@ const PreviousMarathons: React.FC = () => {
       link: "https://developer.huawei.com/tr/activity/devops-bootcamp-2023"
     },
     {
-      id: 3,
-      year: "2023",
-      title: "Afet Yönetimi Teknolojileri Fikir Maratonu",
-      subtitle: "Afet Yönetimi ve Dijital Çözümler",
-      location: "Gaziantep",
-      participants: "30+",
-      projects: "8+",
-      description: "Afet yönetimi alanında yenilikçi teknoloji çözümleri geliştirmek için düzenlenen 48 saatlik yoğun maraton. Genç yetenekler afet öncesi, sırası ve sonrası süreçlerde teknoloji destekli çözümler üretti.",
-      achievements: [
-        "30+ genç yetenek katıldı",
-        "8+ afet yönetimi projesi geliştirildi",
-        "IoT ve AI teknolojileri kullanıldı",
-        "Gaziantep'te yerel çözümler üretildi"
-      ],
-      images: [
-        "/images/marathon-disaster-2023-1.jpg",
-        "/images/marathon-disaster-2023-2.jpg",
-        "/images/marathon-disaster-2023-3.jpg"
-      ],
-      link: "https://developer.huawei.com/tr/activity/disaster-management-marathon-2023"
-    },
-    {
       id: 4,
       year: "2022",
       title: "Afet Yönetimi Teknolojileri Fikir Maratonu",

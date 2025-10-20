@@ -21,7 +21,14 @@ import {
   LogOut,
   ChevronDown,
   UsersRound,
-  CheckSquare
+  CheckSquare,
+  Hash,
+  Award,
+  BookOpen,
+  Mail,
+  Send,
+  Upload,
+  Download
 } from 'lucide-react';
 import AdminNotificationCenter from './AdminNotificationCenter';
 
@@ -64,14 +71,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const menuItems = [
     { name: 'Anasayfa', href: '/admin', icon: Home },
     { name: 'Profil', href: '/admin/profile', icon: User },
-    { name: 'Başvurular', href: '/admin/applications', icon: FileText },
     { name: 'Katılımcılar', href: '/admin/participants', icon: Users },
-    { name: 'Takımlar', href: '/admin/teams', icon: UserCheck },
-    { name: 'Takım Eşleştirme', href: '/admin/team-matching', icon: UsersRound },
     { name: 'Görevler', href: '/admin/tasks', icon: CheckSquare },
-    { name: 'Sunumlar', href: '/admin/presentations', icon: Presentation },
+    { name: 'Ödev Teslimleri', href: '/admin/submissions', icon: Upload },
+    { name: 'Kanallar', href: '/admin/channels', icon: Hash },
     { name: 'Duyurular', href: '/admin/announcements', icon: Bell },
     { name: 'Mesajlar', href: '/admin/messages', icon: MessageSquare },
+    { name: 'Sertifikalar', href: '/admin/certificates', icon: Award },
+    { name: 'Ders Linkleri', href: '/admin/lessons', icon: BookOpen },
+    { name: 'Toplu Mail', href: '/admin/bulk-email', icon: Send },
   ];
 
   const handleLogout = () => {
@@ -176,7 +184,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <h1 className="text-xl font-semibold text-gray-900">
                   {menuItems.find(item => item.href === pathname)?.name || 'Admin Paneli'}
                 </h1>
-                <p className="text-sm text-gray-500">Afet Yönetimi Teknolojileri Fikir Maratonu</p>
+                <p className="text-sm text-gray-500">HSD Türkiye Bootcamp</p>
               </div>
             </div>
 

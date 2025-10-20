@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Users, Sparkles, Target } from 'lucide-react';
 import Image from 'next/image';
@@ -14,6 +14,21 @@ const Hero: React.FC = () => {
   const handleLearnMoreClick = () => {
     document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Parçacıklar: SSR-hydration hatalarını önlemek için sadece client'ta üret
+  const particleConfig = useMemo(() => {
+    if (!mounted) return [] as { left: string; top: string; duration: number; delay: number; color: 'white'|'yellow'|'blue' }[];
+    return Array.from({ length: 15 }).map((_, i) => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: Math.random() * 3 + 3,
+      delay: Math.random() * 2,
+      color: (i % 3 === 0 ? 'white' : (i % 3 === 1 ? 'yellow' : 'blue')) as 'white'|'yellow'|'blue',
+    }));
+  }, [mounted]);
 
   return (
     <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-36">
@@ -30,34 +45,22 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={`absolute w-1 h-1 rounded-full ${
-              i % 3 === 0 ? 'bg-white/40' : 
-              i % 3 === 1 ? 'bg-yellow-400/30' : 
-              'bg-blue-400/30'
-            }`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -200, 0],
-              opacity: [0, 1, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: Math.random() * 3 + 3,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
+      {/* Floating Particles (client-only to avoid hydration mismatch) */}
+      {mounted && (
+        <div className="absolute inset-0 overflow-hidden">
+          {particleConfig.map((p, i) => (
+            <motion.div
+              key={i}
+              className={`absolute w-1 h-1 rounded-full ${
+                p.color === 'white' ? 'bg-white/40' : p.color === 'yellow' ? 'bg-yellow-400/30' : 'bg-blue-400/30'
+              }`}
+              style={{ left: p.left, top: p.top }}
+              animate={{ y: [0, -200, 0], opacity: [0, 1, 0], scale: [0, 1, 0] }}
+              transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Türkiye Haritası ve Deprem Dalgaları - Sağ Taraf */}
       <div className="absolute top-1/2 right-1/12 transform -translate-y-1/2">

@@ -26,18 +26,9 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalTeams: 0,
-    totalTasks: 0,
-    totalPresentations: 0,
     totalAnnouncements: 0,
     totalMessages: 0,
-    unreadMessages: 0,
-    completedTasks: 0,
-    pendingTasks: 0,
-    totalApplications: 0,
-    pendingApplications: 0,
-    approvedApplications: 0,
-    rejectedApplications: 0,
+    totalNotifications: 0,
   });
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
@@ -55,29 +46,29 @@ const AdminDashboard = () => {
         // Son aktiviteleri formatla
         const activities = [];
         
-        if (data.recentActivities?.applications) {
-          data.recentActivities.applications.forEach((app: any) => {
+        if (data.recentActivities?.channelMessages) {
+          data.recentActivities.channelMessages.forEach((msg: any) => {
             activities.push({
-              id: `app-${app.id}`,
-              type: 'application',
-              title: app.status === 'PENDING' ? 'Yeni başvuru' : app.status === 'APPROVED' ? 'Başvuru onaylandı' : 'Başvuru reddedildi',
-              description: `${app.fullName} başvurusu`,
-              time: getTimeAgo(new Date(app.createdAt)),
-              icon: FileText,
-              color: 'text-red-600'
+              id: `msg-${msg.id}`,
+              type: 'message',
+              title: 'Kanal Mesajı',
+              description: `${msg.user?.fullName || 'Kullanıcı'} - ${msg.channel?.displayName || msg.channel?.name}`,
+              time: getTimeAgo(new Date(msg.createdAt)),
+              icon: MessageSquare,
+              color: 'text-blue-600'
             });
           });
         }
 
-        if (data.recentActivities?.messages) {
-          data.recentActivities.messages.forEach((msg: any) => {
+        if (data.recentActivities?.announcements) {
+          data.recentActivities.announcements.forEach((ann: any) => {
             activities.push({
-              id: `msg-${msg.id}`,
-              type: 'message',
-              title: msg.unread ? 'Yeni mesaj' : 'Mesaj',
-              description: msg.subject,
-              time: getTimeAgo(new Date(msg.createdAt)),
-              icon: MessageSquare,
+              id: `ann-${ann.id}`,
+              type: 'announcement',
+              title: 'Yeni Duyuru',
+              description: ann.title,
+              time: getTimeAgo(new Date(ann.createdAt)),
+              icon: Bell,
               color: 'text-red-600'
             });
           });
@@ -128,33 +119,6 @@ const AdminDashboard = () => {
 
   const statsCards = [
     {
-      title: 'Toplam Başvuru',
-      value: stats.totalApplications,
-      icon: FileText,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      href: '/admin/applications'
-    },
-    {
-      title: 'Bekleyen Başvuru',
-      value: stats.pendingApplications,
-      icon: Clock,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      href: '/admin/applications'
-    },
-    {
-      title: 'Onaylanan',
-      value: stats.approvedApplications,
-      icon: CheckCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      href: '/admin/applications'
-    },
-    {
       title: 'Toplam Katılımcı',
       value: stats.totalUsers,
       icon: Users,
@@ -164,41 +128,59 @@ const AdminDashboard = () => {
       href: '/admin/participants'
     },
     {
-      title: 'Toplam Takım',
-      value: stats.totalTeams,
-      icon: UserCheck,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      href: '/admin/teams'
-    },
-    {
-      title: 'Okunmamış Mesaj',
-      value: stats.unreadMessages,
+      title: 'Kanal Mesajları',
+      value: stats.totalMessages,
       icon: MessageSquare,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
-      href: '/admin/messages'
+      href: '/admin/channels'
+    },
+    {
+      title: 'Duyurular',
+      value: stats.totalAnnouncements,
+      icon: Bell,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      href: '/admin/announcements'
+    },
+    {
+      title: 'Bildirimler',
+      value: stats.totalNotifications,
+      icon: AlertCircle,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      href: '/admin/announcements'
     }
   ];
 
   const progressStats = [
     {
-      title: 'Tamamlanan Görevler',
-      value: stats.completedTasks,
-      total: stats.totalTasks,
-      percentage: stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0,
-      icon: CheckCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      title: 'Aktif Katılımcılar',
+      value: stats.totalUsers,
+      total: stats.totalUsers,
+      percentage: 100,
+      icon: Users,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50'
     },
     {
-      title: 'Bekleyen Görevler',
-      value: stats.pendingTasks,
-      total: stats.totalTasks,
-      percentage: stats.totalTasks > 0 ? Math.round((stats.pendingTasks / stats.totalTasks) * 100) : 0,
-      icon: Clock,
+      title: 'Kanal Aktivitesi',
+      value: stats.totalMessages,
+      total: stats.totalMessages,
+      percentage: 100,
+      icon: MessageSquare,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    {
+      title: 'Duyuru Sayısı',
+      value: stats.totalAnnouncements,
+      total: stats.totalAnnouncements,
+      percentage: 100,
+      icon: Bell,
       color: 'text-red-600',
       bgColor: 'bg-red-50'
     }
@@ -219,10 +201,10 @@ const AdminDashboard = () => {
               Hoş Geldiniz{user?.fullName ? `, ${user.fullName}` : ''}! 👋
             </h1>
             <p className="text-red-100 text-lg">
-              Afet Yönetimi Teknolojileri Fikir Maratonu Admin Paneli
+              HSD Türkiye Bootcamp Admin Paneli
             </p>
             <p className="text-red-200 mt-2">
-              Maraton sürecini yönetin ve katılımcıları takip edin.
+              Bootcamp sürecini yönetin ve katılımcıları takip edin.
             </p>
           </div>
           <div className="hidden md:block">
@@ -272,10 +254,10 @@ const AdminDashboard = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-6">Hızlı İşlemler</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { title: 'Başvuruları İncele', description: 'Başvuruları onayla/reddet', icon: FileText, href: '/admin/applications', color: 'text-red-600', bgColor: 'bg-red-50' },
-            { title: 'Yeni Duyuru', description: 'Katılımcılara duyuru gönder', icon: Bell, href: '/admin/announcements', color: 'text-red-600', bgColor: 'bg-red-50' },
-            { title: 'Takım Eşleştir', description: 'Katılımcıları takımlara eşleştir', icon: UserCheck, href: '/admin/team-matching', color: 'text-red-600', bgColor: 'bg-red-50' },
-            { title: 'Mesaj Gönder', description: 'Toplu mesaj gönder', icon: MessageSquare, href: '/admin/messages', color: 'text-red-600', bgColor: 'bg-red-50' }
+            { title: 'Katılımcıları Yönet', description: 'Katılımcıları görüntüle ve yönet', icon: Users, href: '/admin/participants', color: 'text-red-600', bgColor: 'bg-red-50' },
+            { title: 'Görev Oluştur', description: 'Yeni görevler oluştur ve atama yap', icon: Target, href: '/admin/tasks', color: 'text-red-600', bgColor: 'bg-red-50' },
+            { title: 'Kanal Yönetimi', description: 'Sohbet kanallarını izle ve yönet', icon: MessageSquare, href: '/admin/channels', color: 'text-red-600', bgColor: 'bg-red-50' },
+            { title: 'Duyuru Gönder', description: 'Katılımcılara duyuru gönder', icon: Bell, href: '/admin/announcements', color: 'text-red-600', bgColor: 'bg-red-50' }
           ].map((action, index) => {
             const IconComponent = action.icon;
             return (
@@ -309,7 +291,7 @@ const AdminDashboard = () => {
             transition={{ delay: 0.3 }}
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
           >
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Görev İlerlemesi</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Bootcamp İstatistikleri</h2>
             <div className="space-y-6">
               {progressStats.map((stat, index) => {
                 const IconComponent = stat.icon;
