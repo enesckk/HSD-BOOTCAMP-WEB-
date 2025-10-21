@@ -1,43 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - E-posta geçmişi
+// GET - E-posta geçmişini listele
 export async function GET(request: NextRequest) {
   try {
-    const campaigns = await prisma.emailCampaign.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 50,
+    const campaigns = await (prisma as any).emailCampaign.findMany({
       include: {
         recipients: {
           select: {
             id: true,
-            email: true,
-            fullName: true,
             status: true,
-          },
-        },
+            sentAt: true,
+            user: {
+              select: {
+                fullName: true,
+                email: true
+              }
+            }
+          }
+        }
       },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10
     });
+
+    const history = campaigns.map((campaign: any) => ({
+      id: campaign.id,
+      subject: campaign.subject,
+      recipientCount: campaign.recipients.length,
+      sentAt: campaign.createdAt,
+      status: campaign.status,
+      recipients: campaign.recipients
+    }));
 
     return NextResponse.json({
       success: true,
-      history: campaigns.map(campaign => ({
-        id: campaign.id,
-        subject: campaign.subject,
-        type: campaign.type,
-        recipientCount: campaign.recipientCount,
-        status: campaign.status,
-        sentAt: campaign.sentAt,
-        createdAt: campaign.createdAt,
-        recipients: campaign.recipients,
-      })),
+      history: history,
     });
   } catch (error) {
     console.error('Error fetching email history:', error);
     return NextResponse.json(
-      { success: false, error: 'E-posta geçmişi getirilemedi' },
+      { error: 'E-posta geçmişi getirilemedi' },
       { status: 500 }
     );
   }

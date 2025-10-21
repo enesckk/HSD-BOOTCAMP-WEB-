@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   Shield,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -68,6 +69,8 @@ const LoginForm = () => {
       // Kullanıcı rolüne göre yönlendirme
       if (user?.role === 'ADMIN') {
         router.push('/admin');
+      } else if (user?.role === 'INSTRUCTOR') {
+        router.push('/instructor');
       } else {
         router.push('/dashboard');
       }
@@ -106,10 +109,10 @@ const LoginForm = () => {
             className="text-center mb-10"
           >
             <h2 className="text-2xl font-bold text-red-600 mb-2">
-              Afet Yönetimi Teknolojileri Fikir Maratonu
+              HSD Türkiye Bootcamp
             </h2>
             <p className="text-gray-600">
-              Hesabınıza erişim için giriş yapın
+              E-posta adresiniz ve şifreniz ile giriş yapın
             </p>
           </motion.div>
 
@@ -129,7 +132,7 @@ const LoginForm = () => {
                 Hesabınıza Giriş Yapın
               </h3>
               <p className="text-gray-600">
-                E-posta ve şifrenizi girerek güvenli giriş yapın
+                E-posta adresiniz sistemde kayıtlı rolünüze göre otomatik yönlendirileceksiniz
               </p>
             </div>
 

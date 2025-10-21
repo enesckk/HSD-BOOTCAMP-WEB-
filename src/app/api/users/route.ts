@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
         university: true,
         department: true,
         teamRole: true,
-        teamId: true,
         isActive: true,
         createdAt: true,
       },

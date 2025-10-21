@@ -31,17 +31,13 @@ const ParticipantDashboard = () => {
       if (!user) return;
       try {
         setIsLoading(true);
-        const [tasksRes, presRes] = await Promise.all([
-          fetch(`/api/tasks?userId=${user.id}`),
-          fetch(`/api/presentations?userId=${user.id}`)
-        ]);
+        const tasksRes = await fetch(`/api/tasks?userId=${user.id}`);
         const tasksJson = await tasksRes.json();
-        const presJson = await presRes.json();
         
-        console.log('Dashboard data:', { tasksJson, presJson });
+        console.log('Dashboard data:', { tasksJson });
         
         setTasks(tasksJson.items || []);
-        setPresentations(presJson.items || []);
+        setPresentations([]); // Presentations artık yok
       } catch (e) {
         console.error('Dashboard data fetch error:', e);
       } finally {
@@ -119,6 +115,7 @@ const ParticipantDashboard = () => {
   const recentActivities = useMemo(() => {
     const items: any[] = [];
     tasks.slice(0, 3).forEach(t => {
+      const isActive = !t.startDate || new Date(t.startDate) <= new Date();
       items.push({
         id: `task-${t.id}`,
         type: 'upload',
@@ -126,7 +123,9 @@ const ParticipantDashboard = () => {
         description: t.description,
         time: new Date(t.createdAt).toLocaleString('tr-TR'),
         icon: Upload,
-        color: 'text-red-600'
+        color: isActive ? 'text-red-600' : 'text-gray-400',
+        isActive: isActive,
+        startDate: t.startDate
       });
     });
     presentations.slice(0, 2).forEach(p => {

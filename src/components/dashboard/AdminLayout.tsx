@@ -28,7 +28,8 @@ import {
   Mail,
   Send,
   Upload,
-  Download
+  Download,
+  ArrowLeft
 } from 'lucide-react';
 import AdminNotificationCenter from './AdminNotificationCenter';
 
@@ -75,6 +76,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: 'Görevler', href: '/admin/tasks', icon: CheckSquare },
     { name: 'Ödev Teslimleri', href: '/admin/submissions', icon: Upload },
     { name: 'Kanallar', href: '/admin/channels', icon: Hash },
+    { name: 'Chat', href: '/chat', icon: MessageSquare },
     { name: 'Duyurular', href: '/admin/announcements', icon: Bell },
     { name: 'Mesajlar', href: '/admin/messages', icon: MessageSquare },
     { name: 'Sertifikalar', href: '/admin/certificates', icon: Award },
@@ -113,7 +115,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           >
             <div className="flex flex-col h-full">
               {/* Logo */}
-              <div className="flex items-center p-6 border-b border-gray-200">
+              <div className="flex items-center p-6 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-sm">A</span>
@@ -126,7 +128,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               </div>
 
               {/* Navigation */}
-              <nav className="flex-1 p-4 space-y-2">
+              <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0">
                 {menuItems.map((item) => {
                   const IconComponent = item.icon;
                   const isActive = pathname === item.href;
@@ -150,7 +152,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               </nav>
 
               {/* User Info */}
-              <div className="p-4 border-t border-gray-200">
+              <div className="p-4 border-t border-gray-200 flex-shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-red-600" />
@@ -180,6 +182,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               >
                 <Menu className="w-6 h-6 text-gray-600" />
               </button>
+              
+              <button
+                onClick={() => router.back()}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                title="Geri Dön"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-medium">Geri</span>
+              </button>
+              
               <div>
                 <h1 className="text-xl font-semibold text-gray-900">
                   {menuItems.find(item => item.href === pathname)?.name || 'Admin Paneli'}

@@ -377,7 +377,7 @@ export default function AdminMessagesPage() {
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
                   placeholder="Mesaj konusu"
                   required
                 />
@@ -390,7 +390,7 @@ export default function AdminMessagesPage() {
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
                   placeholder="Mesaj içeriği"
                   required
                 />
@@ -518,7 +518,7 @@ export default function AdminMessagesPage() {
                         type="text"
                         value={editSubject}
                         onChange={(e) => setEditSubject(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                       />
                     ) : (
                       <p className="text-gray-900 font-semibold">{selectedMessage.subject}</p>
@@ -532,7 +532,7 @@ export default function AdminMessagesPage() {
                         value={editBody}
                         onChange={(e) => setEditBody(e.target.value)}
                         rows={6}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                       />
                     ) : (
                       <div className="bg-gray-50 rounded-lg p-4">

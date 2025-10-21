@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/dashboard/AdminLayout';
 import { 
   Award, 
   Plus, 
@@ -34,6 +37,8 @@ interface Certificate {
 }
 
 const AdminCertificates = () => {
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,8 +47,17 @@ const AdminCertificates = () => {
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
 
   useEffect(() => {
-    fetchCertificates();
-  }, []);
+    if (!authLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
+      router.push('/login');
+      return;
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'ADMIN') {
+      fetchCertificates();
+    }
+  }, [isAuthenticated, user]);
 
   const fetchCertificates = async () => {
     try {
@@ -140,8 +154,24 @@ const AdminCertificates = () => {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user || user.role !== 'ADMIN') {
+    return <div></div>;
+  }
+
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -171,7 +201,7 @@ const AdminCertificates = () => {
                 placeholder="İsim, email veya program ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
               />
             </div>
           </div>
@@ -180,7 +210,7 @@ const AdminCertificates = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
             >
               <option value="ALL">Tümü</option>
               <option value="PENDING">Beklemede</option>
@@ -197,6 +227,19 @@ const AdminCertificates = () => {
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Sertifikalar yükleniyor...</p>
+          </div>
+        ) : filteredCertificates.length === 0 ? (
+          <div className="p-8 text-center">
+            <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Sertifika Bulunamadı</h3>
+            <p className="text-gray-600 mb-4">Henüz hiç sertifika oluşturulmamış.</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 mx-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>İlk Sertifikayı Oluştur</span>
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -267,13 +310,15 @@ const AdminCertificates = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setSelectedCertificate(certificate)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                          title="Detayları Görüntüle"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setSelectedCertificate(certificate)}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                          title="Düzenle"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -281,13 +326,15 @@ const AdminCertificates = () => {
                           <>
                             <button
                               onClick={() => handleStatusChange(certificate.id, 'APPROVED')}
-                              className="text-green-600 hover:text-green-900"
+                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                              title="Onayla"
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleStatusChange(certificate.id, 'REJECTED')}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                              title="Reddet"
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
@@ -295,7 +342,8 @@ const AdminCertificates = () => {
                         )}
                         <button
                           onClick={() => handleDelete(certificate.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Sil"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -393,7 +441,8 @@ const AdminCertificates = () => {
           </motion.div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

@@ -1,4 +1,4 @@
-import { PrismaClient, TeamRole, UserRole } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -55,7 +55,6 @@ async function main() {
       phone: '+905551234567',
       university: 'Test University',
       department: 'Computer Science',
-      teamRole: TeamRole.LIDER,
       role: UserRole.PARTICIPANT,
       isActive: true,
     },
@@ -128,26 +127,7 @@ async function main() {
 
   console.log('✅ Created sample messages');
 
-  // Test takımı oluştur
-  const testTeam = await prisma.team.upsert({
-    where: { leaderId: testUser.id },
-    update: {
-      capacity: 3,
-    },
-    create: {
-      name: 'Test Takımı',
-      leaderId: testUser.id,
-      capacity: 3
-    }
-  });
-
-  // Test kullanıcısını takıma ekle
-  await prisma.user.update({
-    where: { id: testUser.id },
-    data: { teamId: testTeam.id }
-  });
-
-  console.log('✅ Created test team');
+  console.log('✅ Test user created');
 
   // Örnek görev oluştur
   await prisma.task.create({
@@ -164,21 +144,6 @@ async function main() {
 
   console.log('✅ Created sample task');
 
-  // Örnek sunum oluştur
-  await prisma.presentation.create({
-    data: {
-      userId: testUser.id,
-      teamName: 'Test Takımı',
-      memberNames: 'Test User, John Doe, Jane Smith',
-      title: 'Afet Yönetimi Projesi',
-      description: 'Maraton için hazırladığımız afet yönetimi projesi.',
-      uploadType: 'link',
-      linkUrl: 'https://example.com/presentation',
-      status: 'pending'
-    }
-  });
-
-  console.log('✅ Created sample presentation');
 
   // Örnek bildirimler oluştur
   await prisma.notification.createMany({

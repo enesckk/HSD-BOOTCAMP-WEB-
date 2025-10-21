@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,6 +41,9 @@ export async function GET(request: NextRequest) {
           type: 'ANNOUNCEMENT'
         };
       }
+    } else {
+      // Panel belirtilmemişse tüm bildirimleri getir
+      whereClause = {};
     }
     
     // Veritabanından bildirimleri çek

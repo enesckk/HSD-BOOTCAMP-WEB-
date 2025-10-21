@@ -154,12 +154,6 @@ export async function GET(req: NextRequest) {
               email: true,
             }
           },
-          toTeam: {
-            select: {
-              id: true,
-              name: true,
-            }
-          }
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -173,8 +167,7 @@ export async function GET(req: NextRequest) {
             { toUserId: user.id }, // Bu kullanıcıya özel mesajlar
             { 
               toRole: 'participant',
-              toUserId: null,
-              toTeamId: null
+              toUserId: null
             } // Tüm katılımcılara gönderilen genel mesajlar
           ]
         },
@@ -193,12 +186,6 @@ export async function GET(req: NextRequest) {
               email: true,
             }
           },
-          toTeam: {
-            select: {
-              id: true,
-              name: true,
-            }
-          }
         },
         orderBy: { createdAt: 'desc' }
       });

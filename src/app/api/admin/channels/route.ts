@@ -1,79 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
-
-// GET - Admin için tüm kanal mesajlarını getir
+// GET - Tüm kanalları getir
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const channelId = searchParams.get('channelId');
-    const limit = parseInt(searchParams.get('limit') || '100');
-
-    let whereClause = {};
-    if (channelId) {
-      whereClause = { channelId };
-    }
-
-    const messages = await prisma.channelMessage.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: { 
-            id: true, 
-            fullName: true, 
-            email: true,
-            role: true 
-          }
-        },
-        channel: {
-          select: { 
-            id: true, 
-            name: true, 
-            displayName: true 
-          }
-        }
-      },
+    const channels = await prisma.channel.findMany({
       orderBy: { createdAt: 'desc' },
-      take: limit
-    });
-
-    // Kanal istatistikleri
-    const channelStats = await prisma.channel.findMany({
       include: {
         _count: {
-          select: { messages: true }
+          select: {
+            messages: true
+          }
         }
       }
     });
 
-    return NextResponse.json({ 
-      messages, 
-      channelStats 
-    });
+    return NextResponse.json({ channels });
   } catch (error) {
-    console.error('Error fetching admin channel data:', error);
+    console.error('Error fetching channels:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch channel data' },
+      { error: 'Kanallar getirilemedi' },
       { status: 500 }
     );
   }
 }
 
-// DELETE - Mesaj sil (Admin only)
-export async function DELETE(request: NextRequest) {
+// POST - Yeni kanal oluştur
+export async function POST(request: NextRequest) {
   try {
-    const { messageId } = await request.json();
+    const body = await request.json();
+    const {
+      name,
+      displayName,
+      description,
+      category,
+      type,
+      isPrivate
+    } = body;
 
-    await prisma.channelMessage.delete({
-      where: { id: messageId }
+    if (!name || !displayName) {
+      return NextResponse.json(
+        { error: 'Kanal adı ve görünen ad gereklidir' },
+        { status: 400 }
+      );
+    }
+
+    const channel = await prisma.channel.create({
+      data: {
+        name,
+        displayName,
+        description: description || '',
+        category: category || 'GENEL',
+        type: type || 'public',
+        isPrivate: isPrivate || false
+      }
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ channel });
   } catch (error) {
-    console.error('Error deleting message:', error);
+    console.error('Error creating channel:', error);
     return NextResponse.json(
-      { error: 'Failed to delete message' },
+      { error: 'Kanal oluşturulamadı' },
       { status: 500 }
     );
   }

@@ -56,21 +56,29 @@ export async function GET(request: NextRequest) {
         });
       }
     } else {
-      // Normal kullanıcı görevleri
+      // Normal kullanıcı görevleri - tüm görevleri getir ama tarih kontrolü yap
       console.log('Fetching tasks for userId:', userId);
-      tasks = await prisma.task.findMany({
-        where: userId ? { userId } : undefined,
+      const allTasks = await prisma.task.findMany({
         include: {
           user: {
             select: {
               id: true,
               fullName: true,
-              teamRole: true
+              email: true
             }
           }
         },
         orderBy: { createdAt: 'desc' }
       });
+      
+      // Tarih kontrolü yap - sadece başlama tarihi gelmiş olanlar aktif
+      const now = new Date();
+      tasks = allTasks.map(task => ({
+        ...task,
+        isActive: !task.startDate || new Date(task.startDate) <= now,
+        canSubmit: !task.startDate || new Date(task.startDate) <= now
+      }));
+      
       console.log('Found tasks:', tasks.length);
     }
     
@@ -94,6 +102,9 @@ export async function POST(request: NextRequest) {
     const uploadType = formData.get('uploadType') as string;
     const fileUrl = formData.get('fileUrl') as string;
     const file = formData.get('file') as File | null;
+    const startDate = formData.get('startDate') as string;
+    const dueDate = formData.get('dueDate') as string;
+    const priority = formData.get('priority') as string;
     
     // Get user ID from headers or session (you might need to implement proper auth)
     const userId = formData.get('userId') as string;
@@ -145,6 +156,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Tarih kontrolü ve durum belirleme
+    const now = new Date();
+    const startDateObj = startDate ? new Date(startDate) : null;
+    const dueDateObj = dueDate ? new Date(dueDate) : null;
+    
+    // Başlama tarihi geçmişse veya bugünse aktif, gelecekteyse beklemede
+    let taskStatus = 'PENDING';
+    if (startDateObj && startDateObj <= now) {
+      taskStatus = 'ACTIVE';
+    } else if (!startDateObj) {
+      taskStatus = 'ACTIVE'; // Başlama tarihi yoksa hemen aktif
+    }
+
     const task = await prisma.task.create({
       data: {
         userId,
@@ -153,7 +177,10 @@ export async function POST(request: NextRequest) {
         huaweiCloudAccount,
         uploadType: uploadType.toUpperCase(),
         fileUrl: finalFileUrl,
-        status: 'PENDING'
+        status: taskStatus,
+        startDate: startDateObj,
+        dueDate: dueDateObj,
+        priority: priority || 'MEDIUM'
       },
       include: {
         user: {

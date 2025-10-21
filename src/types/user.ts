@@ -6,7 +6,7 @@ export interface User {
   phone: string;
   university: string;
   department: string;
-  role: 'PARTICIPANT' | 'ADMIN';
+  role: 'PARTICIPANT' | 'ADMIN' | 'INSTRUCTOR';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

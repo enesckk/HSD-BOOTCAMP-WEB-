@@ -20,6 +20,7 @@ model User {
   university  String
   department  String
   role        UserRole @default(PARTICIPANT)
+  teamRole    String?  // LIDER, TEKNIK_SORUMLU, TASARIMCI
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -31,6 +32,8 @@ model User {
   channelMessages ChannelMessage[] @relation("ChannelMessages")
   certificates   Certificate[]
   emailRecipients EmailRecipient[]
+  userMutes      UserMute[]    @relation("UserMutes")
+  mutedBy        UserMute[]    @relation("UserMutedBy")
 
   @@map("users")
 }
@@ -55,6 +58,7 @@ model Admin {
 
 enum UserRole {
   PARTICIPANT
+  INSTRUCTOR
   ADMIN
 }
 
@@ -86,6 +90,7 @@ model Message {
   id          String   @id @default(cuid())
   fromUserId  String
   toUserId    String?  // Belirli kullanıcıya gönderilen mesajlar için
+  toTeamId    String?  // Takıma gönderilen mesajlar için
   toRole      String   // "admin", "mentor", "participant"
   subject     String
   body        String
@@ -96,10 +101,25 @@ model Message {
   // Relations
   fromUser    User     @relation("MessageFromUser", fields: [fromUserId], references: [id])
   toUser      User?    @relation("MessageToUser", fields: [toUserId], references: [id])
+  toTeam      Team?    @relation("MessageToTeam", fields: [toTeamId], references: [id])
 
   @@map("messages")
 }
 
+// Team model - Takımlar için
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  capacity    Int      @default(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  messages    Message[] @relation("MessageToTeam")
+
+  @@map("teams")
+}
 
 // Task model - Görevler için
 model Task {
@@ -113,6 +133,7 @@ model Task {
   linkUrl           String?
   status            TaskStatus @default(PENDING)
   // Yeni alanlar
+  startDate         DateTime? // Başlama tarihi
   dueDate           DateTime? // Bitiş tarihi
   priority          TaskPriority @default(MEDIUM) // Öncelik
   category          String?   // Kategori
@@ -153,8 +174,10 @@ model Channel {
   name        String   @unique
   displayName String
   description String
+  category    String   @default("GENEL") // "GENEL", "BOOTCAMP", "PAYLASIMLAR", "YONETIM"
   type        String   @default("chat") // "chat", "network"
   isActive    Boolean  @default(true)
+  isPrivate   Boolean  @default(false) // Sadece yönetici/eğitmen erişimi
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -170,10 +193,16 @@ model ChannelMessage {
   channelId   String
   userId      String
   content     String
-  messageType String   @default("text") // "text", "question", "answer"
+  messageType String   @default("text") // "text", "question", "answer", "image", "file", "link"
   parentId    String?  // Ana soru için
   isAnswered  Boolean  @default(false) // Soru cevaplandı mı
+  isPinned    Boolean  @default(false) // Sabitlenmiş mesaj
+  isDeleted   Boolean  @default(false) // Silinmiş mesaj
+  deletedBy   String?  // Kim tarafından silindi
+  tags        String?  // Etiketler (virgülle ayrılmış)
+  linkPreview String?  // Link önizleme verisi (JSON)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
 
   // Relations
   channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
@@ -182,6 +211,25 @@ model ChannelMessage {
   replies     ChannelMessage[] @relation("MessageReplies")
 
   @@map("channel_messages")
+}
+
+// UserMute model - Kullanıcı susturma için
+model UserMute {
+  id        String   @id @default(cuid())
+  userId    String   // Susturulan kullanıcı
+  mutedBy   String   // Kim tarafından susturuldu
+  channelId String?  // Hangi kanalda susturuldu (null = tüm kanallar)
+  reason    String?  // Susturma sebebi
+  expiresAt DateTime? // Susturma bitiş tarihi (null = kalıcı)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User    @relation("UserMutes", fields: [userId], references: [id])
+  muter     User    @relation("UserMutedBy", fields: [mutedBy], references: [id])
+
+  @@map("user_mutes")
 }
 
 // Certificate model - Sertifikalar için
@@ -317,5 +365,9 @@ enum NotificationType {
   MESSAGE
   ANNOUNCEMENT
   TASK
+  PRESENTATION
   ADMIN_TASK
+  APPLICATION
+  TEAM
+  ADMIN_PRESENTATION
 }

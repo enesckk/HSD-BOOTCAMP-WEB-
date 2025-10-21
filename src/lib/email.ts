@@ -13,7 +13,7 @@ const emailConfig = {
 
 // E-posta transporter oluştur
 const createTransporter = () => {
-  return nodemailer.createTransporter(emailConfig);
+  return nodemailer.createTransport(emailConfig);
 };
 
 // E-posta gönder

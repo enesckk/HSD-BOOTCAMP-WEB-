@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/dashboard/AdminLayout';
 import { 
   Send, 
   Upload, 
@@ -39,6 +42,8 @@ interface Participant {
 }
 
 const AdminBulkEmail = () => {
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [emailSubject, setEmailSubject] = useState('');
@@ -52,10 +57,23 @@ const AdminBulkEmail = () => {
   const [emailHistory, setEmailHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchParticipants();
-    fetchTemplates();
-    fetchEmailHistory();
-  }, []);
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
+    if (user && user.role !== 'ADMIN') {
+      router.push('/dashboard');
+      return;
+    }
+    
+    if (isAuthenticated && user?.role === 'ADMIN') {
+      fetchParticipants();
+      fetchTemplates();
+      fetchEmailHistory();
+    }
+  }, [user, isAuthenticated, authLoading, router]);
+
 
   const fetchParticipants = async () => {
     try {
@@ -194,8 +212,31 @@ const AdminBulkEmail = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Yetkisiz Erişim</h1>
+          <p className="text-gray-600">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -238,7 +279,7 @@ const AdminBulkEmail = () => {
                 <select
                   value={emailType}
                   onChange={(e) => setEmailType(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
                 >
                   <option value="ANNOUNCEMENT">Duyuru</option>
                   <option value="CERTIFICATE">Sertifika</option>
@@ -252,7 +293,7 @@ const AdminBulkEmail = () => {
                 <select
                   value={selectedTemplate}
                   onChange={(e) => handleTemplateSelect(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
                 >
                   <option value="">Şablon seçin...</option>
                   {templates.map(template => (
@@ -271,7 +312,7 @@ const AdminBulkEmail = () => {
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
                 placeholder="E-posta konusu..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
               />
             </div>
 
@@ -282,7 +323,7 @@ const AdminBulkEmail = () => {
                 onChange={(e) => setEmailContent(e.target.value)}
                 placeholder="E-posta içeriği..."
                 rows={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
               />
             </div>
           </div>
@@ -477,7 +518,8 @@ const AdminBulkEmail = () => {
           </motion.div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

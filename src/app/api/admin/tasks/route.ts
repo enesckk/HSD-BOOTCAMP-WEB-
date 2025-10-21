@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     const {
       title,
       description,
+      startDate,
       dueDate,
       status,
-      priority,
       category,
       tags,
       estimatedHours,
@@ -39,6 +39,18 @@ export async function POST(request: NextRequest) {
       linkUrl,
       userId,
     } = body;
+
+    // Admin kullanıcısını bul
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'ADMIN' }
+    });
+
+    if (!adminUser) {
+      return NextResponse.json(
+        { error: 'Admin kullanıcısı bulunamadı' },
+        { status: 400 }
+      );
+    }
 
     if (!title || !description) {
       return NextResponse.json(
@@ -57,9 +69,9 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
+        startDate: startDate ? new Date(startDate) : null,
         dueDate: dueDate ? new Date(dueDate) : null,
         status: status || 'PENDING',
-        priority: (priority as any) || 'MEDIUM',
         category: category || null,
         tags: tags || null,
         estimatedHours: toInt(estimatedHours),
@@ -69,7 +81,7 @@ export async function POST(request: NextRequest) {
         uploadType: uploadType || 'FILE',
         fileUrl: fileUrl || null,
         linkUrl: linkUrl || null,
-        userId: userId || null,
+        userId: adminUser.id, // Admin tarafından oluşturulan görev
       }
     });
 

@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/dashboard/AdminLayout';
 import { 
   BookOpen, 
   Plus, 
@@ -16,7 +19,8 @@ import {
   Clock,
   User,
   Tag,
-  Youtube
+  Youtube,
+  XCircle
 } from 'lucide-react';
 
 interface Lesson {
@@ -32,10 +36,18 @@ interface Lesson {
   createdAt: string;
   updatedAt: string;
   thumbnailUrl?: string;
-  tags: string[];
+  tags: string;
+  showDate?: string;
+  prerequisites?: string;
+  objectives?: string;
+  resources?: string;
+  isActive?: boolean;
+  order?: number;
 }
 
 const AdminLessons = () => {
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,8 +72,17 @@ const AdminLessons = () => {
   });
 
   useEffect(() => {
-    fetchLessons();
-  }, []);
+    if (!authLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
+      router.push('/login');
+      return;
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'ADMIN') {
+      fetchLessons();
+    }
+  }, [isAuthenticated, user]);
 
   const fetchLessons = async () => {
     try {
@@ -125,25 +146,71 @@ const AdminLessons = () => {
       });
 
       if (response.ok) {
-        fetchLessons();
-        setShowCreateModal(false);
-        setNewLesson({
-          title: '',
-          description: '',
-          youtubeUrl: '',
-          duration: '',
-          instructor: '',
-          category: '',
-          week: 1,
-          showDate: '',
-          prerequisites: '',
-          objectives: '',
-          resources: '',
-          tags: '',
-        });
+        const data = await response.json();
+        if (data.success) {
+          // Add the new lesson to the existing lessons
+          setLessons(prev => [data.lesson, ...prev]);
+          setShowCreateModal(false);
+          setNewLesson({
+            title: '',
+            description: '',
+            youtubeUrl: '',
+            duration: '',
+            instructor: '',
+            category: '',
+            week: 1,
+            showDate: '',
+            prerequisites: '',
+            objectives: '',
+            resources: '',
+            tags: '',
+          });
+          alert('Ders başarıyla eklendi!');
+        } else {
+          alert('Ders eklenirken hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
+        }
+      } else {
+        const errorData = await response.json();
+        alert('Ders eklenirken hata oluştu: ' + (errorData.error || 'Sunucu hatası'));
       }
     } catch (error) {
       console.error('Error creating lesson:', error);
+    }
+  };
+
+  const handleUpdateLesson = async () => {
+    if (!editingLesson) return;
+    
+    try {
+      const response = await fetch(`/api/admin/lessons/${editingLesson.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...editingLesson,
+          showDate: editingLesson.showDate ? new Date(editingLesson.showDate) : null,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Update the lesson in the list
+          setLessons(prev => prev.map(lesson => 
+            lesson.id === editingLesson.id ? data.lesson : lesson
+          ));
+          setEditingLesson(null);
+          alert('Ders başarıyla güncellendi!');
+        } else {
+          alert('Ders güncellenirken hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
+        }
+      } else {
+        const errorData = await response.json();
+        alert('Ders güncellenirken hata oluştu: ' + (errorData.error || 'Sunucu hatası'));
+      }
+    } catch (error) {
+      console.error('Error updating lesson:', error);
     }
   };
 
@@ -174,8 +241,24 @@ const AdminLessons = () => {
     return parseInt(a) - parseInt(b);
   });
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user || user.role !== 'ADMIN') {
+    return <div></div>;
+  }
+
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -205,7 +288,7 @@ const AdminLessons = () => {
                 placeholder="Ders başlığı, açıklama veya eğitmen ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
               />
             </div>
           </div>
@@ -214,7 +297,7 @@ const AdminLessons = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -228,7 +311,7 @@ const AdminLessons = () => {
             <select
               value={weekFilter}
               onChange={(e) => setWeekFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
             >
               {weeks.map(week => (
                 <option key={week} value={week}>
@@ -331,19 +414,19 @@ const AdminLessons = () => {
                   </div>
 
                   {/* Tags */}
-                  {lesson.tags.length > 0 && (
+                  {lesson.tags && lesson.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {lesson.tags.slice(0, 3).map((tag, index) => (
+                      {lesson.tags.split(',').slice(0, 3).map((tag, index) => (
                         <span
                           key={index}
                           className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
                         >
-                          {tag}
+                          {tag.trim()}
                         </span>
                       ))}
-                      {lesson.tags.length > 3 && (
+                      {lesson.tags.split(',').length > 3 && (
                         <span className="text-gray-500 text-xs">
-                          +{lesson.tags.length - 3} daha
+                          +{lesson.tags.split(',').length - 3} daha
                         </span>
                       )}
                     </div>
@@ -414,7 +497,7 @@ const AdminLessons = () => {
                 <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
                   {getYouTubeThumbnail(selectedLesson.youtubeUrl) ? (
                     <img
-                      src={getYouTubeThumbnail(selectedLesson.youtubeUrl)}
+                      src={getYouTubeThumbnail(selectedLesson.youtubeUrl) || ''}
                       alt={selectedLesson.title}
                       className="w-full h-full object-cover"
                     />
@@ -475,16 +558,16 @@ const AdminLessons = () => {
                   </span>
                 </div>
 
-                {selectedLesson.tags.length > 0 && (
+                {selectedLesson.tags && selectedLesson.tags.split(',').length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Etiketler</label>
                     <div className="flex flex-wrap gap-2">
-                      {selectedLesson.tags.map((tag, index) => (
+                      {selectedLesson.tags.split(',').map((tag: string, index: number) => (
                         <span
                           key={index}
                           className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
                         >
-                          {tag}
+                          {tag.trim()}
                         </span>
                       ))}
                     </div>
@@ -540,7 +623,7 @@ const AdminLessons = () => {
                     type="text"
                     value={newLesson.title}
                     onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="Ders başlığını girin..."
                   />
                 </div>
@@ -551,7 +634,7 @@ const AdminLessons = () => {
                     value={newLesson.description}
                     onChange={(e) => setNewLesson({...newLesson, description: e.target.value})}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="Ders açıklamasını girin..."
                   />
                 </div>
@@ -562,7 +645,7 @@ const AdminLessons = () => {
                     type="url"
                     value={newLesson.youtubeUrl}
                     onChange={(e) => setNewLesson({...newLesson, youtubeUrl: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="https://www.youtube.com/watch?v=..."
                   />
                 </div>
@@ -574,7 +657,7 @@ const AdminLessons = () => {
                       type="text"
                       value={newLesson.duration}
                       onChange={(e) => setNewLesson({...newLesson, duration: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="1 saat 30 dakika"
                     />
                   </div>
@@ -583,7 +666,7 @@ const AdminLessons = () => {
                     <select
                       value={newLesson.week}
                       onChange={(e) => setNewLesson({...newLesson, week: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     >
                       {[1,2,3,4,5,6,7,8].map(week => (
                         <option key={week} value={week}>Hafta {week}</option>
@@ -599,7 +682,7 @@ const AdminLessons = () => {
                       type="text"
                       value={newLesson.instructor}
                       onChange={(e) => setNewLesson({...newLesson, instructor: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="Eğitmen adı"
                     />
                   </div>
@@ -609,7 +692,7 @@ const AdminLessons = () => {
                       type="text"
                       value={newLesson.category}
                       onChange={(e) => setNewLesson({...newLesson, category: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="Kubernetes, Docker, vb."
                     />
                   </div>
@@ -623,7 +706,7 @@ const AdminLessons = () => {
                     type="datetime-local"
                     value={newLesson.showDate}
                     onChange={(e) => setNewLesson({...newLesson, showDate: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                   />
                   <p className="text-xs text-gray-500 mt-1">Bu tarihte ders aktif olacak</p>
                 </div>
@@ -634,7 +717,7 @@ const AdminLessons = () => {
                     value={newLesson.prerequisites}
                     onChange={(e) => setNewLesson({...newLesson, prerequisites: e.target.value})}
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="Bu dersi almak için gerekli ön bilgiler..."
                   />
                 </div>
@@ -645,7 +728,7 @@ const AdminLessons = () => {
                     value={newLesson.objectives}
                     onChange={(e) => setNewLesson({...newLesson, objectives: e.target.value})}
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="Bu derste öğrenilecek konular..."
                   />
                 </div>
@@ -656,7 +739,7 @@ const AdminLessons = () => {
                     value={newLesson.resources}
                     onChange={(e) => setNewLesson({...newLesson, resources: e.target.value})}
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="Ek okuma materyalleri, linkler..."
                   />
                 </div>
@@ -667,7 +750,7 @@ const AdminLessons = () => {
                     type="text"
                     value={newLesson.tags}
                     onChange={(e) => setNewLesson({...newLesson, tags: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     placeholder="kubernetes, docker, cloud (virgülle ayırın)"
                   />
                 </div>
@@ -691,7 +774,182 @@ const AdminLessons = () => {
           </motion.div>
         </div>
       )}
-    </div>
+
+      {/* Edit Lesson Modal */}
+      {editingLesson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Ders Düzenle</h3>
+              <button
+                onClick={() => setEditingLesson(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ders Başlığı</label>
+                <input
+                  type="text"
+                  value={editingLesson.title}
+                  onChange={(e) => setEditingLesson({...editingLesson, title: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Ders başlığını girin..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                <textarea
+                  value={editingLesson.description}
+                  onChange={(e) => setEditingLesson({...editingLesson, description: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Ders açıklamasını girin..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">YouTube URL</label>
+                <input
+                  type="url"
+                  value={editingLesson.youtubeUrl}
+                  onChange={(e) => setEditingLesson({...editingLesson, youtubeUrl: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Süre</label>
+                  <input
+                    type="text"
+                    value={editingLesson.duration}
+                    onChange={(e) => setEditingLesson({...editingLesson, duration: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                    placeholder="1 saat 30 dakika"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Hafta</label>
+                  <select
+                    value={editingLesson.week}
+                    onChange={(e) => setEditingLesson({...editingLesson, week: parseInt(e.target.value)})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(week => (
+                      <option key={week} value={week}>Hafta {week}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Eğitmen</label>
+                <input
+                  type="text"
+                  value={editingLesson.instructor}
+                  onChange={(e) => setEditingLesson({...editingLesson, instructor: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Eğitmen adı"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                <input
+                  type="text"
+                  value={editingLesson.category}
+                  onChange={(e) => setEditingLesson({...editingLesson, category: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Kubernetes, Docker, vb."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Gösterim Tarihi</label>
+                <input
+                  type="datetime-local"
+                  value={editingLesson.showDate ? new Date(editingLesson.showDate).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setEditingLesson({...editingLesson, showDate: e.target.value || undefined})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ön Koşullar</label>
+                <textarea
+                  value={editingLesson.prerequisites || ''}
+                  onChange={(e) => setEditingLesson({...editingLesson, prerequisites: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Bu dersi almak için gerekli ön bilgiler..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Öğrenim Hedefleri</label>
+                <textarea
+                  value={editingLesson.objectives || ''}
+                  onChange={(e) => setEditingLesson({...editingLesson, objectives: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Bu derste öğrenilecek konular..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kaynaklar</label>
+                <textarea
+                  value={editingLesson.resources || ''}
+                  onChange={(e) => setEditingLesson({...editingLesson, resources: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="Ek okuma materyalleri, linkler..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Etiketler</label>
+                <input
+                  type="text"
+                  value={editingLesson.tags || ''}
+                  onChange={(e) => setEditingLesson({...editingLesson, tags: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  placeholder="kubernetes, docker, cloud (virgülle ayırın)"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setEditingLesson(null)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleUpdateLesson}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Ders Güncelle
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      </div>
+    </AdminLayout>
   );
 };
 

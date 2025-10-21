@@ -25,6 +25,7 @@ interface Task {
   title: string;
   description: string;
   status: 'PENDING' | 'COMPLETED' | 'REJECTED';
+  startDate?: string;
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -41,14 +42,16 @@ export default function AdminTasksPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    startDate: '',
     dueDate: '',
     status: 'PENDING' as 'PENDING' | 'COMPLETED' | 'REJECTED',
-    priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
     category: '',
     tags: '',
     estimatedHours: '',
+    actualHours: '',
     assignedBy: '',
     notes: '',
+    attachments: '',
     huaweiCloudAccount: '',
     uploadType: 'FILE' as 'FILE' | 'LINK',
     fileUrl: '',
@@ -137,8 +140,20 @@ export default function AdminTasksPage() {
     setFormData({
       title: '',
       description: '',
+      startDate: '',
       dueDate: '',
-      status: 'PENDING'
+      status: 'PENDING',
+      category: '',
+      tags: '',
+      estimatedHours: '',
+      actualHours: '',
+      assignedBy: '',
+      notes: '',
+      attachments: '',
+      huaweiCloudAccount: '',
+      uploadType: 'FILE' as 'FILE' | 'LINK',
+      fileUrl: '',
+      linkUrl: ''
     });
   };
 
@@ -147,8 +162,20 @@ export default function AdminTasksPage() {
     setFormData({
       title: task.title,
       description: task.description,
+      startDate: task.startDate ? task.startDate.split('T')[0] : '',
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
-      status: task.status
+      status: task.status,
+      category: '',
+      tags: '',
+      estimatedHours: '',
+      actualHours: '',
+      assignedBy: '',
+      notes: '',
+      attachments: '',
+      huaweiCloudAccount: '',
+      uploadType: 'FILE' as 'FILE' | 'LINK',
+      fileUrl: '',
+      linkUrl: ''
     });
     setShowEditModal(true);
   };
@@ -238,6 +265,7 @@ export default function AdminTasksPage() {
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Görev</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Durum</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Başlama Tarihi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Bitiş Tarihi</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Oluşturulma</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">İşlemler</th>
@@ -256,6 +284,9 @@ export default function AdminTasksPage() {
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)}`}>
                           {getStatusText(task.status)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : '-'}
@@ -337,6 +368,16 @@ export default function AdminTasksPage() {
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="Görev açıklamasını girin"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi</label>
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
                     />
                   </div>
                   
@@ -435,6 +476,16 @@ export default function AdminTasksPage() {
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi</label>
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
                     />
                   </div>
                   

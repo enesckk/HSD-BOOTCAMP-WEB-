@@ -23,7 +23,8 @@ import {
   Info,
   BookOpen,
   Award,
-  Cloud
+  Cloud,
+  ArrowLeft
 } from 'lucide-react';
 
 interface ParticipantLayoutProps {
@@ -206,6 +207,13 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       color: 'text-red-600'
     },
     {
+      id: 'chat',
+      label: 'Chat',
+      icon: MessageSquare,
+      href: '/chat',
+      color: 'text-red-600'
+    },
+    {
       id: 'tasks',
       label: 'Haftalık Görevler',
       icon: Upload,
@@ -291,7 +299,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       }`}>
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="flex items-center p-6 border-b border-gray-200">
+          <div className="flex items-center p-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
                 <User className="w-6 h-6 text-white" />
@@ -305,7 +313,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
 
 
           {/* Navigation Menu */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activeMenu === item.id;
@@ -334,7 +342,7 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="flex items-center space-x-3 w-full px-4 py-3 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200"
@@ -360,6 +368,16 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
               >
                 <Menu className="w-6 h-6 text-gray-600" />
               </button>
+              
+              <button
+                onClick={() => window.history.back()}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                title="Geri Dön"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-medium">Geri</span>
+              </button>
+              
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {menuItems.find(item => item.id === activeMenu)?.label || 'Dashboard'}
@@ -429,13 +447,16 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
                           notifications.slice(0, 5).map((notification: any) => (
                             <div 
                               key={notification.id} 
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 markNotificationAsRead(notification.id);
                                 if (notification.actionUrl) {
+                                  // Sayfa yönlendirmesi
                                   window.location.href = notification.actionUrl;
                                 }
                               }}
-                              className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                              className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                             >
                               <div className="flex items-start space-x-3">
                                 <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${

@@ -1,50 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - Tek ders getir
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const lesson = await prisma.lesson.findUnique({
-      where: { id: params.id },
-    });
-
-    if (!lesson) {
-      return NextResponse.json(
-        { success: false, error: 'Ders bulunamadı' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      lesson: {
-        id: lesson.id,
-        title: lesson.title,
-        description: lesson.description,
-        youtubeUrl: lesson.youtubeUrl,
-        duration: lesson.duration,
-        instructor: lesson.instructor,
-        category: lesson.category,
-        week: lesson.week,
-        isPublished: lesson.isPublished,
-        createdAt: lesson.createdAt,
-        updatedAt: lesson.updatedAt,
-        thumbnailUrl: lesson.thumbnailUrl,
-        tags: lesson.tags,
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching lesson:', error);
-    return NextResponse.json(
-      { success: false, error: 'Ders getirilemedi' },
-      { status: 500 }
-    );
-  }
-}
-
 // PUT - Ders güncelle
 export async function PUT(
   request: NextRequest,
@@ -52,69 +8,47 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const {
-      title,
-      description,
-      youtubeUrl,
-      duration,
-      instructor,
-      category,
-      week,
-      isPublished,
-      thumbnailUrl,
-      tags,
-    } = body;
+    const { title, description, youtubeUrl, duration, instructor, category, week, tags, showDate, prerequisites, objectives, resources } = body;
 
-    const updateData: any = {};
-    
-    if (title) updateData.title = title;
-    if (description) updateData.description = description;
-    if (youtubeUrl) {
-      // YouTube URL formatını kontrol et
-      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-      if (!youtubeRegex.test(youtubeUrl)) {
-        return NextResponse.json(
-          { success: false, error: 'Geçersiz YouTube URL formatı' },
-          { status: 400 }
-        );
-      }
-      updateData.youtubeUrl = youtubeUrl;
+    if (!title || !description || !youtubeUrl || !instructor) {
+      return NextResponse.json(
+        { error: 'Gerekli alanlar eksik' },
+        { status: 400 }
+      );
     }
-    if (duration) updateData.duration = duration;
-    if (instructor) updateData.instructor = instructor;
-    if (category) updateData.category = category;
-    if (week) updateData.week = parseInt(week);
-    if (isPublished !== undefined) updateData.isPublished = isPublished;
-    if (thumbnailUrl !== undefined) updateData.thumbnailUrl = thumbnailUrl;
-    if (tags !== undefined) updateData.tags = tags;
 
-    const lesson = await prisma.lesson.update({
+    // YouTube URL'den video ID'yi çıkar
+    const youtubeId = youtubeUrl.split('v=')[1]?.split('&')[0];
+    const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
+
+    // Veritabanında güncelle
+    const updatedLesson = await (prisma as any).lesson.update({
       where: { id: params.id },
-      data: updateData,
+      data: {
+        title,
+        description,
+        youtubeUrl,
+        duration: duration || '00:00',
+        instructor,
+        category: category || 'Genel',
+        week: week || 1,
+        thumbnailUrl,
+        tags: tags ? tags.split(',').map((tag: string) => tag.trim()).join(',') : '',
+        showDate: showDate ? new Date(showDate) : new Date(),
+        prerequisites: prerequisites || '',
+        objectives: objectives || '',
+        resources: resources || ''
+      }
     });
 
     return NextResponse.json({
       success: true,
-      lesson: {
-        id: lesson.id,
-        title: lesson.title,
-        description: lesson.description,
-        youtubeUrl: lesson.youtubeUrl,
-        duration: lesson.duration,
-        instructor: lesson.instructor,
-        category: lesson.category,
-        week: lesson.week,
-        isPublished: lesson.isPublished,
-        createdAt: lesson.createdAt,
-        updatedAt: lesson.updatedAt,
-        thumbnailUrl: lesson.thumbnailUrl,
-        tags: lesson.tags,
-      },
+      lesson: updatedLesson,
     });
   } catch (error) {
     console.error('Error updating lesson:', error);
     return NextResponse.json(
-      { success: false, error: 'Ders güncellenemedi' },
+      { error: 'Ders güncellenemedi' },
       { status: 500 }
     );
   }
@@ -126,8 +60,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.lesson.delete({
-      where: { id: params.id },
+    await (prisma as any).lesson.delete({
+      where: { id: params.id }
     });
 
     return NextResponse.json({
@@ -137,7 +71,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting lesson:', error);
     return NextResponse.json(
-      { success: false, error: 'Ders silinemedi' },
+      { error: 'Ders silinemedi' },
       { status: 500 }
     );
   }

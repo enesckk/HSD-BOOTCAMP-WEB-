@@ -14,6 +14,10 @@ import {
   Loader2,
   Search,
   Filter,
+  Eye,
+  Edit,
+  Trash2,
+  MoreVertical,
 } from 'lucide-react';
 
 interface Participant {
@@ -24,7 +28,6 @@ interface Participant {
   university: string;
   department: string;
   teamRole?: string;
-  teamId?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -35,6 +38,7 @@ export default function AdminParticipantsPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
 
   // Yönlendirme yapmadan, yalnızca yetkiliyse veri çek
   useEffect(() => {
@@ -154,6 +158,7 @@ export default function AdminParticipantsPage() {
                   <th className="px-4 py-3 text-left">Rol</th>
                   <th className="px-4 py-3 text-left">Rolü Değiştir</th>
                   <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
+                  <th className="px-4 py-3 text-left">İşlemler</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 text-gray-800">
@@ -172,10 +177,24 @@ export default function AdminParticipantsPage() {
                           <button
                             key={r}
                             onClick={async () => {
-                              await fetch('/api/users', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: p.id, teamRole: r }) });
-                              fetchParticipants();
+                              try {
+                                const response = await fetch('/api/users', { 
+                                  method: 'PATCH', 
+                                  headers: { 'Content-Type': 'application/json' }, 
+                                  body: JSON.stringify({ userId: p.id, teamRole: r }) 
+                                });
+                                if (response.ok) {
+                                  fetchParticipants();
+                                }
+                              } catch (error) {
+                                console.error('Error updating team role:', error);
+                              }
                             }}
-                            className={`px-2 py-1 text-xs rounded border ${p.teamRole===r? 'bg-red-600 text-white border-red-600':'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                            className={`px-2 py-1 text-xs rounded border transition-colors ${
+                              p.teamRole===r 
+                                ? 'bg-red-600 text-white border-red-600' 
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
                           >
                             {r==='LIDER'?'Lider':r==='TEKNIK_SORUMLU'?'Teknik':'Tasarımcı'}
                           </button>
@@ -183,6 +202,46 @@ export default function AdminParticipantsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">{new Date(p.createdAt).toLocaleDateString('tr-TR')}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            // Kullanıcı detaylarını görüntüle
+                            alert(`Kullanıcı Detayları:\nAd: ${p.fullName}\nEmail: ${p.email}\nTelefon: ${p.phone}\nÜniversite: ${p.university}\nBölüm: ${p.department}\nRol: ${p.teamRole || 'Belirtilmemiş'}`);
+                          }}
+                          className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Detayları Görüntüle"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Kullanıcıyı düzenle
+                            const newName = prompt('Yeni Ad Soyad:', p.fullName);
+                            const newEmail = prompt('Yeni Email:', p.email);
+                            if (newName && newEmail) {
+                              // API çağrısı yapılabilir
+                              alert('Düzenleme özelliği yakında eklenecek!');
+                            }
+                          }}
+                          className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
+                          title="Düzenle"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`${p.fullName} kullanıcısını silmek istediğinizden emin misiniz?`)) {
+                              alert('Silme özelliği yakında eklenecek!');
+                            }
+                          }}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

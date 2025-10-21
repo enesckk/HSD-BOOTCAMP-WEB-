@@ -1,35 +1,72 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/dashboard/AdminLayout';
-import { Hash, MessageSquare, Users, Trash2, Eye, Search, Filter, MoreVertical } from 'lucide-react';
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  MessageSquare,
+  Hash,
+  Lock,
+  Globe,
+  Users,
+  Save,
+  X
+} from 'lucide-react';
+
+interface Channel {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  category: string;
+  type: string;
+  isPrivate: boolean;
+  createdAt: string;
+  _count?: {
+    messages: number;
+  };
+}
 
 export default function AdminChannelsPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [channels, setChannels] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    displayName: '',
+    description: '',
+    category: 'GENEL',
+    type: 'public',
+    isPrivate: false
+  });
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
-      return;
+    } else if (!isLoading && user?.role !== 'ADMIN') {
+      router.push('/dashboard');
     }
   }, [isLoading, isAuthenticated, user, router]);
 
   useEffect(() => {
-    fetchChannels();
-  }, []);
+    if (user?.role === 'ADMIN') {
+      fetchChannels();
+    }
+  }, [user]);
 
   const fetchChannels = async () => {
     try {
-      const response = await fetch('/api/channels');
+      setLoading(true);
+      const response = await fetch('/api/admin/channels');
       const data = await response.json();
       setChannels(data.channels || []);
     } catch (error) {
@@ -39,261 +76,471 @@ export default function AdminChannelsPage() {
     }
   };
 
-  const fetchChannelMessages = async (channelId) => {
-    try {
-      const response = await fetch(`/api/admin/channels?channelId=${channelId}`);
-      const data = await response.json();
-      setMessages(data.messages || []);
-    } catch (error) {
-      console.error('Error fetching channel messages:', error);
-    }
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      displayName: '',
+      description: '',
+      category: 'GENEL',
+      type: 'public',
+      isPrivate: false
+    });
   };
 
-  const deleteMessage = async (messageId) => {
+  const openEditModal = (channel: Channel) => {
+    setEditingChannel(channel);
+    setFormData({
+      name: channel.name,
+      displayName: channel.displayName,
+      description: channel.description,
+      category: channel.category,
+      type: channel.type,
+      isPrivate: channel.isPrivate
+    });
+    setShowEditModal(true);
+  };
+
+  const handleCreateChannel = async () => {
     try {
       const response = await fetch('/api/admin/channels', {
-        method: 'DELETE',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId })
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
-        setMessages(messages.filter(msg => msg.id !== messageId));
+        setShowCreateModal(false);
+        resetForm();
+        fetchChannels();
       }
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('Error creating channel:', error);
     }
   };
 
-  const sendReply = async (messageId: string, content: string) => {
-    if (!content.trim()) return;
+  const handleUpdateChannel = async () => {
+    if (!editingChannel) return;
+
     try {
-      await fetch('/api/admin/channel-replies', {
-        method: 'POST',
+      const response = await fetch(`/api/admin/channels/${editingChannel.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId, content, adminId: user?.id })
+        body: JSON.stringify(formData)
       });
-      if (selectedChannel?.id) {
-        await fetchChannelMessages(selectedChannel.id);
+
+      if (response.ok) {
+        setShowEditModal(false);
+        setEditingChannel(null);
+        resetForm();
+        fetchChannels();
       }
     } catch (error) {
-      console.error('Error sending reply:', error);
+      console.error('Error updating channel:', error);
     }
   };
 
-  const filteredChannels = channels.filter(channel =>
-    channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    channel.displayName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const deleteChannel = async (id: string) => {
+    if (!confirm('Bu kanalı silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/channels/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        fetchChannels();
+      }
+    } catch (error) {
+      console.error('Error deleting channel:', error);
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'GENEL':
+        return 'bg-blue-100 text-blue-800';
+      case 'BOOTCAMP':
+        return 'bg-red-100 text-red-800';
+      case 'YONETIM':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Yükleniyor...</p>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
-  if (!isAuthenticated || !user || user.role !== 'ADMIN') {
-    return <div></div>;
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
+    return (
+      <AdminLayout>
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Yetkisiz Erişim</h2>
+          <p className="text-gray-600">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
+        </div>
+      </AdminLayout>
+    );
   }
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-        >
-          <div className="flex items-center space-x-4 mb-4">
-            <Hash className="w-12 h-12" />
-            <div>
-              <h1 className="text-4xl font-bold">Kanal Yönetimi</h1>
-              <p className="text-red-100 text-lg mt-1">Sohbet kanallarını ve mesajları yönetin</p>
-            </div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Kanal Yönetimi</h1>
+            <p className="text-gray-600 mt-2">Chat kanallarını yönetin</p>
           </div>
-          <p className="text-red-200 mt-4">
-            Katılımcıların sohbet kanallarındaki mesajlarını takip edin ve gerekirse müdahale edin.
-          </p>
-        </motion.div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 flex items-center space-x-2 shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Yeni Kanal</span>
+          </button>
+        </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Kanallar Listesi */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Kanallar</h2>
-                <div className="flex items-center space-x-2">
-                  <Search className="w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Kanal ara..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-                  </div>
-                ) : filteredChannels.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Kanal bulunamadı
-                  </div>
-                ) : (
-                  filteredChannels.map((channel, index) => (
-                    <motion.div
-                      key={channel.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
-                        selectedChannel?.id === channel.id
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                      }`}
-                      onClick={() => {
-                        setSelectedChannel(channel);
-                        fetchChannelMessages(channel.id);
-                      }}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white">
-                          <Hash className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{channel.displayName}</h3>
-                          <p className="text-gray-600 text-sm">{channel.description}</p>
-                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                            <span className="flex items-center space-x-1">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>{channel.messages?.length || 0} mesaj</span>
-                            </span>
-                            <span className="flex items-center space-x-1">
-                              <Users className="w-3 h-3" />
-                              <span>Aktif</span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </div>
-            </motion.div>
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
           </div>
-
-          {/* Mesajlar */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+        ) : channels.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Kanal Bulunamadı</h3>
+            <p className="text-gray-600 mb-6">Henüz hiç kanal oluşturulmamış.</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 flex items-center space-x-2 mx-auto shadow-lg transition-all duration-200 transform hover:scale-105"
             >
-              {selectedChannel ? (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white">
-                        <Hash className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
+              <span>İlk Kanalı Oluştur</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {channels.map((channel) => (
+              <motion.div
+                key={channel.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                        <Hash className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold text-gray-900">{selectedChannel.displayName}</h2>
-                        <p className="text-gray-600 text-sm">{selectedChannel.description}</p>
+                        <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                          <span>#{channel.displayName}</span>
+                          {channel.isPrivate ? (
+                            <Lock className="w-4 h-4 text-gray-500" />
+                          ) : (
+                            <Globe className="w-4 h-4 text-gray-500" />
+                          )}
+                        </h3>
+                        <p className="text-sm text-gray-600">{channel.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">{messages.length} mesaj</span>
+                    
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(channel.category)}`}>
+                        {channel.category}
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <MessageSquare className="w-4 h-4" />
+                        <span>{channel._count?.messages || 0} mesaj</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Users className="w-4 h-4" />
+                        <span>{channel.type === 'public' ? 'Herkese Açık' : 'Özel'}</span>
+                      </span>
                     </div>
                   </div>
-
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {messages.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        Bu kanalda henüz mesaj yok
-                      </div>
-                    ) : (
-                      messages.map((message, index) => (
-                        <motion.div
-                          key={message.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                            {message.user?.fullName?.charAt(0) || 'U'}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <span className="font-semibold text-gray-900">
-                                  {message.user?.role === 'ADMIN' ? 'Eğitmen' : message.user?.fullName || 'Kullanıcı'}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(message.createdAt).toLocaleString('tr-TR')}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => deleteMessage(message.id)}
-                                className="text-red-600 hover:text-red-800 transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <p className="text-gray-700 mt-1">{message.content}</p>
-                            {message.messageType === 'question' && (
-                              <div className="mt-2 space-y-2">
-                                <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                                  ❓ Soru
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    placeholder="Cevabınızı yazın ve Enter'a basın"
-                                    onKeyDown={async (e) => {
-                                      if (e.key === 'Enter') {
-                                        const value = (e.target as HTMLInputElement).value;
-                                        await sendReply(message.id, value);
-                                        (e.target as HTMLInputElement).value = '';
-                                      }
-                                    }}
-                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))
-                    )}
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => openEditModal(channel)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Düzenle"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteChannel(channel.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Sil"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                </>
-              ) : (
-                <div className="text-center py-12">
-                  <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Kanal Seçin</h3>
-                  <p className="text-gray-600">Mesajları görüntülemek için sol taraftan bir kanal seçin.</p>
                 </div>
-              )}
-            </motion.div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        )}
+
+        {/* Create Modal */}
+        <AnimatePresence>
+          {showCreateModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900">Yeni Kanal Oluştur</h3>
+                  <button
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      resetForm();
+                    }}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kanal Adı</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="ornek-kanal"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Görünen Ad</label>
+                    <input
+                      type="text"
+                      value={formData.displayName}
+                      onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="Örnek Kanal"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="Kanal açıklaması"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      >
+                        <option value="GENEL">Genel</option>
+                        <option value="BOOTCAMP">Bootcamp</option>
+                        <option value="YONETIM">Yönetim</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tip</label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      >
+                        <option value="public">Herkese Açık</option>
+                        <option value="private">Özel</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="isPrivate"
+                      checked={formData.isPrivate}
+                      onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+                      className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor="isPrivate" className="text-sm font-medium text-gray-700">
+                      Özel Kanal
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end space-x-4 px-6 py-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      resetForm();
+                    }}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={handleCreateChannel}
+                    className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 flex items-center space-x-2 shadow-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Oluştur</span>
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Edit Modal */}
+        <AnimatePresence>
+          {showEditModal && editingChannel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900">Kanalı Düzenle</h3>
+                  <button
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingChannel(null);
+                      resetForm();
+                    }}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kanal Adı</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="ornek-kanal"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Görünen Ad</label>
+                    <input
+                      type="text"
+                      value={formData.displayName}
+                      onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="Örnek Kanal"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+                      placeholder="Kanal açıklaması"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      >
+                        <option value="GENEL">Genel</option>
+                        <option value="BOOTCAMP">Bootcamp</option>
+                        <option value="YONETIM">Yönetim</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tip</label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      >
+                        <option value="public">Herkese Açık</option>
+                        <option value="private">Özel</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="isPrivateEdit"
+                      checked={formData.isPrivate}
+                      onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+                      className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor="isPrivateEdit" className="text-sm font-medium text-gray-700">
+                      Özel Kanal
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end space-x-4 px-6 py-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingChannel(null);
+                      resetForm();
+                    }}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={handleUpdateChannel}
+                    className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 flex items-center space-x-2 shadow-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Güncelle</span>
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AdminLayout>
   );

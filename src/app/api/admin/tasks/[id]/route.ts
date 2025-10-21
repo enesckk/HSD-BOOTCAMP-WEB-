@@ -9,13 +9,14 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, dueDate, status } = body;
+    const { title, description, startDate, dueDate, status } = body;
 
     const task = await prisma.task.update({
       where: { id },
       data: {
         title,
         description,
+        startDate: startDate ? new Date(startDate) : null,
         dueDate: dueDate ? new Date(dueDate) : null,
         status
       }

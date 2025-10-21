@@ -1,16 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-// GET - Tüm sertifikaları getir
+// GET - Sertifikaları listele
 export async function GET(request: NextRequest) {
   try {
+    const certificates = await (prisma as any).certificate.findMany({
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    const formattedCertificates = certificates.map((cert: any) => ({
+      id: cert.id,
+      userId: cert.userId,
+      userName: cert.user.fullName,
+      userEmail: cert.user.email,
+      programName: cert.programName,
+      completionDate: cert.completionDate.toISOString(),
+      status: cert.status,
+      score: cert.score,
+      notes: cert.notes,
+      issuedAt: cert.issuedAt?.toISOString(),
+      downloadUrl: cert.downloadUrl,
+    }));
+
     return NextResponse.json({
       success: true,
-      certificates: [],
+      certificates: formattedCertificates,
     });
   } catch (error) {
     console.error('Error fetching certificates:', error);
     return NextResponse.json(
-      { success: false, error: 'Sertifikalar getirilemedi' },
+      { error: 'Sertifikalar getirilemedi' },
       { status: 500 }
     );
   }
@@ -20,48 +49,27 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      userId,
-      programName,
-      completionDate,
-      score,
-      notes,
-    } = body;
+    const { userId, programName, completionDate, score, notes } = body;
 
-    // Gerekli alanları kontrol et
     if (!userId || !programName || !completionDate) {
       return NextResponse.json(
-        { success: false, error: 'Gerekli alanlar eksik' },
+        { error: 'Gerekli alanlar eksik' },
         { status: 400 }
       );
     }
 
-    // Kullanıcının var olup olmadığını kontrol et
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Kullanıcı bulunamadı' },
-        { status: 404 }
-      );
-    }
-
-    // Sertifikayı oluştur
-    const certificate = await prisma.certificate.create({
+    const certificate = await (prisma as any).certificate.create({
       data: {
         userId,
         programName,
         completionDate: new Date(completionDate),
-        status: 'PENDING',
-        score: score || null,
+        score: score ? parseInt(score) : null,
         notes: notes || null,
+        status: 'PENDING',
       },
       include: {
         user: {
           select: {
-            id: true,
             fullName: true,
             email: true,
           },
@@ -77,18 +85,18 @@ export async function POST(request: NextRequest) {
         userName: certificate.user.fullName,
         userEmail: certificate.user.email,
         programName: certificate.programName,
-        completionDate: certificate.completionDate,
+        completionDate: certificate.completionDate.toISOString(),
         status: certificate.status,
         score: certificate.score,
         notes: certificate.notes,
-        issuedAt: certificate.issuedAt,
+        issuedAt: certificate.issuedAt?.toISOString(),
         downloadUrl: certificate.downloadUrl,
       },
     });
   } catch (error) {
     console.error('Error creating certificate:', error);
     return NextResponse.json(
-      { success: false, error: 'Sertifika oluşturulamadı' },
+      { error: 'Sertifika oluşturulamadı' },
       { status: 500 }
     );
   }
