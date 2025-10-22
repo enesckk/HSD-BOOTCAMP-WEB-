@@ -103,8 +103,8 @@ const FAQ: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <HelpCircle className="w-4 h-4" />
+            <div className="inline-flex items-center space-x-2 bg-white border border-[#2563EB]/30 text-[#2563EB] px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <HelpCircle className="w-4 h-4 text-[#2563EB]" />
               <span>Sıkça Sorulan Sorular</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -149,7 +149,7 @@ const FAQ: React.FC = () => {
                       <h3 className="text-lg font-bold text-gray-900 mb-1">
                         {item.question}
                       </h3>
-                      <span className="text-sm text-red-600 font-medium">
+                      <span className="text-sm text-[#2563EB] font-medium">
                         {item.category}
                       </span>
                     </div>

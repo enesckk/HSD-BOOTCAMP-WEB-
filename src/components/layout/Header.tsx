@@ -88,8 +88,8 @@ const Header: React.FC = () => {
         animate={{ y: 0 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200'
-            : 'bg-black/20 backdrop-blur-md border-b border-white/10'
+            ? 'bg-gradient-to-r from-[#E31B23] via-[#2563EB] to-white backdrop-blur-xl shadow-sm border-b border-[#E5E7EB]'
+            : 'bg-gradient-to-r from-[#E31B23]/90 via-[#2563EB]/90 to-white/80 backdrop-blur-md border-b border-white/40'
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,9 +109,7 @@ const Header: React.FC = () => {
                 priority
               />
               <div className="hidden sm:block">
-                <h1 className={`font-bold text-xl lg:text-2xl ${
-                  isScrolled ? 'text-gray-900' : 'text-white'
-                }`}>
+                <h1 className={`font-semibold text-xl lg:text-2xl text-white`}>
                   {APP_NAME}
                 </h1>
               </div>
@@ -121,7 +119,7 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-6">
               <button
                 onClick={handleLoginClick}
-                className="group relative bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl text-base transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center space-x-3 shadow-lg"
+                className="group relative bg-[#E31B23] hover:bg-[#C8161D] text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-md"
               >
                 <LogIn className="w-5 h-5" />
                 <span>Giriş Yap</span>
@@ -138,8 +136,8 @@ const Header: React.FC = () => {
         transition={{ delay: 0.1 }}
         className={`fixed top-20 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200'
-            : 'bg-transparent'
+            ? 'bg-[#F8FAFC]/95 backdrop-blur-xl border-t border-[#E5E7EB]'
+            : 'bg-[#F8FAFC]/70 backdrop-blur-md border-t border-[#E5E7EB]/60'
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -150,23 +148,21 @@ const Header: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`font-medium text-lg transition-all duration-300 relative ${
+                  className={`font-medium text-base transition-colors duration-200 relative ${
                     isScrolled 
                       ? isActive(item.id)
-                        ? 'text-red-600 font-semibold'
-                        : 'text-gray-700 hover:text-red-600'
+                        ? 'text-[#2563EB]'
+                        : 'text-[#4B5563] hover:text-[#2563EB]'
                       : isActive(item.id)
-                        ? 'text-red-400 font-semibold'
-                        : 'text-white hover:text-red-400'
+                        ? 'text-[#2563EB]'
+                        : 'text-[#0B0F19] hover:text-[#2563EB]'
                   }`}
                 >
                   {item.label}
                   {isActive(item.id) && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full ${
-                        isScrolled ? 'bg-red-600' : 'bg-red-400'
-                      }`}
+                      className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-[#2563EB]`}
                       initial={false}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
@@ -178,10 +174,10 @@ const Header: React.FC = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`lg:hidden p-3 rounded-lg transition-all duration-300 ${
+              className={`lg:hidden p-3 rounded-lg transition-colors ${
                 isScrolled
-                  ? 'text-gray-700 hover:bg-gray-100'
-                  : 'text-white hover:bg-white/20'
+                  ? 'text-[#4B5563] hover:bg-gray-100'
+                  : 'text-[#0B0F19] hover:bg-black/5'
               }`}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -196,7 +192,7 @@ const Header: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-white/20"
+              className="lg:hidden bg-white/95 backdrop-blur-xl border-t border-[#E5E7EB]"
             >
               <div className="container mx-auto px-4 py-6">
                 <nav className="flex flex-col space-y-6">
@@ -204,17 +200,17 @@ const Header: React.FC = () => {
                     <button
                       key={item.id}
                       onClick={() => scrollToSection(item.id)}
-                      className={`text-left font-medium text-lg py-3 transition-colors duration-300 relative ${
+                      className={`text-left font-medium text-base py-3 transition-colors duration-200 relative ${
                         isActive(item.id)
-                          ? 'text-red-600 font-semibold'
-                          : 'text-gray-700 hover:text-red-600'
+                          ? 'text-[#2563EB]'
+                          : 'text-[#4B5563] hover:text-[#2563EB]'
                       }`}
                     >
                       {item.label}
                       {isActive(item.id) && (
                         <motion.div
                           layoutId="mobileActiveIndicator"
-                          className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-red-600 rounded-full"
+                          className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#2563EB] rounded-full"
                           initial={false}
                           transition={{ type: "spring", stiffness: 500, damping: 30 }}
                         />
@@ -225,7 +221,7 @@ const Header: React.FC = () => {
                   <div className="pt-6 border-t border-gray-200">
                     <button
                       onClick={handleLoginClick}
-                      className="flex items-center space-x-3 text-gray-700 font-medium py-3 hover:text-red-600 transition-colors duration-300 w-full"
+                      className="flex items-center gap-3 text-[#4B5563] font-medium py-3 hover:text-[#2563EB] transition-colors duration-200 w-full"
                     >
                       <LogIn className="w-5 h-5" />
                       <span>Giriş Yap</span>

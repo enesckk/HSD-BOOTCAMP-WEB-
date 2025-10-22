@@ -81,8 +81,8 @@ const Timeline: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-20"
           >
-            <div className="inline-flex items-center space-x-2 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-8">
-              <Calendar className="w-4 h-4" />
+            <div className="inline-flex items-center space-x-2 bg-white border border-[#2563EB]/30 text-[#2563EB] px-6 py-2 rounded-full text-sm font-semibold mb-8">
+              <Calendar className="w-4 h-4 text-[#2563EB]" />
               <span>Etkinlik Takvimi</span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
@@ -103,7 +103,7 @@ const Timeline: React.FC = () => {
             className="relative max-w-6xl mx-auto"
           >
             {/* Timeline Line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-500 to-red-600 transform -translate-x-1/2 rounded-full"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#2563EB] via-[#2563EB] to-[#E31B23] transform -translate-x-1/2 rounded-full"></div>
             
             <div className="space-y-16">
               {timelineEvents.map((event, index) => {

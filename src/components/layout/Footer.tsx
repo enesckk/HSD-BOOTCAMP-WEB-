@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-white border-t border-gray-200">
+    <footer className="bg-[#F8FAFC] border-t border-[#E5E7EB]">
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-3 gap-8">
@@ -73,44 +73,44 @@ const Footer: React.FC = () => {
           {/* Company Info */}
           <div className="md:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#E31B23] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">HW</span>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Huawei Türkiye</h3>
+                <h3 className="text-lg font-bold text-[#0B0F19]">Huawei Türkiye</h3>
               </div>
             </div>
             
-            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+            <p className="text-[#475569] text-sm leading-relaxed mb-6">
               Genç yetenekleri destekliyor, yenilikçi çözümler geliştiriyoruz.
             </p>
 
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <Mail className="w-4 h-4 text-red-600" />
-                <span className="text-sm text-gray-600">info@huawei.com.tr</span>
+                <Mail className="w-4 h-4 text-[#E31B23]" />
+                <span className="text-sm text-[#475569]">info@huawei.com.tr</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-red-600" />
-                <span className="text-sm text-gray-600">+90 (212) 318 18 00</span>
+                <Phone className="w-4 h-4 text-[#E31B23]" />
+                <span className="text-sm text-[#475569]">+90 (212) 318 18 00</span>
               </div>
               <div className="flex items-center space-x-3">
-                <MapPin className="w-4 h-4 text-red-600" />
-                <span className="text-sm text-gray-600">İstanbul, Türkiye</span>
+                <MapPin className="w-4 h-4 text-[#E31B23]" />
+                <span className="text-sm text-[#475569]">İstanbul, Türkiye</span>
               </div>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Hızlı Linkler</h3>
+            <h3 className="text-lg font-semibold mb-4 text-[#0B0F19]">Hızlı Linkler</h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-600 hover:text-red-600 transition-colors duration-300"
+                    className="text-sm text-[#475569] hover:text-[#2563EB] transition-colors duration-200"
                   >
                     {link.name}
                   </a>
@@ -121,8 +121,8 @@ const Footer: React.FC = () => {
 
           {/* Social Media & Back to Top */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Bizi Takip Edin</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <h3 className="text-lg font-semibold mb-4 text-[#0B0F19]">Bizi Takip Edin</h3>
+            <p className="text-sm text-[#475569] mb-4">
               Güncel gelişmelerden haberdar olun.
             </p>
             
@@ -134,7 +134,7 @@ const Footer: React.FC = () => {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 transition-all duration-300 ${social.color} hover:text-white`}
+                  className={`w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg flex items-center justify-center text-[#4B5563] transition-colors duration-200 ${social.color} hover:text-white`}
                 >
                   {social.icon}
                 </a>
@@ -146,7 +146,7 @@ const Footer: React.FC = () => {
               onClick={scrollToTop}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 text-sm"
+              className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <ArrowUp className="w-4 h-4" />
               <span>Yukarı Çık</span>
@@ -156,20 +156,20 @@ const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-200 bg-gray-50">
+      <div className="border-t border-[#E5E7EB] bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
             {/* Copyright */}
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-[#6B7280]">
               © {currentYear} Huawei Türkiye. Tüm hakları saklıdır.
             </div>
 
             {/* Additional Links */}
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <a href="#" className="hover:text-red-600 transition-colors duration-300">
+            <div className="flex items-center space-x-4 text-sm text-[#6B7280]">
+              <a href="#" className="hover:text-[#2563EB] transition-colors duration-200">
                 Gizlilik Politikası
               </a>
-              <a href="#" className="hover:text-red-600 transition-colors duration-300">
+              <a href="#" className="hover:text-[#2563EB] transition-colors duration-200">
                 Kullanım Şartları
               </a>
             </div>
@@ -181,4 +181,5 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
 
