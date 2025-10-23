@@ -57,28 +57,31 @@ export async function DELETE(
 
     console.log('Found channel:', channel.name);
 
-    // Transaction kullanarak güvenli silme
-    const result = await prisma.$transaction(async (tx) => {
-      // Önce kanaldaki tüm mesajları sil
-      const deletedMessages = await tx.channelMessage.deleteMany({
-        where: { channelId: id }
-      });
-      console.log('Deleted messages:', deletedMessages.count);
-
-      // Kanal okuma kayıtlarını sil
-      const deletedReads = await tx.userChannelRead.deleteMany({
-        where: { channelId: id }
-      });
-      console.log('Deleted read records:', deletedReads.count);
-
-      // Sonra kanalı sil
-      const deletedChannel = await tx.channel.delete({
-        where: { id }
-      });
-      console.log('Deleted channel:', deletedChannel.name);
-
-      return { deletedChannel, deletedMessages, deletedReads };
+    // Sıralı silme işlemi
+    console.log('Starting deletion process...');
+    
+    // Önce kanaldaki tüm mesajları sil
+    console.log('Deleting channel messages...');
+    const deletedMessages = await prisma.channelMessage.deleteMany({
+      where: { channelId: id }
     });
+    console.log('Deleted messages:', deletedMessages.count);
+
+    // Kanal okuma kayıtlarını sil
+    console.log('Deleting user channel reads...');
+    const deletedReads = await prisma.userChannelRead.deleteMany({
+      where: { channelId: id }
+    });
+    console.log('Deleted read records:', deletedReads.count);
+
+    // Sonra kanalı sil
+    console.log('Deleting channel...');
+    const deletedChannel = await prisma.channel.delete({
+      where: { id }
+    });
+    console.log('Deleted channel:', deletedChannel.name);
+
+    const result = { deletedChannel, deletedMessages, deletedReads };
 
     return NextResponse.json({ 
       success: true, 
