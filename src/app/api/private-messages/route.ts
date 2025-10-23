@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         title: 'Yeni Özel Mesaj',
         message: `Yeni bir mesaj aldınız: ${content.substring(0, 50)}...`,
         userId: toUser.id,
-        isRead: false
+        read: false
       }
     });
 

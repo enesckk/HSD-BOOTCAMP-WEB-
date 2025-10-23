@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
           title: 'Yeni Eğitmen Sorusu',
           message: `Yeni bir soru alındı: ${content.substring(0, 50)}...`,
           userId: instructor.id,
-          isRead: false
+          read: false
         }
       });
     }

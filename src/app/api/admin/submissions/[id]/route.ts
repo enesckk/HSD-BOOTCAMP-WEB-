@@ -90,11 +90,11 @@ export async function PUT(
     if (status === 'NEEDS_REVISION' && submission.userId) {
       await prisma.notification.create({
         data: {
-          type: 'TASK_REVISION',
+          type: 'TASK',
           title: 'Ödev Revizyon Gerekli',
           message: `Ödeviniz revizyon gerektiriyor: ${feedback || 'Lütfen ödevinizi gözden geçirin.'}`,
           userId: submission.userId,
-          isRead: false
+          read: false
         }
       });
     }
@@ -103,11 +103,11 @@ export async function PUT(
     if (status === 'APPROVED' && submission.userId) {
       await prisma.notification.create({
         data: {
-          type: 'TASK_APPROVED',
+          type: 'TASK',
           title: 'Ödev Onaylandı',
           message: `Ödeviniz onaylandı!${score ? ` Puanınız: ${score}/100` : ''}`,
           userId: submission.userId,
-          isRead: false
+          read: false
         }
       });
     }
@@ -116,11 +116,11 @@ export async function PUT(
     if (status === 'REJECTED' && submission.userId) {
       await prisma.notification.create({
         data: {
-          type: 'TASK_REJECTED',
+          type: 'TASK',
           title: 'Ödev Reddedildi',
           message: `Ödeviniz reddedildi: ${feedback || 'Lütfen ödevinizi yeniden gözden geçirin.'}`,
           userId: submission.userId,
-          isRead: false
+          read: false
         }
       });
     }

@@ -2,10 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Sparkles, Target } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, Target, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import { APP_NAME, ACTIVE_CITY_POINTS, getTotalsFromCities } from '@/utils/constants';
 import TurkeyMap from './TurkeyMap';
+import FloatingTechIcons from './FloatingTechIcons';
 
 const Hero: React.FC = () => {
   const handleLoginClick = () => {
@@ -22,9 +23,11 @@ const Hero: React.FC = () => {
   const totals = useMemo(() => getTotalsFromCities(ACTIVE_CITY_POINTS), []);
 
   return (
-    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-36 bg-[#F7F7F8]">
-      {/* Açık arka plan (mavi tint) */}
+    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-28 bg-[#F7F7F8]">
+      {/* Arka plan tintleri (beyaz-lacivert) */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-[#F7F9FF] to-[#EEF2FF]" />
+      <div className="pointer-events-none absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full opacity-[0.08]" style={{background:"radial-gradient(50% 50% at 50% 50%, #E31B23 0%, rgba(227,27,35,0) 70%)"}} />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 w-[520px] h-[520px] rounded-full opacity-[0.07]" style={{background:"radial-gradient(50% 50% at 50% 50%, var(--accent) 0%, rgba(30,58,138,0) 70%)"}} />
 
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,21 +44,34 @@ const Hero: React.FC = () => {
           
           {/* Main Title */}
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="mb-6"
+            transition={{ duration: 0.9, delay: 0.3 }}
+            className="mb-5"
           >
+            {/* Kategori/pill şerit (stile yakın) */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {['Cloud','AI','DevOps'].map((cat) => (
+                <span key={cat} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur border border-[#E5E7EB] text-[13px] text-[#0B0F19] shadow-sm">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{background:'var(--accent)'}} />
+                  {cat}
+                </span>
+              ))}
+            </div>
+
             <motion.div
-              initial={{ scale: 0.8 }}
+              initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-                  transition={{ duration: 1, delay: 0.7 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
               className="inline-block"
             >
-                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#0B0F19] mb-2 leading-[1.05]">
-                    HSD Türkiye <span className="text-[#E31B23]">Bootcamp</span>
+              <h1
+                className="font-black tracking-tight text-[#0B0F19] mb-2 leading-[1.05]"
+                style={{ fontSize: 'clamp(40px, 7vw, 72px)' }}
+              >
+                HSD Türkiye <span className="text-[#E31B23]">Bootcamp</span>
               </h1>
-                  <div className="h-1 w-24 bg-[#2563EB] rounded-full mb-4" />
+              <div className="h-1 w-24 rounded-full mb-4" style={{background:'var(--accent)'}} />
             </motion.div>
           </motion.div>
 
@@ -64,26 +80,27 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.9 }}
-                className="text-lg sm:text-xl text-[#4B5563] mb-8 leading-relaxed max-w-2xl"
+                className="text-[#4B5563] mb-8 leading-relaxed max-w-2xl"
+                style={{ fontSize: 'clamp(16px, 2.2vw, 20px)', lineHeight: 1.6 as unknown as string }}
               >
                 Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
               </motion.p>
 
-              {/* İstatistik rozetleri */}
+              {/* Toplam kapsayıcı bilgi */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.0 }}
-                className="flex flex-wrap items-center gap-3 mb-10"
+                transition={{ duration: 0.7, delay: 0.9 }}
+                className="mb-10"
               >
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white text-[#0B0F19] text-sm shadow-sm border border-[#E5E7EB]">
-                  <Users className="w-4 h-4 text-[#E31B23]" /> {totals.cityCount} şehir
-                </div>
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white text-[#0B0F19] text-sm shadow-sm border border-[#E5E7EB]">
-                  <svg className="w-4 h-4 text-[#2563EB]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 5-9 5-9-5 9-5zm0 7l9 5-9 5-9-5 9-5z"/></svg> {totals.totalUniversities} üniversite
-                </div>
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white text-[#0B0F19] text-sm shadow-sm border border-[#E5E7EB]">
-                  <Sparkles className="w-4 h-4 text-[#E31B23]" /> {totals.totalBootcamps} bootcamp
+                <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-white/90 backdrop-blur border border-[#E5E7EB] text-[#0B0F19] shadow-sm">
+                  <div className="flex items-center -space-x-2">
+                    <span className="w-8 h-8 rounded-lg bg-[#E31B23]/10 text-[#E31B23] flex items-center justify-center"><Users className="w-4 h-4" /></span>
+                    <span className="w-8 h-8 rounded-lg bg-[color:var(--accent)]/10 text-[color:var(--accent)] flex items-center justify-center"><GraduationCap className="w-4 h-4" /></span>
+                  </div>
+                  <span className="text-sm sm:text-base font-medium">
+                    Toplam <strong>{totals.cityCount}</strong> şehir ve <strong>{totals.totalUniversities}</strong> üniversitede aktifiz
+                  </span>
                 </div>
               </motion.div>
 
@@ -102,11 +119,11 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 1.2 }}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mt-8 sm:mt-10 lg:mt-14"
           >
             <button
               onClick={handleLoginClick}
-                  className="group relative bg-[#E31B23] hover:bg-[#C8161D] text-white font-semibold py-3.5 sm:py-4 px-7 sm:px-9 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 shadow-md w-full sm:w-auto"
+              className="group relative bg-[#E31B23] hover:bg-[#C8161D] text-white font-semibold py-4 sm:py-4.5 px-8 sm:px-10 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-[1px] transform w-full sm:w-auto"
             >
                   <Sparkles className="w-5 h-5" />
               <span>Giriş Yap</span>
@@ -115,7 +132,10 @@ const Hero: React.FC = () => {
             
             <button
               onClick={handleLearnMoreClick}
-                  className="group bg-[#2563EB] hover:bg-[#1E40AF] text-white font-semibold py-3.5 sm:py-4 px-7 sm:px-9 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-md"
+              className="group text-white font-semibold py-4 sm:py-4.5 px-8 sm:px-10 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-md hover:shadow-lg hover:-translate-y-[1px] transform"
+              style={{background:'var(--accent)'}}
+              onMouseEnter={(e)=>{(e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-hover)'}}
+              onMouseLeave={(e)=>{(e.currentTarget as HTMLButtonElement).style.background = 'var(--accent)'}}
             >
                   <Target className="w-5 h-5" />
               <span>Daha Fazla Bilgi</span>
@@ -136,7 +156,11 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator kaldırıldı */}
+      {/* Dağınık teknoloji ikonları (arka katman) */}
+      <FloatingTechIcons density="medium" />
+
+      {/* Wave divider to next section (About background #F8FAFC) */}
+      {/* Dalga divider bağımsız bileşene taşındı */}
     </section>
   );
 };
