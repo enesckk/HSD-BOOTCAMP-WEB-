@@ -5,14 +5,10 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     // Sadece kullanıcılar tarafından teslim edilen görevleri getir
-    // (userId null olmayan ve fileUrl/linkUrl olan görevler)
+    // (userId null olmayan görevler - fileUrl/linkUrl kontrolü kaldırıldı)
     const tasks = await prisma.task.findMany({
       where: {
-        userId: { not: null }, // Kullanıcı tarafından oluşturulan görevler
-        OR: [
-          { fileUrl: { not: null } },
-          { linkUrl: { not: null } }
-        ]
+        userId: { not: null } // Kullanıcı tarafından oluşturulan görevler
       },
       include: {
         user: {
