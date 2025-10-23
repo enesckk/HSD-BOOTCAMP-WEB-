@@ -113,12 +113,20 @@ const ChatPage = () => {
 
   const fetchChannels = async () => {
     try {
+      console.log('Fetching channels for user:', user?.id);
       const response = await fetch('/api/chat/channels', {
         headers: {
           'x-user-id': user?.id || ''
         }
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Channels API response:', data);
+      
       if (data.success) {
         setChannels(data.channels);
         if (data.channels.length > 0) {
@@ -126,9 +134,8 @@ const ChatPage = () => {
         }
         console.log(`${data.channels.length} kanal yüklendi`);
       } else {
-        console.error('Error fetching channels:', data.error);
-        // Hata durumunda boş array set et
-        setChannels([]);
+        console.error('API returned error:', data.error);
+        throw new Error(data.error || 'Kanallar getirilemedi');
       }
     } catch (error) {
       console.error('Error fetching channels:', error);
