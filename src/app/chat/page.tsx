@@ -113,7 +113,11 @@ const ChatPage = () => {
 
   const fetchChannels = async () => {
     try {
-      const response = await fetch('/api/chat/channels');
+      const response = await fetch('/api/chat/channels', {
+        headers: {
+          'x-user-id': user?.id || ''
+        }
+      });
       const data = await response.json();
       if (data.success) {
         setChannels(data.channels);
@@ -142,6 +146,9 @@ const ChatPage = () => {
       if (data.success) {
         setMessages(data.messages);
         console.log(`Kanal ${channelId} için ${data.messages.length} mesaj yüklendi`);
+        
+        // Mesajları okundu olarak işaretle
+        markChannelAsRead(channelId);
       } else {
         console.error('Error fetching messages:', data.error);
         // Hata durumunda boş array set et
@@ -151,6 +158,22 @@ const ChatPage = () => {
       console.error('Error fetching messages:', error);
       // Hata durumunda boş array set et
       setMessages([]);
+    }
+  };
+
+  const markChannelAsRead = async (channelId: string) => {
+    if (!user?.id) return;
+    
+    try {
+      await fetch(`/api/chat/channels/${channelId}/mark-read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id
+        }
+      });
+    } catch (error) {
+      console.error('Error marking channel as read:', error);
     }
   };
 
