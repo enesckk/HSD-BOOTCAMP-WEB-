@@ -4,7 +4,11 @@ import { prisma } from '@/lib/prisma';
 // GET - Tüm görevleri getir
 export async function GET(request: NextRequest) {
   try {
+    // Admin tarafından oluşturulan görevleri getir (userId null olan)
     const tasks = await prisma.task.findMany({
+      where: {
+        userId: null // Admin tarafından oluşturulan görevler
+      },
       orderBy: { createdAt: 'desc' }
     });
 

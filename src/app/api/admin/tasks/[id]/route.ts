@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 // PUT - Görevi güncelle
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -35,7 +35,7 @@ export async function PUT(
 // DELETE - Görevi sil
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;

@@ -33,8 +33,8 @@ export async function GET(
       submission: {
         id: submission.id,
         userId: submission.userId,
-        userName: submission.user.fullName,
-        userEmail: submission.user.email,
+        userName: submission.user?.fullName || 'Bilinmeyen Kullanıcı',
+        userEmail: submission.user?.email || 'Bilinmeyen Email',
         taskTitle: submission.title,
         taskDescription: submission.description,
         submissionType: submission.uploadType,
@@ -91,8 +91,8 @@ export async function PUT(
       submission: {
         id: submission.id,
         userId: submission.userId,
-        userName: submission.user.fullName,
-        userEmail: submission.user.email,
+        userName: submission.user?.fullName || 'Bilinmeyen Kullanıcı',
+        userEmail: submission.user?.email || 'Bilinmeyen Email',
         taskTitle: submission.title,
         taskDescription: submission.description,
         submissionType: submission.uploadType,
