@@ -15,7 +15,11 @@ import {
   Globe,
   Users,
   Save,
-  X
+  X,
+  Eye,
+  Send,
+  MoreVertical,
+  User
 } from 'lucide-react';
 
 interface Channel {
@@ -29,6 +33,18 @@ interface Channel {
   createdAt: string;
   _count?: {
     messages: number;
+  };
+}
+
+interface ChannelMessage {
+  id: string;
+  content: string;
+  messageType: string;
+  createdAt: string;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
   };
 }
 
@@ -49,6 +65,14 @@ export default function AdminChannelsPage() {
     isPrivate: false
   });
   const [error, setError] = useState('');
+  
+  // Yeni state'ler
+  const [activeTab, setActiveTab] = useState<'management' | 'chat'>('management');
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [messages, setMessages] = useState<ChannelMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -198,6 +222,72 @@ export default function AdminChannelsPage() {
     }
   };
 
+  // Yeni fonksiyonlar
+  const fetchChannelMessages = async (channelId: string) => {
+    try {
+      setMessagesLoading(true);
+      const response = await fetch(`/api/chat/channels/${channelId}/messages`);
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const selectChannel = (channel: Channel) => {
+    setSelectedChannel(channel);
+    setActiveTab('chat');
+    fetchChannelMessages(channel.id);
+  };
+
+  const sendMessage = async () => {
+    if (!selectedChannel || !newMessage.trim()) return;
+
+    try {
+      setSendingMessage(true);
+      const response = await fetch(`/api/chat/channels/${selectedChannel.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || ''
+        },
+        body: JSON.stringify({
+          content: newMessage,
+          messageType: 'text'
+        })
+      });
+
+      if (response.ok) {
+        setNewMessage('');
+        fetchChannelMessages(selectedChannel.id);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!confirm('Bu mesajı silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const response = await fetch(`/api/chat/messages/${messageId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok && selectedChannel) {
+        fetchChannelMessages(selectedChannel.id);
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -225,7 +315,7 @@ export default function AdminChannelsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Kanal Yönetimi</h1>
-            <p className="text-gray-600 mt-2">Chat kanallarını yönetin</p>
+            <p className="text-gray-600 mt-2">Chat kanallarını yönetin ve sohbetleri görüntüleyin</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -233,6 +323,30 @@ export default function AdminChannelsPage() {
           >
             <Plus className="w-5 h-5" />
             <span>Yeni Kanal</span>
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setActiveTab('management')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'management'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Kanal Yönetimi
+          </button>
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'chat'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Kanal Sohbetleri
           </button>
         </div>
 
@@ -248,7 +362,10 @@ export default function AdminChannelsPage() {
           </div>
         )}
 
-        {loading ? (
+        {/* Tab Content */}
+        {activeTab === 'management' && (
+          <>
+            {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
           </div>
@@ -310,6 +427,13 @@ export default function AdminChannelsPage() {
                   
                   <div className="flex items-center space-x-2">
                     <button
+                      onClick={() => selectChannel(channel)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Sohbeti Görüntüle"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => openEditModal(channel)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Düzenle"
@@ -327,6 +451,138 @@ export default function AdminChannelsPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        )}
+          </>
+        )}
+
+        {/* Chat Tab */}
+        {activeTab === 'chat' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Channel List */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Kanallar</h3>
+                <div className="space-y-2">
+                  {channels.map((channel) => (
+                    <button
+                      key={channel.id}
+                      onClick={() => selectChannel(channel)}
+                      className={`w-full text-left p-3 rounded-lg transition-colors ${
+                        selectedChannel?.id === channel.id
+                          ? 'bg-red-50 border border-red-200 text-red-900'
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                          <Hash className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">#{channel.displayName}</p>
+                          <p className="text-sm text-gray-500 truncate">{channel.description}</p>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {channel._count?.messages || 0}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="lg:col-span-2">
+              {selectedChannel ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 h-[600px] flex flex-col">
+                  {/* Chat Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                        <Hash className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">#{selectedChannel.displayName}</h3>
+                        <p className="text-sm text-gray-500">{selectedChannel.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(selectedChannel.category)}`}>
+                        {selectedChannel.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {messagesLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600"></div>
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-500">Henüz mesaj yok</p>
+                      </div>
+                    ) : (
+                      messages.map((message) => (
+                        <div key={message.id} className="flex items-start space-x-3 group">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-gray-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="font-medium text-gray-900 text-sm">{message.user.fullName}</span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(message.createdAt).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <p className="text-gray-800 text-sm whitespace-pre-wrap">{message.content}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteMessage(message.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Message Input */}
+                  <div className="p-4 border-t border-gray-200">
+                    <div className="flex space-x-3">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                        placeholder="Mesaj yazın..."
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        disabled={sendingMessage}
+                      />
+                      <button
+                        onClick={sendMessage}
+                        disabled={!newMessage.trim() || sendingMessage}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 h-[600px] flex items-center justify-center">
+                  <div className="text-center">
+                    <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Kanal Seçin</h3>
+                    <p className="text-gray-600">Sohbet görüntülemek için sol taraftan bir kanal seçin</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

@@ -105,12 +105,12 @@ export async function DELETE(
         deletedReads: deletedReads.count
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting channel:', error);
     return NextResponse.json(
       { 
         success: false,
-        error: 'Kanal silinemedi: ' + (error.message || 'Bilinmeyen hata')
+        error: 'Kanal silinemedi: ' + (error?.message || 'Bilinmeyen hata')
       },
       { status: 500 }
     );

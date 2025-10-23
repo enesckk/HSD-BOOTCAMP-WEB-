@@ -174,7 +174,7 @@ const RegisterForm = () => {
             className="text-center mb-8"
           >
             <h2 className="text-3xl font-bold text-red-600 mb-2">
-              Afet Yönetimi Teknolojileri Fikir Maratonu
+              HSD Türkiye Bootcamp
             </h2>
             <p className="text-gray-600">
               Maratona katılmak için kayıt olun

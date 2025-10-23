@@ -1,36 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+// GET - Kullanıcılar için mevcut görevleri getir
+export async function GET() {
+  console.log('=== GET AVAILABLE TASKS API CALLED ===');
+  
   try {
-    // Admin tarafından oluşturulan tüm görevleri getir
+    // Admin tarafından oluşturulan görevleri getir (userId null olanlar)
     const availableTasks = await prisma.task.findMany({
       where: {
-        // Admin tarafından oluşturulan görevler (userId null veya admin kullanıcılar)
-        user: {
-          role: 'ADMIN'
-        }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            role: true
-          }
-        }
+        userId: null, // Admin görevleri
+        status: 'PENDING' // Sadece bekleyen görevler
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
-
-    return NextResponse.json(availableTasks);
+    
+    console.log('Available tasks found:', availableTasks.length);
+    
+    return NextResponse.json({
+      success: true,
+      tasks: availableTasks,
+      count: availableTasks.length,
+      message: 'Mevcut görevler başarıyla getirildi'
+    });
+    
   } catch (error) {
-    console.error('Error fetching available tasks:', error);
-    return NextResponse.json(
-      { error: 'Mevcut görevler getirilemedi' },
-      { status: 500 }
-    );
+    console.error('=== GET AVAILABLE TASKS ERROR ===');
+    console.error('Error:', error);
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Görevler getirilemedi',
+      detail: error instanceof Error ? error.message : 'Bilinmeyen hata'
+    }, { status: 500 });
   }
 }

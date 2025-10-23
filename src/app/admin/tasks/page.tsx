@@ -44,18 +44,7 @@ export default function AdminTasksPage() {
     description: '',
     startDate: '',
     dueDate: '',
-    status: 'PENDING' as 'PENDING' | 'COMPLETED' | 'REJECTED',
-    category: '',
-    tags: '',
-    estimatedHours: '',
-    actualHours: '',
-    assignedBy: '',
-    notes: '',
-    attachments: '',
-    huaweiCloudAccount: '',
-    uploadType: 'FILE' as 'FILE' | 'LINK',
-    fileUrl: '',
-    linkUrl: '',
+    status: 'PENDING' as 'PENDING' | 'COMPLETED' | 'REJECTED'
   });
 
   useEffect(() => {
@@ -71,17 +60,60 @@ export default function AdminTasksPage() {
 
   const fetchTasks = async () => {
     try {
+      console.log('=== FRONTEND: FETCHING TASKS START ===');
+      
       const response = await fetch('/api/admin/tasks');
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       const data = await response.json();
-      setTasks(data.tasks || []);
+      console.log('Response data:', data);
+      
+      if (data.success) {
+        console.log('Success: Setting tasks:', data.tasks?.length || 0, 'tasks');
+        setTasks(data.tasks || []);
+      } else {
+        console.error('API Error:', data.error);
+        console.error('API Detail:', data.detail);
+        console.error('API Error Type:', data.errorType);
+        setTasks([]);
+      }
+      
+      console.log('=== FRONTEND: FETCHING TASKS SUCCESS ===');
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('=== FRONTEND: FETCHING TASKS ERROR ===');
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Full error:', error);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
   };
 
   const createTask = async () => {
+    // Form validasyonu
+    if (!formData.title.trim()) {
+      alert('Görev başlığı gereklidir!');
+      return;
+    }
+    if (!formData.description.trim()) {
+      alert('Görev açıklaması gereklidir!');
+      return;
+    }
+    if (!formData.startDate) {
+      alert('Başlama tarihi gereklidir!');
+      return;
+    }
+    if (!formData.dueDate) {
+      alert('Bitiş tarihi gereklidir!');
+      return;
+    }
+    if (new Date(formData.startDate) >= new Date(formData.dueDate)) {
+      alert('Bitiş tarihi başlama tarihinden sonra olmalıdır!');
+      return;
+    }
+
     try {
       const response = await fetch('/api/admin/tasks', {
         method: 'POST',
@@ -90,12 +122,32 @@ export default function AdminTasksPage() {
       });
 
       if (response.ok) {
-        await fetchTasks();
-        setShowCreateModal(false);
-        resetForm();
+        const result = await response.json();
+        console.log('Create task response:', result);
+        
+        if (result.success) {
+          console.log('Task created successfully, adding to list...');
+          
+          // Oluşturulan görevi doğrudan state'e ekle
+          if (result.task) {
+            setTasks(prevTasks => [result.task, ...prevTasks]);
+            console.log('Task added to state:', result.task);
+          }
+          
+          setShowCreateModal(false);
+          resetForm();
+          alert('Görev başarıyla oluşturuldu!');
+        } else {
+          alert('Hata: ' + (result.error || 'Görev oluşturulamadı'));
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        alert('Hata: ' + (errorData.error || 'Sunucu hatası'));
       }
     } catch (error) {
       console.error('Error creating task:', error);
+      alert('Bağlantı hatası: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
     }
   };
 
@@ -142,18 +194,7 @@ export default function AdminTasksPage() {
       description: '',
       startDate: '',
       dueDate: '',
-      status: 'PENDING',
-      category: '',
-      tags: '',
-      estimatedHours: '',
-      actualHours: '',
-      assignedBy: '',
-      notes: '',
-      attachments: '',
-      huaweiCloudAccount: '',
-      uploadType: 'FILE' as 'FILE' | 'LINK',
-      fileUrl: '',
-      linkUrl: ''
+      status: 'PENDING'
     });
   };
 
@@ -164,18 +205,7 @@ export default function AdminTasksPage() {
       description: task.description,
       startDate: task.startDate ? task.startDate.split('T')[0] : '',
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
-      status: task.status,
-      category: '',
-      tags: '',
-      estimatedHours: '',
-      actualHours: '',
-      assignedBy: '',
-      notes: '',
-      attachments: '',
-      huaweiCloudAccount: '',
-      uploadType: 'FILE' as 'FILE' | 'LINK',
-      fileUrl: '',
-      linkUrl: ''
+      status: task.status
     });
     setShowEditModal(true);
   };
@@ -350,58 +380,51 @@ export default function AdminTasksPage() {
                 
                 <div className="p-6 space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Görev Başlığı</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Görev Başlığı *</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="Görev başlığını girin"
+                      required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama *</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
                       placeholder="Görev açıklamasını girin"
+                      required
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi</label>
-                    <input
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
-                    <input
-                      type="date"
-                      value={formData.dueDate}
-                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Durum</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                    >
-                      <option value="PENDING">Beklemede</option>
-                      <option value="COMPLETED">Tamamlandı</option>
-                      <option value="REJECTED">Reddedildi</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi *</label>
+                      <input
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi *</label>
+                      <input
+                        type="date"
+                        value={formData.dueDate}
+                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
                 

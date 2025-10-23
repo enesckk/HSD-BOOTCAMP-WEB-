@@ -79,7 +79,10 @@ export async function PUT(
       data
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      success: true,
+      user: user
+    });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Award, Download, CheckCircle, Clock, Star, ExternalLink, Calendar, Users, Target } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import BackButton from '@/components/ui/BackButton';
 
 const CertificatePage = () => {
   const { user } = useAuth();
@@ -75,6 +76,9 @@ const CertificatePage = () => {
 
   return (
     <div className="space-y-8">
+      {/* Geri Tuşu */}
+      <BackButton title="Sertifika'dan Geri Dön" showHome={true} />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -76,7 +76,26 @@ const LoginForm = () => {
       }
     } catch (error: any) {
       console.error('Giriş hatası:', error);
-      setSubmitError(error.message || 'Giriş yapılırken bir hata oluştu');
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error?.message);
+      console.error('Error details:', error);
+      
+      let errorMessage = 'Giriş yapılırken bir hata oluştu';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      console.log('Final error message:', errorMessage);
+      setSubmitError(errorMessage);
     } finally {
       setIsLoading(false);
     }

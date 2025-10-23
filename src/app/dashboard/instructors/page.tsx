@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Mail, Linkedin, Award, BookOpen, Star, Clock, MessageSquare } from 'lucide-react';
+import BackButton from '@/components/ui/BackButton';
 
 const InstructorsPage = () => {
   const instructors = [
@@ -70,6 +71,9 @@ const InstructorsPage = () => {
 
   return (
     <div className="space-y-8">
+      {/* Geri Tuşu */}
+      <BackButton title="Eğitmenler'den Geri Dön" showHome={true} />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

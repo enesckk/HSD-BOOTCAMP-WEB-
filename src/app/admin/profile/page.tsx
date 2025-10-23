@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -81,12 +81,29 @@ export default function AdminProfilePage() {
     try {
       setIsLoading(true);
       
-      // API çağrısı simülasyonu
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccess('Profil başarıyla güncellendi');
-      setIsEditing(false);
-      setPasswords({ current: '', next: '', confirm: '' });
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.user) {
+          // AuthContext'i güncelle
+          updateUser(result.user);
+          setSuccess('Profil başarıyla güncellendi');
+          setIsEditing(false);
+          setPasswords({ current: '', next: '', confirm: '' });
+        } else {
+          setError(result.error || 'Profil güncelleme hatası');
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Profil güncelleme hatası');
+      }
       
     } catch (error) {
       console.error('Profil güncelleme hatası:', error);

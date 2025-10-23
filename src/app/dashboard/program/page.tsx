@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, BookOpen, Target, Award, Users, Zap, Play, Flag } from 'lucide-react';
+import BackButton from '@/components/ui/BackButton';
 
 const ProgramPage = () => {
   const programWeeks = [
@@ -73,6 +74,9 @@ const ProgramPage = () => {
 
   return (
     <div className="space-y-8">
+      {/* Geri Tuşu */}
+      <BackButton title="Eğitim Programı'ndan Geri Dön" showHome={true} />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

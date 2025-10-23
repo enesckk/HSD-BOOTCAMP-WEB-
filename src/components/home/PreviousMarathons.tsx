@@ -69,7 +69,7 @@ const PreviousMarathons: React.FC = () => {
     {
       id: 4,
       year: "2022",
-      title: "Afet Yönetimi Teknolojileri Fikir Maratonu",
+      title: "HSD Türkiye Bootcamp",
       subtitle: "Deprem ve Doğal Afet Yönetimi",
       location: "İstanbul",
       participants: "25+",

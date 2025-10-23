@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -86,13 +86,15 @@ const ProfilePage = () => {
       });
 
       if (response.ok) {
-        const updatedUser = await response.json();
-        // Auth context storage anahtarı projede STORAGE_KEYS.USER
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setIsEditing(false);
-        setPasswords({ current: '', next: '', confirm: '' });
-        // Sayfayı yenile
-        window.location.reload();
+        const result = await response.json();
+        if (result.success && result.user) {
+          // AuthContext'i güncelle
+          updateUser(result.user);
+          setIsEditing(false);
+          setPasswords({ current: '', next: '', confirm: '' });
+        } else {
+          setError(result.error || 'Profil güncelleme hatası');
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Profil güncelleme hatası');

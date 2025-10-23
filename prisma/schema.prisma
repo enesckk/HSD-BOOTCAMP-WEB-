@@ -67,8 +67,10 @@ enum UserRole {
 
 enum TaskStatus {
   PENDING
-  COMPLETED
+  SUBMITTED
+  APPROVED
   REJECTED
+  NEEDS_REVISION
 }
 
 // Announcement model - Duyurular için

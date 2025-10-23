@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import AdminLayout from '@/components/dashboard/AdminLayout';
+// import AdminLayout from '@/components/dashboard/AdminLayout';
 import { 
   Upload, 
   Download, 
@@ -53,6 +53,12 @@ const AdminSubmissions = () => {
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [evaluationData, setEvaluationData] = useState({
+    status: 'PENDING' as 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION',
+    feedback: ''
+  });
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
@@ -60,15 +66,64 @@ const AdminSubmissions = () => {
 
   const fetchSubmissions = async () => {
     try {
+      console.log('Fetching submissions...');
       const response = await fetch('/api/admin/submissions');
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('API Response:', data);
       if (data.success) {
         setSubmissions(data.submissions);
+        console.log('Submissions set:', data.submissions);
+      } else {
+        console.error('API returned success: false');
       }
     } catch (error) {
       console.error('Error fetching submissions:', error);
     } finally {
+      console.log('Setting isLoading to false');
       setIsLoading(false);
+    }
+  };
+
+  const openEvaluationModal = (submission: Submission) => {
+    setSelectedSubmission(submission);
+    setEvaluationData({
+      status: submission.status as 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION',
+      feedback: submission.feedback || ''
+    });
+    setShowEvaluationModal(true);
+  };
+
+  const handleEvaluation = async () => {
+    if (!selectedSubmission) return;
+
+    try {
+      setIsEvaluating(true);
+      const response = await fetch(`/api/admin/submissions/${selectedSubmission.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          status: evaluationData.status,
+          feedback: evaluationData.feedback
+        })
+      });
+
+      if (response.ok) {
+        setShowEvaluationModal(false);
+        setSelectedSubmission(null);
+        fetchSubmissions(); // Listeyi yenile
+        alert('Değerlendirme başarıyla kaydedildi!');
+      } else {
+        const errorData = await response.json();
+        alert('Hata: ' + (errorData.error || 'Değerlendirme kaydedilemedi'));
+      }
+    } catch (error) {
+      console.error('Error evaluating submission:', error);
+      alert('Bağlantı hatası: ' + error.message);
+    } finally {
+      setIsEvaluating(false);
     }
   };
 
@@ -146,7 +201,7 @@ const AdminSubmissions = () => {
   };
 
   return (
-    <AdminLayout>
+    <div className="min-h-screen bg-gray-50">
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -240,7 +295,7 @@ const AdminSubmissions = () => {
                     Tarih
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Puan
+                    Değerlendirme
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     İşlemler
@@ -306,12 +361,14 @@ const AdminSubmissions = () => {
                       {new Date(submission.submittedAt).toLocaleDateString('tr-TR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {submission.score ? (
+                      {submission.feedback ? (
                         <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          <span>{submission.score}/100</span>
+                          <MessageSquare className="w-4 h-4 text-blue-500" />
+                          <span className="text-blue-600">Değerlendirildi</span>
                         </div>
-                      ) : '-'}
+                      ) : (
+                        <span className="text-gray-400">Değerlendirilmedi</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
@@ -320,10 +377,17 @@ const AdminSubmissions = () => {
                             setSelectedSubmission(submission);
                             setShowDetailModal(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
                           title="Detayları Görüntüle"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => openEvaluationModal(submission)}
+                          className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                          title="Değerlendir"
+                        >
+                          <CheckCircle className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -462,12 +526,6 @@ const AdminSubmissions = () => {
               >
                 Kapat
               </button>
-              <button
-                onClick={() => setShowFeedbackModal(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Değerlendir
-              </button>
             </div>
           </motion.div>
         </div>
@@ -500,7 +558,7 @@ const AdminSubmissions = () => {
                     <label className="block text-sm font-medium text-gray-700">Ad Soyad</label>
                     <p className="text-gray-900">{selectedSubmission.userName}</p>
                   </div>
-                  <div>
+              <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <p className="text-gray-900">{selectedSubmission.userEmail}</p>
                   </div>
@@ -515,7 +573,7 @@ const AdminSubmissions = () => {
                     <label className="block text-sm font-medium text-gray-700">Görev Başlığı</label>
                     <p className="text-gray-900 font-semibold">{selectedSubmission.taskTitle}</p>
                   </div>
-                  <div>
+              <div>
                     <label className="block text-sm font-medium text-gray-700">Görev Açıklaması</label>
                     <p className="text-gray-900 whitespace-pre-wrap">{selectedSubmission.taskDescription}</p>
                   </div>
@@ -635,8 +693,111 @@ const AdminSubmissions = () => {
         </div>
       )}
 
+      {/* Evaluation Modal */}
+      {showEvaluationModal && selectedSubmission && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl w-full"
+          >
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900">Ödev Değerlendirme</h3>
+              <button
+                onClick={() => setShowEvaluationModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Ödev Bilgileri */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Ödev Bilgileri</h4>
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-medium text-gray-700">Katılımcı:</span>
+                    <span className="ml-2 text-gray-900">{selectedSubmission.userName}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Görev:</span>
+                    <span className="ml-2 text-gray-900">{selectedSubmission.taskTitle}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Teslim Türü:</span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedSubmission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Değerlendirme Formu */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Değerlendirme Durumu
+                  </label>
+                  <select
+                    value={evaluationData.status}
+                    onChange={(e) => setEvaluationData(prev => ({ 
+                      ...prev, 
+                      status: e.target.value as 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION' 
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  >
+                    <option value="APPROVED">✅ Onaylandı</option>
+                    <option value="REJECTED">❌ Reddedildi</option>
+                    <option value="NEEDS_REVISION">🔄 Revizyon Gerekli</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Değerlendirme Notu
+                  </label>
+                  <textarea
+                    value={evaluationData.feedback}
+                    onChange={(e) => setEvaluationData(prev => ({ ...prev, feedback: e.target.value }))}
+                    placeholder="Ödev hakkında detaylı değerlendirme notunuzu yazın..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 h-32 resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowEvaluationModal(false)}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleEvaluation}
+                disabled={isEvaluating}
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+              >
+                {isEvaluating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Değerlendiriliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Değerlendirmeyi Kaydet</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>
-    </AdminLayout>
+    </div>
   );
 };
 

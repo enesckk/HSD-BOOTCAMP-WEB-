@@ -121,7 +121,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   </div>
                   <div>
                     <h1 className="text-lg font-bold text-gray-900">Admin Paneli</h1>
-                    <p className="text-xs text-gray-500">Afet Yönetimi Maratonu</p>
+                    <p className="text-xs text-gray-500">HSD Türkiye Bootcamp</p>
                   </div>
                 </div>
               </div>

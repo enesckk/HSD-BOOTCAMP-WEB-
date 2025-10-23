@@ -19,7 +19,10 @@ import {
   Target,
   Award,
   X,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw,
+  Edit,
+  XCircle
 } from 'lucide-react';
 
 const TasksPage = () => {
@@ -49,27 +52,104 @@ const TasksPage = () => {
       try {
         setIsLoading(true);
         
+        // Önce localStorage'dan görevleri yükle
+        if (user) {
+          const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
+          console.log('=== PAGE LOAD ===');
+          console.log('User ID:', user.id);
+          console.log('Saved tasks from localStorage:', savedTasks);
+          
+          if (savedTasks) {
+            try {
+              const parsedTasks = JSON.parse(savedTasks);
+              if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
+                setTasks(parsedTasks);
+                console.log('✅ Tasks loaded from localStorage:', parsedTasks);
+                console.log('✅ Tasks count from localStorage:', parsedTasks.length);
+              } else {
+                console.log('❌ Invalid or empty localStorage data, clearing...');
+                localStorage.removeItem(`user_tasks_${user.id}`);
+                setTasks([]);
+              }
+            } catch (error) {
+              console.error('❌ Error parsing localStorage data:', error);
+              localStorage.removeItem(`user_tasks_${user.id}`);
+              setTasks([]);
+            }
+          } else {
+            console.log('❌ No localStorage data found');
+            setTasks([]);
+          }
+        }
+        
         // Kullanıcının kendi görevlerini getir (sadece user varsa)
         if (user) {
+          try {
           const userTasksRes = await fetch(`/api/tasks?userId=${user.id}`);
           const userTasksJson = await userTasksRes.json();
-          const userTasksArray = Array.isArray(userTasksJson) ? userTasksJson : 
-                                Array.isArray(userTasksJson.items) ? userTasksJson.items : 
-                                Array.isArray(userTasksJson.tasks) ? userTasksJson.tasks : [];
+            console.log('API response:', userTasksJson);
+            
+            if (userTasksJson.success && userTasksJson.tasks && userTasksJson.tasks.length > 0) {
+              const userTasksArray = userTasksJson.tasks;
+              console.log('✅ API tasks found:', userTasksArray);
+              
+              // API'den veri gelirse, localStorage'ı güncelle
           setTasks(userTasksArray);
-          console.log('User tasks:', userTasksArray);
+              localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(userTasksArray));
+              console.log('✅ Tasks updated from API and saved to localStorage');
+            } else {
+              console.log('❌ No tasks from API, keeping localStorage data');
+              // API'den veri gelmezse, localStorage'daki veriyi koru
+              const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
+              if (savedTasks) {
+                const parsedTasks = JSON.parse(savedTasks);
+                if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
+                  setTasks(parsedTasks);
+                  console.log('✅ Keeping localStorage data:', parsedTasks);
+                }
+              }
+            }
+          } catch (apiError) {
+            console.error('❌ API error, keeping localStorage data:', apiError);
+            // API hatası durumunda localStorage'daki veriyi koru
+            const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
+            if (savedTasks) {
+              const parsedTasks = JSON.parse(savedTasks);
+              if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
+                setTasks(parsedTasks);
+                console.log('✅ Keeping localStorage data after API error:', parsedTasks);
+              }
+            }
+          }
         }
         
         // Yöneticinin oluşturduğu mevcut görevleri getir (her zaman)
+        console.log('=== FETCHING AVAILABLE TASKS ===');
         const availableTasksRes = await fetch('/api/tasks/available');
+        console.log('Available tasks response status:', availableTasksRes.status);
+        console.log('Available tasks response ok:', availableTasksRes.ok);
+        
         const availableTasksJson = await availableTasksRes.json();
-        const availableTasksArray = Array.isArray(availableTasksJson) ? availableTasksJson : 
-                                   Array.isArray(availableTasksJson.items) ? availableTasksJson.items : 
-                                   Array.isArray(availableTasksJson.tasks) ? availableTasksJson.tasks : [];
+        console.log('Available tasks response JSON:', availableTasksJson);
+        
+        const availableTasksArray = availableTasksJson.success ? 
+                                   (availableTasksJson.tasks || []) : 
+                                   [];
         setAvailableTasks(availableTasksArray);
         
-        console.log('Available tasks:', availableTasksArray);
+        console.log('Available tasks array:', availableTasksArray);
         console.log('Available tasks length:', availableTasksArray.length);
+        
+        // Debug: Her görev için detay
+        availableTasksArray.forEach((task, index) => {
+          console.log(`Task ${index + 1}:`, {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            userId: task.userId
+          });
+        });
       } catch (e) {
         console.error('Tasks fetch error', e);
         setError('Görevler yüklenemedi');
@@ -98,13 +178,23 @@ const TasksPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    console.log('=== SUBMIT FORM START ===');
+    
+    if (!user) {
+      console.log('No user found');
+      return;
+    }
     
     // Görev seçimi kontrolü
     if (!selectedTaskForSubmission) {
+      console.log('No task selected');
       setError('Lütfen yükleme yapmadan önce bir görev seçiniz.');
       return;
     }
+    
+    console.log('Selected task:', selectedTaskForSubmission);
+    console.log('Form data:', formData);
+    console.log('Upload type:', uploadType);
     
     setIsUploading(true);
     setError('');
@@ -119,31 +209,76 @@ const TasksPage = () => {
       
       if (uploadType === 'file' && formData.file) {
         formDataToSend.append('file', formData.file);
+        console.log('File added to form data:', formData.file.name);
       } else if (uploadType === 'link') {
         formDataToSend.append('fileUrl', formData.fileLink);
+        console.log('Link added to form data:', formData.fileLink);
       }
       
-      const url = '/api/tasks/submit';
-      const method = 'POST';
+      console.log('Sending request to /api/tasks/submit');
       
-      const res = await fetch(url, {
-        method,
+      const res = await fetch('/api/tasks/submit', {
+        method: 'POST',
         body: formDataToSend
       });
       
+      console.log('Response status:', res.status);
+      console.log('Response ok:', res.ok);
+      
       if (!res.ok) {
         const errorData = await res.json();
+        console.error('API Error:', errorData);
         throw new Error(errorData.error || 'Görev kaydedilemedi');
       }
       
       const newTask = await res.json();
+      console.log('Task submitted successfully:', newTask);
+      
+      // Response kontrolü
+      if (!newTask.success) {
+        throw new Error(newTask.error || 'Görev kaydedilemedi');
+      }
       
       if (editingTask) {
-        setTasks(prev => (prev || []).map(t => t.id === editingTask.id ? newTask : t));
+        const updatedTasks = (tasks || []).map(t => t.id === editingTask.id ? newTask.task : t);
+        setTasks(updatedTasks);
+        // localStorage'a kaydet
+        if (user) {
+          localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(updatedTasks));
+        }
         setSuccessMessage('Görev başarıyla güncellendi!');
       } else {
-        setTasks(prev => [newTask, ...(prev || [])]);
+        const newTasks = [newTask.task, ...(tasks || [])];
+        console.log('New tasks array:', newTasks);
+        setTasks(newTasks);
+        
+        // localStorage'a kaydet
+        if (user) {
+          console.log('=== SAVING TASK ===');
+          console.log('User ID:', user.id);
+          console.log('New tasks array:', newTasks);
+          console.log('New tasks count:', newTasks.length);
+          
+          localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(newTasks));
+          console.log('✅ Task saved to localStorage with key:', `user_tasks_${user.id}`);
+          console.log('✅ Saved data:', JSON.stringify(newTasks));
+          
+          // localStorage'ı kontrol et
+          const checkSaved = localStorage.getItem(`user_tasks_${user.id}`);
+          console.log('✅ Verification - localStorage contains:', checkSaved);
+          
+          // Parse edip kontrol et
+          try {
+            const parsedCheck = JSON.parse(checkSaved || '[]');
+            console.log('✅ Parsed verification:', parsedCheck);
+            console.log('✅ Parsed count:', parsedCheck.length);
+          } catch (error) {
+            console.error('❌ Verification parse error:', error);
+          }
+        }
+        
         setSuccessMessage('Görev başarıyla yüklendi!');
+        console.log('Task saved to localStorage:', newTask.task);
       }
       
       // Reset form
@@ -159,7 +294,8 @@ const TasksPage = () => {
       setTimeout(() => setSuccessMessage(''), 3000);
       
     } catch (e) {
-      console.error('Task save error', e);
+      console.error('=== SUBMIT FORM ERROR ===');
+      console.error('Error:', e);
       setError(e instanceof Error ? e.message : 'Görev kaydedilemedi');
     } finally {
       setIsUploading(false);
@@ -176,29 +312,33 @@ const TasksPage = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'APPROVED':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'ACTIVE':
-        return <Clock className="w-5 h-5 text-blue-600" />;
+      case 'SUBMITTED':
+        return <Upload className="w-5 h-5 text-blue-600" />;
       case 'PENDING':
         return <Clock className="w-5 h-5 text-yellow-600" />;
-      case 'OVERDUE':
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+      case 'REJECTED':
+        return <XCircle className="w-5 h-5 text-red-600" />;
+      case 'NEEDS_REVISION':
+        return <RefreshCw className="w-5 h-5 text-orange-600" />;
       default:
-        return <AlertCircle className="w-5 h-5 text-gray-400" />;
+        return <Clock className="w-5 h-5 text-gray-400" />;
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'Tamamlandı';
-      case 'ACTIVE':
-        return 'Aktif';
+      case 'APPROVED':
+        return 'Onaylandı';
+      case 'SUBMITTED':
+        return 'Teslim Edildi';
       case 'PENDING':
         return 'Bekliyor';
-      case 'OVERDUE':
-        return 'Gecikmiş';
+      case 'REJECTED':
+        return 'Reddedildi';
+      case 'NEEDS_REVISION':
+        return 'Revizyon Gerekli';
       default:
         return 'Bilinmiyor';
     }
@@ -261,12 +401,123 @@ const TasksPage = () => {
             </motion.button>
           </div>
 
+
           {/* Görevler Listesi */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
             </div>
-          ) : !tasks || tasks.length === 0 ? (
+          ) : (
+            <div className="space-y-6">
+              {/* Kullanıcının Kendi Görevleri */}
+              {tasks && tasks.length > 0 ? (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                    Yüklediğiniz Görevler ({tasks.length})
+                  </h3>
+                  <div className="space-y-4">
+                    {tasks.map((task, index) => (
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="text-xl font-bold text-gray-900">{task.title}</h3>
+                              {getStatusIcon(task.status)}
+                              <span className="text-sm text-gray-500">{getStatusText(task.status)}</span>
+                            </div>
+                            
+                            {/* Görev Durumu */}
+                            <div className="flex items-center space-x-2">
+                              <Target className="w-4 h-4 text-red-600" />
+                              <span className="text-sm text-gray-500">Durum:</span>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                task.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                                task.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                                task.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                                task.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                                task.status === 'NEEDS_REVISION' ? 'bg-orange-100 text-orange-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {task.status === 'APPROVED' ? 'Onaylandı' :
+                                 task.status === 'SUBMITTED' ? 'Teslim Edildi' :
+                                 task.status === 'PENDING' ? 'Bekliyor' :
+                                 task.status === 'REJECTED' ? 'Reddedildi' :
+                                 task.status === 'NEEDS_REVISION' ? 'Revizyon Gerekli' :
+                                 task.status}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-600 mb-4">{task.description}</p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-500">Başlama:</span>
+                              <span className="text-gray-900">
+                                {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-500">Bitiş:</span>
+                              <span className="text-gray-900">
+                                {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Cloud className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-500">Huawei Cloud:</span>
+                              <span className="text-gray-900">{task.huaweiCloudAccount || 'Belirtilmemiş'}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2 mt-4">
+                            <button 
+                              onClick={() => handleViewDetail(task)}
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Detayları Görüntüle"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            
+                            {/* Düzenleme Butonu - Sadece teslim edilen görevler için */}
+                            {task.status === 'SUBMITTED' && (
+                              <button 
+                                onClick={() => {
+                                  setEditingTask(task);
+                                  setSelectedTaskForSubmission(task);
+                                  setFormData({
+                                    huaweiCloudAccount: task.huaweiCloudAccount || '',
+                                    file: null,
+                                    fileLink: task.linkUrl || '',
+                                    notes: task.notes || ''
+                                  });
+                                  setUploadType(task.uploadType === 'LINK' ? 'link' : 'file');
+                                  setActiveTab('upload');
+                                }}
+                                className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Görevi Düzenle"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -276,7 +527,7 @@ const TasksPage = () => {
                 <FileText className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz görev yok</h3>
-              <p className="text-gray-600 mb-6">Admin tarafından oluşturulan görevler burada görünecek.</p>
+                  <p className="text-gray-600 mb-6">Yüklediğiniz görevler burada görünecek.</p>
               <motion.button
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
                 whileHover={{ scale: 1.05 }}
@@ -287,107 +538,74 @@ const TasksPage = () => {
                 <span>Görev Yükle</span>
               </motion.button>
             </motion.div>
-          ) : (
-            <div className="space-y-6">
-              {(tasks || []).map((task, index) => (
+              )}
+
+              {/* Mevcut Görevler (Admin Tarafından Oluşturulan) */}
+              {availableTasks && availableTasks.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Target className="w-5 h-5 mr-2 text-green-600" />
+                    Mevcut Görevler ({availableTasks.length})
+                  </h3>
+                  <div className="space-y-4">
+                    {availableTasks.map((task, index) => (
                 <motion.div
                   key={task.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-3">
+                        className="bg-green-50 border border-green-200 rounded-xl shadow-sm"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-3">
                         <h3 className="text-xl font-bold text-gray-900">{task.title}</h3>
-                        {getStatusIcon(task.status)}
-                        <span className="text-sm text-gray-500">{getStatusText(task.status)}</span>
-                      </div>
-                      
-                      {/* Görev Sahibi */}
-                      {task.user && (
-                        <div className="flex items-center space-x-2 mb-3">
-                          <Users className="w-4 h-4 text-red-600" />
-                          <span className="text-sm text-gray-500">Görev Sahibi:</span>
-                          <span className="font-medium text-gray-900">{task.user.fullName}</span>
-                          {task.user.teamRole && (
-                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                              {task.user.teamRole === 'LIDER' ? 'Lider' : 
-                               task.user.teamRole === 'TEKNIK_SORUMLU' ? 'Teknik Sorumlu' : 
-                               task.user.teamRole === 'TASARIMCI' ? 'Tasarımcı' : 'Üye'}
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                Mevcut
                             </span>
-                          )}
                         </div>
-                      )}
+                          </div>
                       
                       <p className="text-gray-600 mb-4">{task.description}</p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center space-x-2">
-                          <Cloud className="w-4 h-4 text-red-600" />
-                          <span className="text-gray-500">Huawei Cloud:</span>
-                          <span className="font-medium text-gray-900">{task.huaweiCloudAccount || 'Belirtilmemiş'}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-4 h-4 text-red-600" />
-                          <span className="text-gray-500">Yükleme:</span>
-                          <span className="font-medium text-gray-900">{new Date(task.createdAt).toLocaleDateString('tr-TR')} {new Date(task.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        {task.startDate && (
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4 text-blue-600" />
+                              <Calendar className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-500">Başlama:</span>
-                            <span className="font-medium text-gray-900">{new Date(task.startDate).toLocaleDateString('tr-TR')}</span>
+                              <span className="text-gray-900">
+                                {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                              </span>
                           </div>
-                        )}
-                        {task.dueDate && (
+                            
                           <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4 text-orange-600" />
+                              <Calendar className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-500">Bitiş:</span>
-                            <span className="font-medium text-gray-900">{new Date(task.dueDate).toLocaleDateString('tr-TR')}</span>
-                          </div>
-                        )}
-                        {task.uploadType === 'FILE' && task.fileUrl && (
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-red-600" />
-                            <span className="text-gray-500">Dosya:</span>
-                            <a 
-                              href={`/api/files/${encodeURIComponent(task.fileUrl.split('/').pop() || '')}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              download={task.fileUrl.split('/').pop()}
-                              className="font-medium text-red-600 hover:text-red-700 underline"
-                            >
-                              Dosyayı İndir
-                            </a>
-                          </div>
-                        )}
-                        {task.uploadType === 'LINK' && task.fileUrl && (
-                          <div className="flex items-center space-x-2">
-                            <Link className="w-4 h-4 text-red-600" />
-                            <span className="text-gray-500">Link:</span>
-                            <a href={task.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-red-600 hover:text-red-700">
-                              Dosyayı Görüntüle
-                            </a>
-                          </div>
-                        )}
+                              <span className="text-gray-900">
+                                {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                              </span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2 ml-4">
-                      <button 
-                        onClick={() => handleViewDetail(task)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Detayları Görüntüle"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {/* Düzenleme ve silme butonları kaldırıldı - Sadece admin görevleri düzenleyebilir */}
+                          <div className="mt-4">
+                            <motion.button
+                              onClick={() => {
+                                setSelectedTaskForSubmission(task);
+                                setActiveTab('upload');
+                              }}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <Upload className="w-4 h-4" />
+                              <span>Bu Görevi Seç ve Yükle</span>
+                            </motion.button>
                     </div>
                   </div>
                 </motion.div>
               ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -416,6 +634,13 @@ const TasksPage = () => {
                 <p className="text-gray-600">
                   {editingTask ? 'Görev bilgilerini güncelleyin' : 'Görev detaylarınızı girin ve dosyanızı yükleyin'}
                 </p>
+                {editingTask && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>Düzenlenen Görev:</strong> {editingTask.title}
+                </p>
+                  </div>
+                )}
               </div>
               <div className="w-20"></div>
             </div>
@@ -443,7 +668,8 @@ const TasksPage = () => {
                 <p className="text-xs text-gray-500 mt-1">Huawei Cloud hesabınızın kullanıcı adını girin</p>
               </div>
 
-              {/* Görev Seçimi - ZORUNLU */}
+              {/* Görev Seçimi - Sadece yeni görev oluştururken göster */}
+              {!editingTask && (
               <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
                 <label className="block text-sm font-bold text-red-800 mb-2">
                   ⚠️ Görev Seçin (Zorunlu) *
@@ -480,7 +706,35 @@ const TasksPage = () => {
                 <p className="text-xs text-gray-500 mt-1">
                   Debug: {availableTasks.length} görev mevcut
                 </p>
+                {availableTasks.length > 0 && (
+                  <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                    <p className="font-semibold">Mevcut Görevler:</p>
+                    {availableTasks.map((task, index) => (
+                      <p key={task.id} className="text-blue-700">
+                        {index + 1}. {task.title} (ID: {task.id})
+                      </p>
+                    ))}
               </div>
+                )}
+              </div>
+              )}
+
+              {/* Düzenleme Modunda Seçilen Görev Bilgisi */}
+              {editingTask && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                  <label className="block text-sm font-bold text-blue-800 mb-2">
+                    📝 Düzenlenen Görev
+                  </label>
+                  <div className="bg-white border border-blue-300 rounded-lg p-3">
+                    <h3 className="font-semibold text-gray-900 mb-1">{editingTask.title}</h3>
+                    <p className="text-sm text-gray-600">{editingTask.description}</p>
+                    <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                      <span>Başlama: {editingTask.startDate ? new Date(editingTask.startDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}</span>
+                      <span>Bitiş: {editingTask.dueDate ? new Date(editingTask.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Upload Type - Sadece görev seçildikten sonra aktif */}
               <div className={!selectedTaskForSubmission ? 'opacity-50 pointer-events-none' : ''}>

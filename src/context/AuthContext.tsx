@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   checkMarathonId: (marathonId: string) => Promise<{ available: boolean; message?: string }>;
+  updateUser: (updatedUser: User | Admin) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,13 +69,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
+      console.log('AuthContext login - Starting login process');
       const response = await authService.login(credentials);
+      console.log('AuthContext login - Response received:', response);
       
       localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       setUser(response.user);
       
+      console.log('AuthContext login - User set successfully');
       return response.user;
+            } catch (error: any) {
+              console.error('AuthContext login error:', error);
+              console.error('AuthContext login error type:', typeof error);
+              console.error('AuthContext login error message:', error?.message);
+              throw error; // Re-throw the error so LoginForm can handle it
     } finally {
       setIsLoading(false);
     }
@@ -104,6 +113,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return await authService.checkMarathonId(marathonId);
   };
 
+  const updateUser = (updatedUser: User | Admin) => {
+    setUser(updatedUser);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -112,6 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     checkMarathonId,
+    updateUser,
   };
 
   return (

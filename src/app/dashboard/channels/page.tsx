@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Users, Hash, Send, HelpCircle, Lock, Globe, User, Mail } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import BackButton from '@/components/ui/BackButton';
 
 const ChannelsPage = () => {
   const { user } = useAuth();
@@ -171,6 +172,8 @@ const ChannelsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
+        {/* Geri Tuşu */}
+        <BackButton title="Kanallar'dan Geri Dön" showHome={true} />
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-8rem)]">
           
           {/* Sol Sidebar - Kanallar */}
