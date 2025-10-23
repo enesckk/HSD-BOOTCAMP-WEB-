@@ -83,6 +83,7 @@ const ChatPage = () => {
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState(0);
   const [askInstructorTags, setAskInstructorTags] = useState('');
+  const [privateMessages, setPrivateMessages] = useState([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ const ChatPage = () => {
     
     if (isAuthenticated) {
       fetchChannels();
+      fetchPrivateMessages();
     }
   }, [user, isAuthenticated, authLoading, router]);
 
@@ -337,6 +339,25 @@ const ChatPage = () => {
     }
   };
 
+  const fetchPrivateMessages = async () => {
+    try {
+      const response = await fetch('/api/private-messages', {
+        headers: {
+          'x-user-id': user?.id || ''
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPrivateMessages(data.messages || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching private messages:', error);
+    }
+  };
+
   const askInstructor = async () => {
     if (!askInstructorMessage.trim() || isAskingInstructor) return;
 
@@ -365,6 +386,8 @@ const ChatPage = () => {
         setAskInstructorMessage('');
         setAskInstructorTags('');
         alert('Sorunuz admin\'e özel mesaj olarak iletildi!');
+        // Mesaj gönderildikten sonra listeyi yenile
+        fetchPrivateMessages();
       } else {
         alert('Soru gönderilemedi: ' + data.error);
       }
@@ -909,56 +932,143 @@ const ChatPage = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-3">Bir kanal seçin</h3>
               <p className="text-gray-600 mb-8 text-lg">Sohbete başlamak için sol menüden bir kanal seçin</p>
               
-              {/* Eğitmene Sor Formu */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                    <HelpCircle className="w-5 h-5 text-white" />
+              {/* Eğitmene Sor - Sadece Katılımcılar için */}
+              {user?.role === 'PARTICIPANT' && (
+                <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                      <HelpCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900">Eğitmene Sor</h4>
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900">Eğitmene Sor</h4>
+                  <p className="text-gray-600 mb-6 text-center">
+                    Sorularınızı admin'e özel mesaj olarak iletebilirsiniz. Mesajınız sadece admin tarafından görülebilir ve size özel olarak cevaplanacaktır.
+                  </p>
+                  
+                  {/* Özel Mesajlar Listesi */}
+                  <div className="mb-6">
+                    <h5 className="text-lg font-semibold text-gray-900 mb-4">Özel Mesajlarım</h5>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {privateMessages.length > 0 ? (
+                        privateMessages.map((message, index) => (
+                          <div key={index} className="bg-gray-50 rounded-lg p-4 border">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-sm font-medium text-gray-900">
+                                {message.fromUser?.fullName || 'Siz'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(message.createdAt).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2">{message.body}</p>
+                            {message.subject && (
+                              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                {message.subject}
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-gray-500 py-4">
+                          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                          <p>Henüz özel mesajınız yok</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Yeni Mesaj Formu */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Sorunuz
+                      </label>
+                      <textarea
+                        value={askInstructorMessage}
+                        onChange={(e) => setAskInstructorMessage(e.target.value)}
+                        placeholder="Sorunuzu buraya yazın..."
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white resize-none shadow-sm"
+                        rows={4}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Etiketler (opsiyonel)
+                      </label>
+                      <input
+                        type="text"
+                        value={askInstructorTags}
+                        onChange={(e) => setAskInstructorTags(e.target.value)}
+                        placeholder="Örn: kubernetes, docker, huawei-cloud"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white shadow-sm"
+                      />
+                    </div>
+                    <button
+                      onClick={askInstructor}
+                      disabled={!askInstructorMessage.trim() || isAskingInstructor}
+                      className="w-full px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-lg transition-all duration-200 transform hover:scale-105"
+                    >
+                      {isAskingInstructor ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <HelpCircle className="w-5 h-5" />
+                      )}
+                      <span className="font-semibold">{isAskingInstructor ? 'Gönderiliyor...' : 'Soruyu Gönder'}</span>
+                    </button>
+                  </div>
                 </div>
-                <p className="text-gray-600 mb-6 text-center">
-                  Sorularınızı admin'e özel mesaj olarak iletebilirsiniz. Mesajınız sadece admin tarafından görülebilir ve size özel olarak cevaplanacaktır.
-                </p>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Sorunuz
-                    </label>
-                    <textarea
-                      value={askInstructorMessage}
-                      onChange={(e) => setAskInstructorMessage(e.target.value)}
-                      placeholder="Sorunuzu buraya yazın..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white resize-none shadow-sm"
-                      rows={4}
-                    />
+              )}
+
+              {/* Admin/Eğitmen için Özel Mesaj Görüntüleme */}
+              {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+                <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900">Gelen Özel Mesajlar</h4>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Etiketler (opsiyonel)
-                    </label>
-                    <input
-                      type="text"
-                      value={askInstructorTags}
-                      onChange={(e) => setAskInstructorTags(e.target.value)}
-                      placeholder="Örn: kubernetes, docker, huawei-cloud"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white shadow-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={askInstructor}
-                    disabled={!askInstructorMessage.trim() || isAskingInstructor}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 shadow-lg transition-all duration-200 transform hover:scale-105"
-                  >
-                    {isAskingInstructor ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <p className="text-gray-600 mb-6 text-center">
+                    Katılımcılardan gelen özel mesajları burada görüntüleyebilir ve cevaplayabilirsiniz.
+                  </p>
+                  
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {privateMessages.length > 0 ? (
+                      privateMessages.map((message, index) => (
+                        <div key={index} className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-sm font-medium text-blue-900">
+                              {message.fromUser?.fullName || 'Bilinmeyen Kullanıcı'}
+                            </span>
+                            <span className="text-xs text-blue-600">
+                              {new Date(message.createdAt).toLocaleString('tr-TR')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-blue-800 mb-2">{message.body}</p>
+                          {message.subject && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              {message.subject}
+                            </span>
+                          )}
+                          <div className="mt-3 flex space-x-2">
+                            <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                              Cevapla
+                            </button>
+                            <button className="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
+                              Detay
+                            </button>
+                          </div>
+                        </div>
+                      ))
                     ) : (
-                      <HelpCircle className="w-5 h-5" />
+                      <div className="text-center text-gray-500 py-4">
+                        <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p>Henüz özel mesaj yok</p>
+                      </div>
                     )}
-                    <span className="font-semibold">{isAskingInstructor ? 'Gönderiliyor...' : 'Soruyu Gönder'}</span>
-                  </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
