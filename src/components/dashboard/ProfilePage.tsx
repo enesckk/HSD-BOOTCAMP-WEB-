@@ -27,8 +27,7 @@ const ProfilePage = () => {
     email: '',
     phone: '',
     university: '',
-    department: '',
-    marathonId: ''
+    department: ''
   });
   const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
 
@@ -40,8 +39,7 @@ const ProfilePage = () => {
         email: user.email || '',
         phone: user.phone || '',
         university: user.university || '',
-        department: user.department || '',
-        marathonId: user.marathonId || ''
+        department: user.department || ''
       });
       setPasswords({ current: '', next: '', confirm: '' });
     }
@@ -115,8 +113,7 @@ const ProfilePage = () => {
         email: user.email || '',
         phone: user.phone || '',
         university: user.university || '',
-        department: user.department || '',
-        marathonId: user.marathonId || ''
+        department: user.department || ''
       });
     }
     setError('');
@@ -193,10 +190,6 @@ const ProfilePage = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">{formData.fullName}</h2>
               <p className="text-gray-600">{formData.email}</p>
-              <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                <Shield className="w-4 h-4 mr-1" />
-                {formData.marathonId}
-              </div>
             </div>
           </motion.div>
 
@@ -264,14 +257,6 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* Marathon ID */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Marathon ID
-                </label>
-                <p className="text-gray-900 py-2 font-mono bg-gray-50 px-3 rounded-lg">{formData.marathonId}</p>
-                <p className="text-xs text-gray-500 mt-1">Bu alan değiştirilemez</p>
-              </div>
 
               {/* University */}
               <div>

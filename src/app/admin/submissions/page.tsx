@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-// import AdminLayout from '@/components/dashboard/AdminLayout';
+import AdminLayout from '@/components/dashboard/AdminLayout';
 import { 
   Upload, 
   Download, 
@@ -121,7 +121,8 @@ const AdminSubmissions = () => {
       }
     } catch (error) {
       console.error('Error evaluating submission:', error);
-      alert('Bağlantı hatası: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+      alert('Bağlantı hatası: ' + errorMessage);
     } finally {
       setIsEvaluating(false);
     }
@@ -201,12 +202,11 @@ const AdminSubmissions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-    <div className="space-y-8">
+    <AdminLayout>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ödev Teslimleri</h1>
           <p className="text-gray-600">Katılımcıların teslim ettiği ödevleri görüntüleyin ve değerlendirin</p>
         </div>
         <div className="flex items-center space-x-4">
@@ -796,8 +796,8 @@ const AdminSubmissions = () => {
         </div>
       )}
 
-    </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

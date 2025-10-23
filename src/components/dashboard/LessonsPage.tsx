@@ -27,13 +27,20 @@ interface Lesson {
   description: string;
   instructor: string;
   duration: string;
-  date: string;
-  type: 'video' | 'document' | 'live' | 'assignment';
-  url: string;
-  thumbnail?: string;
-  isCompleted?: boolean;
-  isRequired?: boolean;
-  tags?: string[];
+  youtubeUrl: string;
+  thumbnailUrl?: string;
+  category: string;
+  week: number;
+  tags: string;
+  showDate: string;
+  prerequisites?: string;
+  objectives?: string;
+  resources?: string;
+  isPublished: boolean;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const LessonsPage = () => {
@@ -43,141 +50,78 @@ const LessonsPage = () => {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Mock data - gerçek uygulamada API'den gelecek
+  // API'den dersleri çek
   useEffect(() => {
-    const mockLessons: Lesson[] = [
-      {
-        id: '1',
-        title: 'Python Temelleri',
-        description: 'Python programlama dilinin temel kavramları ve syntax yapısı',
-        instructor: 'Dr. Ahmet Yılmaz',
-        duration: '2 saat 30 dakika',
-        date: '2024-01-15',
-        type: 'video',
-        url: 'https://example.com/python-temelleri',
-        thumbnail: '/api/placeholder/400/225',
-        isCompleted: true,
-        isRequired: true,
-        tags: ['Python', 'Temel', 'Programlama']
-      },
-      {
-        id: '2',
-        title: 'Veri Yapıları ve Algoritmalar',
-        description: 'Temel veri yapıları ve algoritma tasarım prensipleri',
-        instructor: 'Prof. Dr. Mehmet Kaya',
-        duration: '3 saat',
-        date: '2024-01-20',
-        type: 'video',
-        url: 'https://example.com/veri-yapilari',
-        thumbnail: '/api/placeholder/400/225',
-        isCompleted: false,
-        isRequired: true,
-        tags: ['Algoritma', 'Veri Yapıları', 'İleri Seviye']
-      },
-      {
-        id: '3',
-        title: 'Web Geliştirme Temelleri',
-        description: 'HTML, CSS ve JavaScript ile web geliştirme',
-        instructor: 'Öğr. Gör. Ayşe Demir',
-        duration: '4 saat',
-        date: '2024-01-25',
-        type: 'live',
-        url: 'https://example.com/web-gelistirme',
-        isCompleted: false,
-        isRequired: true,
-        tags: ['Web', 'HTML', 'CSS', 'JavaScript']
-      },
-      {
-        id: '4',
-        title: 'Makine Öğrenmesi Giriş',
-        description: 'Makine öğrenmesi kavramları ve uygulamaları',
-        instructor: 'Dr. Fatma Özkan',
-        duration: '2 saat 45 dakika',
-        date: '2024-01-30',
-        type: 'video',
-        url: 'https://example.com/makine-ogrenmesi',
-        thumbnail: '/api/placeholder/400/225',
-        isCompleted: false,
-        isRequired: false,
-        tags: ['AI', 'Makine Öğrenmesi', 'Veri Bilimi']
-      },
-      {
-        id: '5',
-        title: 'Proje Yönetimi',
-        description: 'Yazılım projelerinde proje yönetimi teknikleri',
-        instructor: 'İnş. Müh. Can Yıldız',
-        duration: '1 saat 30 dakika',
-        date: '2024-02-05',
-        type: 'document',
-        url: 'https://example.com/proje-yonetimi.pdf',
-        isCompleted: false,
-        isRequired: false,
-        tags: ['Proje Yönetimi', 'İş Süreçleri']
+    const fetchLessons = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('search', searchTerm);
+        if (filterType !== 'all') params.append('category', filterType);
+        if (filterStatus !== 'all') params.append('week', filterStatus);
+
+        const response = await fetch(`/api/lessons?${params.toString()}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setLessons(data.lessons);
+        } else {
+          console.error('Error fetching lessons:', data.error);
+          setLessons([]);
+        }
+      } catch (error) {
+        console.error('Error fetching lessons:', error);
+        setLessons([]);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    // Simulate API call
-    setTimeout(() => {
-      setLessons(mockLessons);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    fetchLessons();
+  }, [searchTerm, filterType, filterStatus]);
 
-  const filteredLessons = lessons.filter(lesson => {
-    const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lesson.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lesson.instructor.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || lesson.type === filterType;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'completed' && lesson.isCompleted) ||
-                         (filterStatus === 'pending' && !lesson.isCompleted);
-    
-    return matchesSearch && matchesType && matchesStatus;
-  });
+  // API'den gelen veriler zaten filtrelenmiş, sadece client-side filtreleme
+  const filteredLessons = lessons;
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
+  const getTypeIcon = (category: string) => {
+    switch (category.toLowerCase()) {
       case 'video':
+      case 'youtube':
         return <Video className="w-5 h-5" />;
       case 'document':
+      case 'döküman':
         return <FileText className="w-5 h-5" />;
       case 'live':
+      case 'canlı':
         return <Play className="w-5 h-5" />;
       case 'assignment':
+      case 'ödev':
         return <BookOpen className="w-5 h-5" />;
       default:
-        return <BookOpen className="w-5 h-5" />;
+        return <Video className="w-5 h-5" />;
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
+  const getTypeColor = (category: string) => {
+    switch (category.toLowerCase()) {
       case 'video':
+      case 'youtube':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'document':
+      case 'döküman':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'live':
+      case 'canlı':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'assignment':
+      case 'ödev':
         return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'video':
-        return 'Video Ders';
-      case 'document':
-        return 'Döküman';
-      case 'live':
-        return 'Canlı Ders';
-      case 'assignment':
-        return 'Ödev';
-      default:
-        return 'Ders';
-    }
+  const getTypeLabel = (category: string) => {
+    return category || 'Ders';
   };
 
   if (loading) {
@@ -227,29 +171,35 @@ const LessonsPage = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ders Türü</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
               >
-                <option value="all">Tümü</option>
-                <option value="video">Video Ders</option>
-                <option value="live">Canlı Ders</option>
-                <option value="document">Döküman</option>
-                <option value="assignment">Ödev</option>
+                <option value="all">Tüm Kategoriler</option>
+                <option value="Genel">Genel</option>
+                <option value="Teknik">Teknik</option>
+                <option value="SoftSkill">Soft Skill</option>
+                <option value="Proje">Proje</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hafta</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
               >
-                <option value="all">Tümü</option>
-                <option value="completed">Tamamlanan</option>
-                <option value="pending">Bekleyen</option>
+                <option value="all">Tüm Haftalar</option>
+                <option value="1">Hafta 1</option>
+                <option value="2">Hafta 2</option>
+                <option value="3">Hafta 3</option>
+                <option value="4">Hafta 4</option>
+                <option value="5">Hafta 5</option>
+                <option value="6">Hafta 6</option>
+                <option value="7">Hafta 7</option>
+                <option value="8">Hafta 8</option>
               </select>
             </div>
             <div className="flex items-end">
@@ -271,27 +221,24 @@ const LessonsPage = () => {
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300"
             >
               {/* Thumbnail */}
-              {lesson.thumbnail && (
-                <div className="relative h-48 bg-gradient-to-br from-red-50 to-red-100">
+              <div className="relative h-48 bg-gradient-to-br from-red-50 to-red-100">
+                {lesson.thumbnailUrl ? (
+                  <img 
+                    src={lesson.thumbnailUrl} 
+                    alt={lesson.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    {getTypeIcon(lesson.type)}
+                    {getTypeIcon(lesson.category)}
                   </div>
-                  {lesson.isCompleted && (
-                    <div className="absolute top-4 right-4">
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
-                  )}
-                  {lesson.isRequired && (
-                    <div className="absolute top-4 left-4">
-                      <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                        Zorunlu
-                      </div>
-                    </div>
-                  )}
+                )}
+                <div className="absolute top-4 left-4">
+                  <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    Hafta {lesson.week}
+                  </div>
                 </div>
-              )}
+              </div>
 
               <div className="p-6">
                 {/* Header */}
@@ -300,9 +247,9 @@ const LessonsPage = () => {
                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                       {lesson.title}
                     </h3>
-                    <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(lesson.type)}`}>
-                      {getTypeIcon(lesson.type)}
-                      <span>{getTypeLabel(lesson.type)}</span>
+                    <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(lesson.category)}`}>
+                      {getTypeIcon(lesson.category)}
+                      <span>{getTypeLabel(lesson.category)}</span>
                     </div>
                   </div>
                 </div>
@@ -326,24 +273,24 @@ const LessonsPage = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{new Date(lesson.date).toLocaleDateString('tr-TR')}</span>
+                    <span>{new Date(lesson.showDate).toLocaleDateString('tr-TR')}</span>
                   </div>
                 </div>
 
                 {/* Tags */}
-                {lesson.tags && lesson.tags.length > 0 && (
+                {lesson.tags && lesson.tags.split(',').length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {lesson.tags.slice(0, 3).map((tag, index) => (
+                    {lesson.tags.split(',').slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
                       >
-                        {tag}
+                        {tag.trim()}
                       </span>
                     ))}
-                    {lesson.tags.length > 3 && (
+                    {lesson.tags.split(',').length > 3 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{lesson.tags.length - 3}
+                        +{lesson.tags.split(',').length - 3}
                       </span>
                     )}
                   </div>
@@ -352,30 +299,19 @@ const LessonsPage = () => {
                 {/* Action Button */}
                 <div className="flex items-center justify-between">
                   <a
-                    href={lesson.url}
+                    href={lesson.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                   >
-                    {lesson.type === 'video' || lesson.type === 'live' ? (
-                      <Play className="w-4 h-4" />
-                    ) : lesson.type === 'document' ? (
-                      <Download className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                    <span>
-                      {lesson.type === 'video' || lesson.type === 'live' ? 'İzle' : 
-                       lesson.type === 'document' ? 'İndir' : 'Görüntüle'}
-                    </span>
+                    <Play className="w-4 h-4" />
+                    <span>YouTube'da İzle</span>
                   </a>
                   
-                  {lesson.isCompleted && (
-                    <div className="flex items-center space-x-1 text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm font-medium">Tamamlandı</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-1 text-gray-500">
+                    <ExternalLink className="w-4 h-4" />
+                    <span className="text-sm">Dış Link</span>
+                  </div>
                 </div>
               </div>
             </motion.div>

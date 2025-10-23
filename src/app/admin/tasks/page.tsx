@@ -251,25 +251,18 @@ export default function AdminTasksPage() {
     <AdminLayout>
       <div className="space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Görev Yönetimi</h1>
-              <p className="text-red-100 text-lg">Bootcamp görevlerini oluşturun ve yönetin</p>
-            </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-white text-red-600 px-6 py-3 rounded-xl font-semibold hover:bg-red-50 transition-colors flex items-center space-x-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Yeni Görev</span>
-            </button>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-600">Bootcamp görevlerini oluşturun ve yönetin</p>
           </div>
-        </motion.div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Yeni Görev</span>
+          </button>
+        </div>
 
         {/* Tasks List */}
         <motion.div
