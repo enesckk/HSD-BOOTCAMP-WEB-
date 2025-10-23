@@ -61,6 +61,11 @@ export default function AdminMessagesPage() {
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Eğitmene Sor cevaplama states
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
+  const [replying, setReplying] = useState(false);
+
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
       router.push('/login');
@@ -205,6 +210,52 @@ export default function AdminMessagesPage() {
     } catch (error) {
       console.error('Error updating message:', error);
       showAlertMessage('Hata', 'Mesaj güncellenirken hata oluştu', false);
+    }
+  };
+
+  // Eğitmene Sor cevaplama fonksiyonu
+  const replyToQuestion = async () => {
+    if (!replyContent.trim()) {
+      showAlertMessage('Uyarı', 'Cevap boş olamaz', false);
+      return;
+    }
+
+    if (!selectedMessage || !user) {
+      showAlertMessage('Hata', 'Mesaj veya kullanıcı bilgisi bulunamadı', false);
+      return;
+    }
+
+    try {
+      setReplying(true);
+      const response = await fetch('/api/admin/channel-replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: selectedMessage.id,
+          content: replyContent,
+          adminId: user.id
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          showAlertMessage('Başarılı', 'Cevap gönderildi', true);
+          setShowReplyModal(false);
+          setReplyContent('');
+          setSelectedMessage(null);
+          fetchMessages(); // Mesajları yenile
+        } else {
+          showAlertMessage('Hata', data.error || 'Cevap gönderilemedi', false);
+        }
+      } else {
+        showAlertMessage('Hata', 'Cevap gönderilemedi', false);
+      }
+    } catch (error) {
+      console.error('Error replying to question:', error);
+      showAlertMessage('Hata', 'Cevap gönderilirken hata oluştu', false);
+    } finally {
+      setReplying(false);
     }
   };
 
@@ -638,6 +689,15 @@ export default function AdminMessagesPage() {
                         </button>
                       </>
                     )}
+                    {activeTab === 'ask-instructor' && !selectedMessage.unread && (
+                      <button
+                        onClick={() => setShowReplyModal(true)}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center space-x-2"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Cevapla</span>
+                      </button>
+                    )}
                   </div>
                   <div className="flex space-x-2">
                     {isEditing ? (
@@ -710,6 +770,84 @@ export default function AdminMessagesPage() {
                   </div>
                 </div>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Reply Modal */}
+        <AnimatePresence>
+          {showReplyModal && selectedMessage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                className="bg-white rounded-2xl shadow-xl w-full max-w-2xl"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900">Soruyu Cevapla</h3>
+                  <button
+                    onClick={() => {
+                      setShowReplyModal(false);
+                      setReplyContent('');
+                    }}
+                    className="p-2 rounded-lg hover:bg-gray-100"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Soru:</h4>
+                    <p className="text-gray-700">{selectedMessage.body}</p>
+                    <div className="mt-2 text-sm text-gray-500">
+                      <span className="font-medium">Gönderen:</span> {selectedMessage.fromUser?.fullName || 'Bilinmeyen'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cevabınız</label>
+                    <textarea
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                      rows={6}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-500"
+                      placeholder="Soruyu cevaplayın..."
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowReplyModal(false);
+                      setReplyContent('');
+                    }}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={replyToQuestion}
+                    disabled={replying || !replyContent.trim()}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium flex items-center space-x-2"
+                  >
+                    {replying ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <MessageSquare className="w-4 h-4" />
+                    )}
+                    <span>{replying ? 'Gönderiliyor...' : 'Cevapla'}</span>
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
