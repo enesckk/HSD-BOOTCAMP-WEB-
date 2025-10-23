@@ -340,7 +340,7 @@ const ChatPage = () => {
 
     setIsAskingInstructor(true);
     try {
-      const response = await fetch('/api/chat/ask-instructor', {
+      const response = await fetch('/api/private-messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -349,6 +349,7 @@ const ChatPage = () => {
         body: JSON.stringify({
           content: askInstructorMessage,
           tags: askInstructorTags,
+          toRole: 'ADMIN' // Admin'e özel mesaj gönder
         }),
       });
 
@@ -356,7 +357,7 @@ const ChatPage = () => {
       if (data.success) {
         setAskInstructorMessage('');
         setAskInstructorTags('');
-        alert('Sorunuz eğitmenlere iletildi!');
+        alert('Sorunuz admin\'e özel mesaj olarak iletildi!');
       } else {
         alert('Soru gönderilemedi: ' + data.error);
       }
@@ -910,7 +911,7 @@ const ChatPage = () => {
                   <h4 className="text-xl font-bold text-gray-900">Eğitmene Sor</h4>
                 </div>
                 <p className="text-gray-600 mb-6 text-center">
-                  Sorularınızı eğitmenlere iletebilirsiniz. Sorularınız otomatik olarak eğitmen paneline iletilecektir.
+                  Sorularınızı admin'e özel mesaj olarak iletebilirsiniz. Mesajınız sadece admin tarafından görülebilir ve size özel olarak cevaplanacaktır.
                 </p>
                 <div className="space-y-4">
                   <div>
