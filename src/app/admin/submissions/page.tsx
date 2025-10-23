@@ -316,32 +316,6 @@ const AdminSubmissions = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => setSelectedSubmission(submission)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {submission.submissionType === 'FILE' && submission.fileUrl && (
-                          <a
-                            href={submission.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
-                        )}
-                        {submission.submissionType === 'LINK' && submission.linkUrl && (
-                          <a
-                            href={submission.linkUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </a>
-                        )}
-                        <button
                           onClick={() => {
                             setSelectedSubmission(submission);
                             setShowDetailModal(true);
