@@ -200,6 +200,13 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       color: 'text-red-600'
     },
     {
+      id: 'lessons',
+      label: 'Ders Linkleri',
+      icon: Presentation,
+      href: '/dashboard/lessons',
+      color: 'text-red-600'
+    },
+    {
       id: 'channels',
       label: 'Kanallar',
       icon: MessageSquare,
