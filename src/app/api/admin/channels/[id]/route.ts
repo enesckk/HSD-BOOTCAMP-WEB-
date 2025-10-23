@@ -57,39 +57,54 @@ export async function DELETE(
 
     console.log('Found channel:', channel.name);
 
-    // Sıralı silme işlemi
+    // Basit silme işlemi - Cascade delete kullan
     console.log('Starting deletion process...');
     
-    // Önce kanaldaki tüm mesajları sil
-    console.log('Deleting channel messages...');
-    const deletedMessages = await prisma.channelMessage.deleteMany({
-      where: { channelId: id }
-    });
-    console.log('Deleted messages:', deletedMessages.count);
+    try {
+      // Sadece kanalı sil - Prisma cascade delete ile ilişkili verileri temizler
+      console.log('Deleting channel with cascade...');
+      const deletedChannel = await prisma.channel.delete({
+        where: { id }
+      });
+      console.log('Deleted channel:', deletedChannel.name);
 
-    // Kanal okuma kayıtlarını sil
-    console.log('Deleting user channel reads...');
-    const deletedReads = await prisma.userChannelRead.deleteMany({
-      where: { channelId: id }
-    });
-    console.log('Deleted read records:', deletedReads.count);
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Kanal başarıyla silindi',
+        deletedChannel: deletedChannel.name
+      });
+    } catch (deleteError) {
+      console.error('Error during channel deletion:', deleteError);
+      
+      // Eğer cascade delete çalışmazsa manuel silme
+      console.log('Cascade delete failed, trying manual deletion...');
+      
+      // Önce kanaldaki tüm mesajları sil
+      const deletedMessages = await prisma.channelMessage.deleteMany({
+        where: { channelId: id }
+      });
+      console.log('Deleted messages:', deletedMessages.count);
 
-    // Sonra kanalı sil
-    console.log('Deleting channel...');
-    const deletedChannel = await prisma.channel.delete({
-      where: { id }
-    });
-    console.log('Deleted channel:', deletedChannel.name);
+      // Kanal okuma kayıtlarını sil
+      const deletedReads = await prisma.userChannelRead.deleteMany({
+        where: { channelId: id }
+      });
+      console.log('Deleted read records:', deletedReads.count);
 
-    const result = { deletedChannel, deletedMessages, deletedReads };
+      // Sonra kanalı sil
+      const deletedChannel = await prisma.channel.delete({
+        where: { id }
+      });
+      console.log('Deleted channel:', deletedChannel.name);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Kanal başarıyla silindi',
-      deletedChannel: result.deletedChannel.name,
-      deletedMessages: result.deletedMessages.count,
-      deletedReads: result.deletedReads.count
-    });
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Kanal başarıyla silindi (manuel)',
+        deletedChannel: deletedChannel.name,
+        deletedMessages: deletedMessages.count,
+        deletedReads: deletedReads.count
+      });
+    }
   } catch (error) {
     console.error('Error deleting channel:', error);
     return NextResponse.json(
