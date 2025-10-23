@@ -207,13 +207,6 @@ const ParticipantLayout = ({ children }: ParticipantLayoutProps) => {
       color: 'text-red-600'
     },
     {
-      id: 'chat',
-      label: 'Chat',
-      icon: MessageSquare,
-      href: '/chat',
-      color: 'text-red-600'
-    },
-    {
       id: 'tasks',
       label: 'Haftalık Görevler',
       icon: Upload,

@@ -76,7 +76,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: 'Görevler', href: '/admin/tasks', icon: CheckSquare },
     { name: 'Ödev Teslimleri', href: '/admin/submissions', icon: Upload },
     { name: 'Kanallar', href: '/admin/channels', icon: Hash },
-    { name: 'Chat', href: '/chat', icon: MessageSquare },
     { name: 'Duyurular', href: '/admin/announcements', icon: Bell },
     { name: 'Mesajlar', href: '/admin/messages', icon: MessageSquare },
     { name: 'Sertifikalar', href: '/admin/certificates', icon: Award },
