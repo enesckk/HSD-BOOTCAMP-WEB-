@@ -86,6 +86,45 @@ export async function PUT(
       },
     });
 
+    // Revizyon durumunda kullanıcıya bildirim gönder
+    if (status === 'NEEDS_REVISION' && submission.userId) {
+      await prisma.notification.create({
+        data: {
+          type: 'TASK_REVISION',
+          title: 'Ödev Revizyon Gerekli',
+          message: `Ödeviniz revizyon gerektiriyor: ${feedback || 'Lütfen ödevinizi gözden geçirin.'}`,
+          userId: submission.userId,
+          isRead: false
+        }
+      });
+    }
+
+    // Onay durumunda kullanıcıya bildirim gönder
+    if (status === 'APPROVED' && submission.userId) {
+      await prisma.notification.create({
+        data: {
+          type: 'TASK_APPROVED',
+          title: 'Ödev Onaylandı',
+          message: `Ödeviniz onaylandı!${score ? ` Puanınız: ${score}/100` : ''}`,
+          userId: submission.userId,
+          isRead: false
+        }
+      });
+    }
+
+    // Red durumunda kullanıcıya bildirim gönder
+    if (status === 'REJECTED' && submission.userId) {
+      await prisma.notification.create({
+        data: {
+          type: 'TASK_REJECTED',
+          title: 'Ödev Reddedildi',
+          message: `Ödeviniz reddedildi: ${feedback || 'Lütfen ödevinizi yeniden gözden geçirin.'}`,
+          userId: submission.userId,
+          isRead: false
+        }
+      });
+    }
+
     return NextResponse.json({
       success: true,
       submission: {

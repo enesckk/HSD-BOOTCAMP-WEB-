@@ -76,6 +76,12 @@ const AdminSubmissions = () => {
 
   const handleStatusChange = async (submissionId: string, newStatus: string) => {
     try {
+      // Onay durumunda puan zorunlu
+      if (newStatus === 'APPROVED' && (!score || score < 0 || score > 100)) {
+        alert('Onay durumunda puan (0-100) zorunludur!');
+        return;
+      }
+
       const response = await fetch(`/api/admin/submissions/${submissionId}`, {
         method: 'PUT',
         headers: {
@@ -84,7 +90,7 @@ const AdminSubmissions = () => {
         body: JSON.stringify({ 
           status: newStatus,
           feedback: feedback,
-          score: score,
+          score: newStatus === 'APPROVED' ? score : null, // Sadece onay durumunda puan gönder
         }),
       });
 
@@ -93,9 +99,14 @@ const AdminSubmissions = () => {
         setShowFeedbackModal(false);
         setFeedback('');
         setScore(0);
+        alert(`Ödev ${newStatus === 'APPROVED' ? 'onaylandı' : newStatus === 'NEEDS_REVISION' ? 'revizyon için işaretlendi' : 'reddedildi'}!`);
+      } else {
+        const errorData = await response.json();
+        alert('Hata: ' + (errorData.error || 'Bilinmeyen hata'));
       }
     } catch (error) {
       console.error('Error updating submission:', error);
+      alert('Hata: ' + error);
     }
   };
 
@@ -541,7 +552,9 @@ const AdminSubmissions = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Puan (0-100)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Puan (0-100) <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -549,7 +562,12 @@ const AdminSubmissions = () => {
                   value={score}
                   onChange={(e) => setScore(parseInt(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="0-100 arası puan girin"
+                  required
                 />
+                <p className="text-sm text-gray-500 mt-1">
+                  Onay durumunda puan zorunludur
+                </p>
               </div>
 
               <div>
