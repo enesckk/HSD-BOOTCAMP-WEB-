@@ -155,7 +155,6 @@ export default function AdminParticipantsPage() {
                   <th className="px-4 py-3 text-left">Telefon</th>
                   <th className="px-4 py-3 text-left">Üniversite</th>
                   <th className="px-4 py-3 text-left">Bölüm</th>
-                  <th className="px-4 py-3 text-left">Rol</th>
                   <th className="px-4 py-3 text-left">Rolü Değiştir</th>
                   <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
                   <th className="px-4 py-3 text-left">İşlemler</th>
@@ -170,7 +169,6 @@ export default function AdminParticipantsPage() {
                     <td className="px-4 py-3">{p.phone}</td>
                     <td className="px-4 py-3">{p.university}</td>
                     <td className="px-4 py-3">{p.department}</td>
-                    <td className="px-4 py-3">{p.teamRole || '-'}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         {['LIDER','TEKNIK_SORUMLU','TASARIMCI'].map(r => (
@@ -252,3 +250,4 @@ export default function AdminParticipantsPage() {
     </AdminLayout>
   );
 }
+
