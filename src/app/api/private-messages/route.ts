@@ -113,6 +113,17 @@ export async function POST(request: NextRequest) {
       messageType: 'question'
     });
     
+    // Önce kullanıcıların var olup olmadığını kontrol et
+    const fromUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+    console.log('From user exists:', !!fromUser);
+    
+    const toUserCheck = await prisma.user.findUnique({
+      where: { id: toUser.id }
+    });
+    console.log('To user exists:', !!toUserCheck);
+    
     const message = await prisma.message.create({
       data: {
         fromUserId: userId,
