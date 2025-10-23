@@ -95,6 +95,7 @@ model Message {
   toRole      String   // "admin", "mentor", "participant"
   subject     String
   body        String
+  messageType String?  @default("text") // "text", "question", "announcement"
   unread      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
