@@ -46,18 +46,46 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedChannels = await Promise.all(channels.map(async (channel) => {
-      // Son 24 saat içindeki mesaj sayısını hesapla
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+      let unreadCount = 0;
       
-      const recentMessageCount = await prisma.channelMessage.count({
-        where: {
-          channelId: channel.id,
-          createdAt: {
-            gte: yesterday
+      if (userId) {
+        // Kullanıcının bu kanalı ne zaman okuduğunu bul
+        const userRead = await prisma.userChannelRead.findUnique({
+          where: {
+            userId_channelId: {
+              userId: userId,
+              channelId: channel.id
+            }
           }
-        }
-      });
+        });
+
+        // Son okuma zamanından sonraki mesaj sayısını hesapla
+        const lastReadAt = userRead?.lastReadAt || new Date(0); // Hiç okumamışsa başlangıç tarihi
+        
+        unreadCount = await prisma.channelMessage.count({
+          where: {
+            channelId: channel.id,
+            createdAt: {
+              gt: lastReadAt
+            },
+            isDeleted: false
+          }
+        });
+      } else {
+        // Kullanıcı ID yoksa son 24 saatteki mesaj sayısını göster
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        unreadCount = await prisma.channelMessage.count({
+          where: {
+            channelId: channel.id,
+            createdAt: {
+              gte: yesterday
+            },
+            isDeleted: false
+          }
+        });
+      }
 
       return {
         id: channel.id,
@@ -66,7 +94,7 @@ export async function GET(request: NextRequest) {
         description: channel.description,
         category: channel.category,
         isPrivate: channel.isPrivate,
-        messageCount: recentMessageCount, // Son 24 saatteki mesaj sayısı
+        messageCount: unreadCount, // Gerçek okunmamış mesaj sayısı
         lastMessage: channel.messages[0] ? {
           content: channel.messages[0].content,
           user: channel.messages[0].user.fullName,

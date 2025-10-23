@@ -172,6 +172,9 @@ const ChatPage = () => {
           'x-user-id': user.id
         }
       });
+      
+      // Kanal okundu işaretlendikten sonra kanalları yeniden yükle
+      fetchChannels();
     } catch (error) {
       console.error('Error marking channel as read:', error);
     }

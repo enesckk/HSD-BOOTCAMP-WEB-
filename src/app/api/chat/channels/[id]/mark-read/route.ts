@@ -16,15 +16,21 @@ export async function POST(
       );
     }
 
-    // Kullanıcının bu kanaldaki tüm mesajları okundu olarak işaretle
-    // Bu işlem için bir read status tablosu oluşturmak gerekebilir
-    // Şimdilik basit bir çözüm olarak, kullanıcının son görüntüleme zamanını güncelleyelim
-    
-    // Kullanıcının kanal görüntüleme zamanını güncelle
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        updatedAt: new Date()
+    // Kullanıcının bu kanalı okundu olarak işaretle
+    await prisma.userChannelRead.upsert({
+      where: {
+        userId_channelId: {
+          userId: userId,
+          channelId: id
+        }
+      },
+      update: {
+        lastReadAt: new Date()
+      },
+      create: {
+        userId: userId,
+        channelId: id,
+        lastReadAt: new Date()
       }
     });
 
