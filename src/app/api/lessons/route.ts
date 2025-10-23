@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     const whereClause: any = {
-      isPublished: true,
-      isActive: true
+      // Tüm dersleri göster (yayınlanmamış olanları da)
     };
 
     if (category && category !== 'all') {

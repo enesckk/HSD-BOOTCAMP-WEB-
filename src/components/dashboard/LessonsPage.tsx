@@ -1,131 +1,95 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Play,
-  ExternalLink,
-  Calendar,
-  Clock,
-  User,
-  BookOpen,
-  Video,
-  FileText,
-  Download,
-  Eye,
-  ChevronRight,
-  Search,
-  Filter,
-  Star,
-  Award,
-  CheckCircle
-} from 'lucide-react';
+import { BookOpen, ExternalLink, Calendar, Tag, Search, Filter } from 'lucide-react';
 
 interface Lesson {
   id: string;
   title: string;
   description: string;
-  instructor: string;
-  duration: string;
   youtubeUrl: string;
-  thumbnailUrl?: string;
+  duration: string;
+  instructor: string;
   category: string;
   week: number;
-  tags: string;
-  showDate: string;
-  prerequisites?: string;
-  objectives?: string;
-  resources?: string;
   isPublished: boolean;
   isActive: boolean;
+  thumbnailUrl: string;
+  tags: string;
+  showDate: string;
   order: number;
+  prerequisites: string;
+  objectives: string;
+  resources: string;
   createdAt: string;
   updatedAt: string;
 }
 
-const LessonsPage = () => {
+const LessonsPage: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedWeek, setSelectedWeek] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // API'den dersleri çek
   useEffect(() => {
-    const fetchLessons = async () => {
-      try {
-        const params = new URLSearchParams();
-        if (searchTerm) params.append('search', searchTerm);
-        if (filterType !== 'all') params.append('category', filterType);
-        if (filterStatus !== 'all') params.append('week', filterStatus);
-
-        console.log('Fetching lessons with params:', params.toString());
-        const response = await fetch(`/api/lessons?${params.toString()}`);
-        const data = await response.json();
-
-        console.log('Lessons API response:', data);
-
-        if (data.success) {
-          console.log('Setting lessons:', data.lessons);
-          setLessons(data.lessons);
-        } else {
-          console.error('Error fetching lessons:', data.error);
-          setLessons([]);
-        }
-      } catch (error) {
-        console.error('Error fetching lessons:', error);
-        setLessons([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLessons();
-  }, [searchTerm, filterType, filterStatus]);
+  }, []);
 
-  // API'den gelen veriler zaten filtrelenmiş, sadece client-side filtreleme
-  const filteredLessons = lessons;
+  const fetchLessons = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching lessons...');
+      
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (selectedWeek !== 'all') params.append('week', selectedWeek);
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
-  const getTypeIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'video':
-      case 'youtube':
-        return <Video className="w-5 h-5" />;
-      case 'document':
-      case 'döküman':
-        return <FileText className="w-5 h-5" />;
-      case 'live':
-      case 'canlı':
-        return <Play className="w-5 h-5" />;
-      case 'assignment':
-      case 'ödev':
-        return <BookOpen className="w-5 h-5" />;
-      default:
-        return <Video className="w-5 h-5" />;
+      const response = await fetch(`/api/lessons?${params.toString()}`);
+      const data = await response.json();
+      
+      console.log('Lessons API response:', data);
+      
+      if (data.success) {
+        setLessons(data.lessons || []);
+        console.log('Lessons set:', data.lessons);
+      } else {
+        console.error('API error:', data.error);
+        setLessons([]);
+      }
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+      setLessons([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTypeColor = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'video':
-      case 'youtube':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'document':
-      case 'döküman':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'live':
-      case 'canlı':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'assignment':
-      case 'ödev':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  useEffect(() => {
+    fetchLessons();
+  }, [searchTerm, selectedWeek, selectedCategory]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchLessons();
   };
 
-  const getTypeLabel = (category: string) => {
-    return category || 'Ders';
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedWeek('all');
+    setSelectedCategory('all');
+  };
+
+  const getWeekOptions = () => {
+    const weeks = [...new Set(lessons.map(lesson => lesson.week))].sort((a, b) => a - b);
+    return weeks;
+  };
+
+  const getCategoryOptions = () => {
+    const categories = [...new Set(lessons.map(lesson => lesson.category))].filter(Boolean);
+    return categories;
   };
 
   if (loading) {
@@ -141,195 +105,199 @@ const LessonsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Ders Linkleri</h1>
-            <p className="text-gray-600 mt-2">Eğitim programındaki tüm derslere buradan erişebilirsiniz</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              Toplam: {lessons.length} ders
-            </div>
-            <div className="text-sm text-green-600">
-              Tamamlanan: {lessons.filter(l => l.isCompleted).length}
-            </div>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Ders Linkleri</h1>
+          <p className="text-gray-600">Tüm ders materyallerine buradan erişebilirsiniz</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Arama</label>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <form onSubmit={handleSearch} className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Ders, eğitmen veya konu ara..."
+                  placeholder="Ders ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+            </form>
+
+            {/* Week Filter */}
+            <div className="lg:w-48">
               <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
-              >
-                <option value="all">Tüm Kategoriler</option>
-                <option value="Genel">Genel</option>
-                <option value="Teknik">Teknik</option>
-                <option value="SoftSkill">Soft Skill</option>
-                <option value="Proje">Proje</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Hafta</label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               >
                 <option value="all">Tüm Haftalar</option>
-                <option value="1">Hafta 1</option>
-                <option value="2">Hafta 2</option>
-                <option value="3">Hafta 3</option>
-                <option value="4">Hafta 4</option>
-                <option value="5">Hafta 5</option>
-                <option value="6">Hafta 6</option>
-                <option value="7">Hafta 7</option>
-                <option value="8">Hafta 8</option>
+                {getWeekOptions().map(week => (
+                  <option key={week} value={week.toString()}>
+                    Hafta {week}
+                  </option>
+                ))}
               </select>
             </div>
-            <div className="flex items-end">
-              <button className="w-full bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2">
-                <Filter className="w-4 h-4" />
-                <span>Filtrele</span>
-              </button>
+
+            {/* Category Filter */}
+            <div className="lg:w-48">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="all">Tüm Kategoriler</option>
+                {getCategoryOptions().map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Clear Filters */}
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Temizle
+            </button>
           </div>
         </div>
 
-        {/* Lessons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {console.log('Rendering lessons:', filteredLessons)}
-          {filteredLessons.length === 0 ? (
-            <div className="lg:col-span-3 text-center py-10 text-gray-500">
-              <BookOpen className="w-12 h-12 mx-auto mb-4" />
-              <p className="text-lg">Henüz ders bulunamadı.</p>
-            </div>
-          ) : (
-            filteredLessons.map((lesson) => (
-            <motion.div
-              key={lesson.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300"
-            >
-              {/* Thumbnail */}
-              <div className="relative h-48 bg-gradient-to-br from-red-50 to-red-100">
-                {lesson.thumbnailUrl ? (
-                  <img 
-                    src={lesson.thumbnailUrl} 
-                    alt={lesson.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {getTypeIcon(lesson.category)}
-                  </div>
-                )}
-                <div className="absolute top-4 left-4">
-                  <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                    Hafta {lesson.week}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                      {lesson.title}
-                    </h3>
-                    <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(lesson.category)}`}>
-                      {getTypeIcon(lesson.category)}
-                      <span>{getTypeLabel(lesson.category)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {lesson.description}
-                </p>
-
-                {/* Instructor */}
-                <div className="flex items-center space-x-2 mb-4">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{lesson.instructor}</span>
-                </div>
-
-                {/* Duration and Date */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-4 h-4" />
-                    <span>{lesson.duration}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(lesson.showDate).toLocaleDateString('tr-TR')}</span>
-                  </div>
-                </div>
-
-                {/* Tags */}
-                {lesson.tags && lesson.tags.split(',').length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {lesson.tags.split(',').slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                      >
-                        {tag.trim()}
-                      </span>
-                    ))
-                    {lesson.tags.split(',').length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{lesson.tags.split(',').length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Action Button */}
-                <div className="flex items-center justify-between">
-                  <a
-                    href={lesson.youtubeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                  >
-                    <Play className="w-4 h-4" />
-                    <span>YouTube'da İzle</span>
-                  </a>
-                  
-                  <div className="flex items-center space-x-1 text-gray-500">
-                    <ExternalLink className="w-4 h-4" />
-                    <span className="text-sm">Dış Link</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-            )
-          )}
+        {/* Results */}
+        <div className="mb-4">
+          <p className="text-gray-600">
+            {lessons.length} ders bulundu
+          </p>
         </div>
 
+        {/* Lessons Grid */}
+        {lessons.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Ders bulunamadı</h3>
+            <p className="text-gray-500">
+              {searchTerm || selectedWeek !== 'all' || selectedCategory !== 'all'
+                ? 'Arama kriterlerinize uygun ders bulunamadı.'
+                : 'Henüz ders eklenmemiş.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lessons.map((lesson, index) => (
+              <motion.div
+                key={lesson.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow ${
+                  lesson.isPublished && lesson.isActive 
+                    ? 'border-gray-200' 
+                    : 'border-orange-200 bg-orange-50'
+                }`}
+              >
+                <div className="p-6">
+                  {/* Thumbnail */}
+                  {lesson.thumbnailUrl && (
+                    <div className="mb-4">
+                      <img 
+                        src={lesson.thumbnailUrl} 
+                        alt={lesson.title}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {/* Status Badge */}
+                  {(!lesson.isPublished || !lesson.isActive) && (
+                    <div className="mb-4">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        Henüz Yayınlanmadı
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {lesson.title}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Hafta {lesson.week}</span>
+                        </div>
+                        {lesson.category && (
+                          <div className="flex items-center gap-1">
+                            <Tag className="h-4 w-4" />
+                            <span>{lesson.category}</span>
+                          </div>
+                        )}
+                      </div>
+                      {lesson.instructor && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          <strong>Eğitmen:</strong> {lesson.instructor}
+                        </p>
+                      )}
+                      {lesson.duration && lesson.duration !== "00:00" && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          <strong>Süre:</strong> {lesson.duration}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {lesson.description && (
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      {lesson.description}
+                    </p>
+                  )}
+
+                  {/* Tags */}
+                  {lesson.tags && (
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {lesson.tags.split(',').slice(0, 3).map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                        >
+                          {tag.trim()}
+                        </span>
+                      ))}
+                      {lesson.tags.split(',').length > 3 && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          +{lesson.tags.split(',').length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Link Button */}
+                  {lesson.youtubeUrl && (
+                    <a
+                      href={lesson.youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      YouTube'da İzle
+                    </a>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
