@@ -8,8 +8,26 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { title, description, youtubeUrl, duration, instructor, category, week, tags, showDate, prerequisites, objectives, resources } = body;
     const { id } = await params;
+
+    // Eğer sadece isPublished güncelleniyorsa
+    if (body.hasOwnProperty('isPublished') && Object.keys(body).length === 1) {
+      const updatedLesson = await (prisma as any).lesson.update({
+        where: { id: id },
+        data: {
+          isPublished: body.isPublished,
+          isActive: body.isPublished // isPublished true ise isActive de true yap
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        lesson: updatedLesson,
+      });
+    }
+
+    // Tam güncelleme için
+    const { title, description, youtubeUrl, duration, instructor, category, week, tags, showDate, prerequisites, objectives, resources } = body;
 
     if (!title || !description || !youtubeUrl || !instructor) {
       return NextResponse.json(
