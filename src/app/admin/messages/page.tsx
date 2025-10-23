@@ -87,7 +87,11 @@ export default function AdminMessagesPage() {
     try {
       if (activeTab === 'ask-instructor') {
         // Eğitmene Sor mesajlarını getir
-        const response = await fetch('/api/private-messages');
+        const response = await fetch('/api/private-messages', {
+          headers: {
+            'x-user-id': user?.id || ''
+          }
+        });
         const data = await response.json();
         setMessages(data.messages || []);
       } else {

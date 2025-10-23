@@ -90,20 +90,27 @@ const ChannelsPage = () => {
     try {
       const response = await fetch(`/api/chat/channels/${selectedChannel.id}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user.id
+        },
         body: JSON.stringify({
           content: newMessage,
-          messageType: 'text',
-          userId: user.id
+          messageType: 'text'
         })
       });
 
       if (response.ok) {
         setNewMessage('');
         fetchMessages(selectedChannel.id);
+      } else {
+        const errorData = await response.json();
+        console.error('Error sending message:', errorData);
+        alert('Mesaj gönderilemedi: ' + (errorData.error || 'Bilinmeyen hata'));
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      alert('Mesaj gönderilemedi: ' + error);
     }
   };
 
