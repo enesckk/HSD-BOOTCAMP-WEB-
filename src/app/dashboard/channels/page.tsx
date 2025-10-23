@@ -18,6 +18,7 @@ const ChannelsPage = () => {
   const [askInstructorTags, setAskInstructorTags] = useState('');
   const [isAskingInstructor, setIsAskingInstructor] = useState(false);
   const [privateMessages, setPrivateMessages] = useState([]);
+  const [showAskInstructor, setShowAskInstructor] = useState(false);
 
   useEffect(() => {
     fetchChannels();
@@ -26,7 +27,14 @@ const ChannelsPage = () => {
 
   useEffect(() => {
     if (selectedChannel) {
-      fetchMessages(selectedChannel.id);
+      // Eğitmene Sor kanalı seçildiyse özel mesajları göster
+      if (selectedChannel.name === 'egitmene-sor' || selectedChannel.displayName === 'Eğitmene Sor') {
+        setShowAskInstructor(true);
+        setMessages([]); // Normal mesajları temizle
+      } else {
+        setShowAskInstructor(false);
+        fetchMessages(selectedChannel.id);
+      }
     }
   }, [selectedChannel]);
 
@@ -206,8 +214,8 @@ const ChannelsPage = () => {
           {/* Ana İçerik Alanı */}
           <div className="lg:col-span-3 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
             
-            {/* Eğitmene Sor - Sadece Katılımcılar için */}
-            {user?.role === 'PARTICIPANT' && (
+            {/* Eğitmene Sor - Sadece Eğitmene Sor kanalı seçildiğinde ve katılımcılar için */}
+            {showAskInstructor && user?.role === 'PARTICIPANT' && (
               <div className="bg-red-50 border-b border-red-200 p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
@@ -262,8 +270,8 @@ const ChannelsPage = () => {
               </div>
             )}
 
-            {/* Admin/Eğitmen için Özel Mesaj Görüntüleme */}
-            {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+            {/* Admin/Eğitmen için Özel Mesaj Görüntüleme - Sadece Eğitmene Sor kanalı seçildiğinde */}
+            {showAskInstructor && (user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
               <div className="bg-blue-50 border-b border-blue-200 p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -313,8 +321,8 @@ const ChannelsPage = () => {
               </div>
             )}
 
-            {/* Kanal Mesajları */}
-            {selectedChannel ? (
+            {/* Normal Kanal Mesajları - Eğitmene Sor kanalı değilse */}
+            {selectedChannel && !showAskInstructor && (
               <>
                 {/* Kanal Header */}
                 <div className="p-6 border-b border-gray-200 bg-gray-50">
@@ -383,7 +391,10 @@ const ChannelsPage = () => {
                   </div>
                 </div>
               </>
-            ) : (
+            )}
+
+            {/* Kanal seçilmediğinde */}
+            {!selectedChannel && (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
