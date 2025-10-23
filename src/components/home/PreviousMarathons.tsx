@@ -63,72 +63,68 @@ const PreviousMarathons: React.FC = () => {
   const previousEvents = [
     {
       id: 1,
-      year: "2024",
+      year: "Temmuz 2025",
       title: "Huawei Cloud AI Bootcamp",
       subtitle: "Yapay Zeka ve Makine Öğrenmesi",
       location: "Online",
-      participants: "50+",
-      projects: "15+",
+      participants: "2000+",
       duration: "8 Hafta",
       description: "Huawei Cloud AI teknolojileri üzerine kapsamlı eğitim programı. Katılımcılar AI/ML servisleri ile pratik deneyim kazandı.",
       achievements: [
-        "50+ katılımcı eğitim aldı",
-        "15+ AI projesi geliştirildi",
+        "2000+ katılımcı eğitim aldı",
         "Huawei Cloud AI servisleri kullanıldı",
         "Sertifikasyon programı tamamlandı"
       ],
       images: [
-        "/images/bootcamp-ai-2024-1.jpg",
-        "/images/bootcamp-ai-2024-2.jpg",
-        "/images/bootcamp-ai-2024-3.jpg"
+        "/ai1.png",
+        "/ai2.png",
+        "/ai3.png"
       ],
-      link: "https://developer.huawei.com/tr/activity/ai-bootcamp-2024"
+      link: "https://developer.huawei.com/tr/activity/ai-bootcamp-2025"
     },
     {
       id: 2,
-      year: "2023",
+      year: "Nisan 2025",
       title: "Huawei Cloud DevOps Bootcamp",
       subtitle: "DevOps ve CI/CD",
       location: "Online",
-      participants: "40+",
-      projects: "12+",
+      participants: "2000+",
       duration: "6 Hafta",
       description: "DevOps metodolojileri ve sürekli entegrasyon süreçleri üzerine yoğun eğitim programı. Huawei Cloud DevOps araçları ile pratik deneyim.",
       achievements: [
-        "40+ DevOps uzmanı yetiştirildi",
-        "12+ CI/CD pipeline geliştirildi",
+        "2000+ DevOps uzmanı yetiştirildi",
         "Huawei Cloud DevOps araçları kullanıldı",
         "Sertifikasyon programı tamamlandı"
       ],
       images: [
-        "/images/bootcamp-devops-2023-1.jpg",
-        "/images/bootcamp-devops-2023-2.jpg",
-        "/images/bootcamp-devops-2023-3.jpg"
+        "/devops1.png",
+        "/devops2.png",
+        "/devops3.png"
       ],
-      link: "https://developer.huawei.com/tr/activity/devops-bootcamp-2023"
+      link: "https://developer.huawei.com/tr/activity/devops-bootcamp-2025"
     },
     {
       id: 3,
-      year: "2022",
+      year: "Şubat 2025",
       title: "HSD Türkiye Bootcamp",
       subtitle: "Deprem ve Doğal Afet Yönetimi",
       location: "İstanbul",
-      participants: "25+",
-      projects: "6+",
+      participants: "30",
+      projects: "10",
       duration: "2 Gün",
       description: "Deprem ve doğal afetlerin teknoloji ile yönetimi konusunda fikir maratonu. Katılımcılar erken uyarı sistemleri, hasar tespiti ve koordinasyon çözümleri geliştirdi.",
       achievements: [
-        "25+ katılımcı ile başarılı maraton",
-        "6+ afet yönetimi projesi",
+        "30 katılımcı ile başarılı maraton",
+        "10 afet yönetimi projesi",
         "Deprem erken uyarı sistemleri geliştirildi",
         "Huawei Cloud teknolojileri kullanıldı"
       ],
       images: [
-        "/images/marathon-disaster-2022-1.jpg",
-        "/images/marathon-disaster-2022-2.jpg",
-        "/images/marathon-disaster-2022-3.jpg"
+        "/afet1.jpg",
+        "/afet2.jpg",
+        "/afet3.jpg"
       ],
-      link: "https://developer.huawei.com/tr/activity/disaster-management-marathon-2022"
+      link: "https://developer.huawei.com/tr/activity/disaster-management-marathon-2025"
     }
   ];
 
@@ -136,13 +132,13 @@ const PreviousMarathons: React.FC = () => {
     {
       icon: <Users className="w-6 h-6" />,
       title: "Toplam Katılımcı",
-      number: "145+",
+      number: "4030+",
       description: "Teknoloji uzmanları eğitim aldı"
     },
     {
       icon: <Award className="w-6 h-6" />,
       title: "Geliştirilen Proje",
-      number: "41+",
+      number: "110+",
       description: "Pratik projeler tamamlandı"
     },
     {
@@ -261,14 +257,10 @@ const PreviousMarathons: React.FC = () => {
                       </p>
                       
                       {/* Event Details */}
-                      <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="bg-[var(--accent)]/10 rounded-xl p-4 text-center">
                           <div className="text-2xl font-bold text-[var(--accent)] mb-1">{event.participants}</div>
                           <div className="text-sm text-[var(--text-muted)] font-medium">Katılımcı</div>
-                        </div>
-                        <div className="bg-[var(--primary)]/10 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-[var(--primary)] mb-1">{event.projects}</div>
-                          <div className="text-sm text-[var(--text-muted)] font-medium">Proje</div>
                         </div>
                         <div className="bg-[var(--accent)]/10 rounded-xl p-4 text-center">
                           <div className="text-2xl font-bold text-[var(--accent)] mb-1">{event.duration}</div>
@@ -310,22 +302,11 @@ const PreviousMarathons: React.FC = () => {
                             transition={{ duration: 0.5 }}
                             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                             style={{
-                              backgroundImage: `url(${event.images[event.id === 1 ? currentSlide1 : currentSlide2]})`
+                              backgroundImage: `url(${event.images[event.id === 1 ? currentSlide1 : currentSlide2]})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center'
                             }}
                           >
-                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                              <div className="text-center text-white">
-                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                  <Trophy className="w-8 h-8 text-white" />
-                                </div>
-                                <p className="text-white font-bold text-lg">
-                                  {event.title}
-                                </p>
-                                <p className="text-white/80 text-sm mt-1">
-                                  {event.location} • {event.year}
-                                </p>
-                              </div>
-                            </div>
                           </motion.div>
                         </AnimatePresence>
 
@@ -415,11 +396,11 @@ const PreviousMarathons: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-[var(--text-muted)]">145+ teknoloji uzmanı eğitim aldı</span>
+                    <span className="text-[var(--text-muted)]">4030+ teknoloji uzmanı eğitim aldı</span>
                   </div>
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-[var(--text-muted)]">41+ pratik proje tamamlandı</span>
+                    <span className="text-[var(--text-muted)]">110+ pratik proje tamamlandı</span>
                   </div>
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
