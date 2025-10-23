@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Brain, Cloud, Cpu, Network, Bot, Shield } from 'lucide-react';
 
 type FloatingTechIconsProps = {
@@ -11,17 +11,31 @@ type FloatingTechIconsProps = {
 const ICONS = [Brain, Cloud, Cpu, Network, Bot, Shield];
 
 const FloatingTechIcons: React.FC<FloatingTechIconsProps> = ({ density = 'medium', color = 'var(--accent)' }) => {
-  const count = density === 'high' ? 14 : density === 'low' ? 6 : 10;
-  const items = Array.from({ length: count }).map((_, i) => {
-    const Icon = ICONS[i % ICONS.length];
-    const top = Math.random() * 70 + 10; // % olarak
-    const left = Math.random() * 80 + 10; // % olarak
-    const size = Math.random() * 18 + 16; // px
-    const delay = Math.random() * 4;
-    const duration = 6 + Math.random() * 6;
-    const opacity = 0.08 + Math.random() * 0.12;
-    return { i, Icon, top, left, size, delay, duration, opacity };
-  });
+  const [items, setItems] = useState<Array<{
+    i: number;
+    Icon: any;
+    top: number;
+    left: number;
+    size: number;
+    delay: number;
+    duration: number;
+    opacity: number;
+  }>>([]);
+
+  useEffect(() => {
+    const count = density === 'high' ? 14 : density === 'low' ? 6 : 10;
+    const generatedItems = Array.from({ length: count }).map((_, i) => {
+      const Icon = ICONS[i % ICONS.length];
+      const top = Math.random() * 70 + 10; // % olarak
+      const left = Math.random() * 80 + 10; // % olarak
+      const size = Math.random() * 18 + 16; // px
+      const delay = Math.random() * 4;
+      const duration = 6 + Math.random() * 6;
+      const opacity = 0.08 + Math.random() * 0.12;
+      return { i, Icon, top, left, size, delay, duration, opacity };
+    });
+    setItems(generatedItems);
+  }, [density]);
 
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
@@ -32,7 +46,7 @@ const FloatingTechIcons: React.FC<FloatingTechIconsProps> = ({ density = 'medium
           .float-anim { animation: none !important; }
         }
       `}</style>
-      {items.map(({ i, Icon, top, left, size, delay, duration, opacity }) => (
+      {items.length > 0 && items.map(({ i, Icon, top, left, size, delay, duration, opacity }) => (
         <Icon
           key={i}
           className="float-anim"
