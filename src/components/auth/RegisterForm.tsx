@@ -8,7 +8,6 @@ import {
   Phone, 
   GraduationCap, 
   BookOpen, 
-  Users, 
   Lock, 
   Eye, 
   EyeOff,
@@ -16,9 +15,6 @@ import {
   XCircle,
   AlertCircle,
   ArrowRight,
-  Shield,
-  Zap,
-  Target,
   ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -31,15 +27,9 @@ interface RegisterFormData {
   phone: string;
   university: string;
   department: string;
-  teamRole: string;
   password: string;
 }
 
-const teamRoles = [
-  { value: 'Lider', label: 'Takım Lideri', icon: Shield, description: 'Takım koordinasyonu ve proje yönetimi' },
-  { value: 'Teknik Sorumlu', label: 'Teknik Sorumlu', icon: Zap, description: 'Teknik geliştirme ve kodlama' },
-  { value: 'Tasarımcı', label: 'Tasarımcı', icon: Target, description: 'UI/UX tasarım ve kullanıcı deneyimi' }
-];
 
 const RegisterForm = () => {
   const { register, checkMarathonId } = useAuth();
@@ -52,7 +42,6 @@ const RegisterForm = () => {
     phone: '',
     university: '',
     department: '',
-    teamRole: '',
     password: ''
   });
 
@@ -119,7 +108,6 @@ const RegisterForm = () => {
     if (!formData.phone.trim()) newErrors.phone = 'Telefon numarası gereklidir';
     if (!formData.university.trim()) newErrors.university = 'Üniversite adı gereklidir';
     if (!formData.department.trim()) newErrors.department = 'Bölüm adı gereklidir';
-    if (!formData.teamRole) newErrors.teamRole = 'Takım rolü seçmelisiniz';
     if (!formData.password) newErrors.password = 'Şifre gereklidir';
     else if (formData.password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalıdır';
 
@@ -398,63 +386,6 @@ const RegisterForm = () => {
               </div>
             </div>
 
-              {/* Team Role Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                Takım Rolü *
-              </label>
-                <div className="grid md:grid-cols-3 gap-4">
-                {teamRoles.map((role) => {
-                    const IconComponent = role.icon;
-                  return (
-                      <motion.div
-                      key={role.value}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                        className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 ${
-                          formData.teamRole === role.value
-                            ? 'border-red-500 bg-red-50'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                        onClick={() => handleInputChange('teamRole', role.value)}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            formData.teamRole === role.value ? 'bg-red-600' : 'bg-gray-100'
-                          }`}>
-                            <IconComponent className={`w-5 h-5 ${
-                              formData.teamRole === role.value ? 'text-white' : 'text-gray-600'
-                            }`} />
-                          </div>
-                          <div>
-                            <h3 className={`font-medium ${
-                              formData.teamRole === role.value ? 'text-red-900' : 'text-gray-900'
-                            }`}>
-                              {role.label}
-                            </h3>
-                            <p className={`text-sm ${
-                              formData.teamRole === role.value ? 'text-red-700' : 'text-gray-600'
-                            }`}>
-                              {role.description}
-                            </p>
-                          </div>
-                        </div>
-                        {formData.teamRole === role.value && (
-                          <div className="absolute top-2 right-2">
-                            <CheckCircle className="w-5 h-5 text-red-600" />
-                      </div>
-                        )}
-                      </motion.div>
-                  );
-                })}
-              </div>
-              {errors.teamRole && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <span className="mr-1">⚠</span>
-                    {errors.teamRole}
-                  </p>
-              )}
-            </div>
 
               {/* Password */}
               <div>

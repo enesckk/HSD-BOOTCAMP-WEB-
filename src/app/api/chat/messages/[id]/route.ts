@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { action, content } = body;
+    const { id } = await params;
 
     const userId = request.headers.get('x-user-id');
     if (!userId) {
@@ -57,7 +58,7 @@ export async function PUT(
     }
 
     const message = await prisma.channelMessage.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         user: {
@@ -93,7 +94,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -104,9 +105,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Mesajı kalıcı olarak sil
     await prisma.channelMessage.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json({

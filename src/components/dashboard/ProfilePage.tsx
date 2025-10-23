@@ -9,13 +9,11 @@ import {
   Phone, 
   GraduationCap, 
   BookOpen, 
-  Users, 
   Edit3,
   Save,
   X,
   Camera,
   Shield,
-  Award,
   Loader2
 } from 'lucide-react';
 
@@ -30,7 +28,6 @@ const ProfilePage = () => {
     phone: '',
     university: '',
     department: '',
-    teamRole: 'Lider',
     marathonId: ''
   });
   const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
@@ -44,7 +41,6 @@ const ProfilePage = () => {
         phone: user.phone || '',
         university: user.university || '',
         department: user.department || '',
-        teamRole: user.teamRole || 'Lider',
         marathonId: user.marathonId || ''
       });
       setPasswords({ current: '', next: '', confirm: '' });
@@ -118,7 +114,6 @@ const ProfilePage = () => {
         phone: user.phone || '',
         university: user.university || '',
         department: user.department || '',
-        teamRole: user.teamRole || 'Lider',
         marathonId: user.marathonId || ''
       });
     }
@@ -203,31 +198,6 @@ const ProfilePage = () => {
             </div>
           </motion.div>
 
-          {/* Team Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Takım Bilgileri</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Users className="w-5 h-5 text-red-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Rol</p>
-                  <p className="font-medium text-gray-900">{formData.teamRole}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Award className="w-5 h-5 text-red-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Durum</p>
-                  <p className="font-medium text-red-600">Aktif</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
 
         {/* Profile Form */}
@@ -335,14 +305,6 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* Team Role (readonly) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Takım Rolü
-                </label>
-                <p className="text-gray-900 py-2">{formData.teamRole}</p>
-                <p className="text-xs text-gray-500 mt-1">Bu alan değiştirilemez</p>
-              </div>
             </div>
 
             {/* Password Update */}

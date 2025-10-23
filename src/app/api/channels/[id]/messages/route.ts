@@ -6,15 +6,16 @@ const prisma = new PrismaClient();
 // GET - Belirli kanalın mesajlarını getir
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
+    const { id } = await params;
 
     const messages = await prisma.channelMessage.findMany({
-      where: { channelId: params.id },
+      where: { channelId: id },
       include: {
         user: {
           select: { 
@@ -42,10 +43,11 @@ export async function GET(
 // POST - Kanal mesajı gönder
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { content, messageType, userId } = await request.json();
+    const { id } = await params;
 
     // Kullanıcı doğrulama (basit)
     if (!userId) {
@@ -57,7 +59,7 @@ export async function POST(
 
     const message = await prisma.channelMessage.create({
       data: {
-        channelId: params.id,
+        channelId: id,
         userId,
         content,
         messageType: messageType || 'text'

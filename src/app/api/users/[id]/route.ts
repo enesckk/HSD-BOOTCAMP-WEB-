@@ -6,11 +6,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     if (!user) {
@@ -32,18 +33,19 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { fullName, phone, university, department, email, password } = body;
+    const { id } = await params;
 
     // Email değişiyorsa, başka kullanıcıda aynı email var mı kontrol et
     if (email) {
       const existingUser = await prisma.user.findFirst({
         where: {
           email: email,
-          id: { not: params.id }
+          id: { not: id }
         }
       });
 
@@ -73,7 +75,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data
     });
 

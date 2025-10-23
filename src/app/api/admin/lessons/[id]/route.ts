@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // PUT - Ders güncelle
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { title, description, youtubeUrl, duration, instructor, category, week, tags, showDate, prerequisites, objectives, resources } = body;
+    const { id } = await params;
 
     if (!title || !description || !youtubeUrl || !instructor) {
       return NextResponse.json(
@@ -23,7 +24,7 @@ export async function PUT(
 
     // Veritabanında güncelle
     const updatedLesson = await (prisma as any).lesson.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title,
         description,
@@ -57,11 +58,12 @@ export async function PUT(
 // DELETE - Ders sil
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await (prisma as any).lesson.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json({

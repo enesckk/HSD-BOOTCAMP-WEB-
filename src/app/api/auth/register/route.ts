@@ -11,10 +11,10 @@ const REFRESH_TOKEN_EXPIRES_IN = '30d';
 export async function POST(request: NextRequest) {
   try {
     const body: RegisterRequest = await request.json();
-    const { marathonId, email, fullName, phone, university, department, teamRole, password } = body;
+    const { marathonId, email, fullName, phone, university, department, password } = body;
 
     // Validation
-    if (!marathonId || !email || !fullName || !phone || !university || !department || !teamRole || !password) {
+    if (!marathonId || !email || !fullName || !phone || !university || !department || !password) {
       return NextResponse.json(
         { message: 'Tüm alanlar gereklidir' },
         { status: 400 }
@@ -56,21 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate team role
-    const validTeamRoles = ['Lider', 'Teknik Sorumlu', 'Tasarımcı'];
-    if (!validTeamRoles.includes(teamRole)) {
-      return NextResponse.json(
-        { message: 'Geçersiz takım rolü' },
-        { status: 400 }
-      );
-    }
-
-    // Map Turkish team roles to enum values
-    const teamRoleMap: { [key: string]: 'LIDER' | 'TEKNIK_SORUMLU' | 'TASARIMCI' } = {
-      'Lider': 'LIDER',
-      'Teknik Sorumlu': 'TEKNIK_SORUMLU',
-      'Tasarımcı': 'TASARIMCI'
-    };
 
     // Hash password
     const saltRounds = 10;
@@ -85,7 +70,6 @@ export async function POST(request: NextRequest) {
         phone,
         university,
         department,
-        teamRole: teamRoleMap[teamRole],
         role: 'PARTICIPANT',
         isActive: true,
       },
@@ -132,7 +116,6 @@ export async function POST(request: NextRequest) {
       phone: newUser.phone,
       university: newUser.university,
       department: newUser.department,
-      teamRole: newUser.teamRole,
       role: newUser.role,
       isActive: newUser.isActive,
       createdAt: newUser.createdAt.toISOString(),

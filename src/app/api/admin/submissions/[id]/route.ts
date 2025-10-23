@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET - Tek teslim getir
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const submission = await prisma.task.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         user: {
           select: {
@@ -58,11 +59,12 @@ export async function GET(
 // PUT - Teslim durumunu güncelle
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { status, feedback, score } = body;
+    const { id } = await params;
 
     const updateData: any = {};
     
@@ -71,7 +73,7 @@ export async function PUT(
     if (score !== undefined) updateData.score = score;
 
     const submission = await prisma.task.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         user: {

@@ -3,16 +3,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
+    const { id } = await params;
 
     const messages = await prisma.channelMessage.findMany({
       where: {
-        channelId: params.id,
+        channelId: id,
         isDeleted: false
       },
       include: {
@@ -64,11 +65,12 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { content, messageType, parentId, tags, isAnnouncement } = body;
+    const { id } = await params;
 
     // Kullanıcı bilgisini header'dan al (AuthContext'ten gelecek)
     const userId = request.headers.get('x-user-id');
@@ -86,7 +88,7 @@ export async function POST(
         parentId: parentId || null,
         tags: tags || null,
         isPinned: isAnnouncement || false,
-        channelId: params.id,
+        channelId: id,
         userId
       },
       include: {
