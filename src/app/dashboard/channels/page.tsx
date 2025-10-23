@@ -133,12 +133,14 @@ const ChannelsPage = () => {
       });
 
       const data = await response.json();
+      console.log('Ask instructor response:', data);
       if (data.success) {
         setAskInstructorMessage('');
         setAskInstructorTags('');
         alert('Sorunuz admin\'e özel mesaj olarak iletildi!');
         fetchPrivateMessages();
       } else {
+        console.error('Ask instructor failed:', data);
         alert('Soru gönderilemedi: ' + data.error);
       }
     } catch (error) {

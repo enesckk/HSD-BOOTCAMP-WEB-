@@ -57,8 +57,12 @@ export async function GET(request: NextRequest) {
 // POST - Özel mesaj gönder
 export async function POST(request: NextRequest) {
   try {
+    console.log('Private message POST request received');
     const userId = request.headers.get('x-user-id');
+    console.log('User ID from header:', userId);
+    
     if (!userId) {
+      console.log('No user ID found in headers');
       return NextResponse.json(
         { success: false, error: 'Kullanıcı bilgisi bulunamadı' },
         { status: 401 }
@@ -66,9 +70,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Request body:', body);
     const { content, tags, toRole = 'ADMIN' } = body;
 
     if (!content?.trim()) {
+      console.log('No content provided');
       return NextResponse.json(
         { success: false, error: 'Mesaj içeriği gereklidir' },
         { status: 400 }
@@ -76,6 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Alıcı kullanıcıyı bul (ADMIN veya INSTRUCTOR)
+    console.log('Looking for user with role:', toRole);
     let toUser;
     if (toRole === 'ADMIN') {
       toUser = await prisma.user.findFirst({
@@ -87,7 +94,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('Found toUser:', toUser ? toUser.id : 'null');
     if (!toUser) {
+      console.log('No user found with role:', toRole);
       return NextResponse.json(
         { success: false, error: 'Alıcı kullanıcı bulunamadı' },
         { status: 404 }
@@ -95,6 +104,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Özel mesaj oluştur
+    console.log('Creating message with data:', {
+      fromUserId: userId,
+      toUserId: toUser.id,
+      toRole: toRole,
+      subject: tags ? `[${tags}] Eğitmene Sor` : 'Eğitmene Sor',
+      body: content,
+      messageType: 'question'
+    });
+    
     const message = await prisma.message.create({
       data: {
         fromUserId: userId,
@@ -142,7 +160,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error sending private message:', error);
     return NextResponse.json(
-      { success: false, error: 'Mesaj gönderilemedi' },
+      { success: false, error: 'Mesaj gönderilemedi: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata') },
       { status: 500 }
     );
   }
