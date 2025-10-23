@@ -122,7 +122,7 @@ export const emailTemplates = {
           <h2 style="color: #1f2937; margin-bottom: 20px;">Merhaba {{fullName}}!</h2>
           
           <p style="color: #374151; line-height: 1.6; margin-bottom: 20px;">
-            HSD Türkiye Bootcamp programına katıldığınız için teşekkürler! 
+            HSD Türkiye Bootcamp programına katıldığınız için sizi tebrik ederiz! 
             Bu heyecan verici yolculukta sizinle birlikte olmaktan mutluluk duyuyoruz.
           </p>
           
