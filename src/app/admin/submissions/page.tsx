@@ -661,67 +661,6 @@ const AdminSubmissions = () => {
         </div>
       )}
 
-      {/* Feedback Modal */}
-      {showFeedbackModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Ödev Değerlendirme</h3>
-              <button
-                onClick={() => setShowFeedbackModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Geri Bildirim</label>
-                <textarea
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="Ödev hakkında geri bildirim yazın..."
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowFeedbackModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  İptal
-                </button>
-                <button
-                  onClick={() => handleStatusChange(selectedSubmission.id, 'APPROVED')}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Onayla
-                </button>
-                <button
-                  onClick={() => handleStatusChange(selectedSubmission.id, 'NEEDS_REVISION')}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-                >
-                  Revizyon İste
-                </button>
-                <button
-                  onClick={() => handleStatusChange(selectedSubmission.id, 'REJECTED')}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Reddet
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
     </AdminLayout>
   );
