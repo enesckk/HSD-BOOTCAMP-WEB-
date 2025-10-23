@@ -1,32 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - Eğitmene sorulan soruları listele
+// GET - Eğitmene sorulan soruları listele (Messages)
 export async function GET(request: NextRequest) {
   try {
-    // Eğitmene Sor DM kanalını bul
-    const dmChannel = await (prisma as any).channel.findFirst({
+    // Admin'e gönderilen mesajları getir
+    const questions = await prisma.message.findMany({
       where: {
-        name: 'egitmene-sor-dm'
-      }
-    });
-
-    if (!dmChannel) {
-      return NextResponse.json({
-        success: true,
-        questions: [],
-      });
-    }
-
-    // Bu kanaldaki mesajları getir
-    const questions = await (prisma as any).channelMessage.findMany({
-      where: {
-        channelId: dmChannel.id,
-        isDeleted: false,
+        toRole: 'ADMIN',
         messageType: 'question'
       },
       include: {
-        user: {
+        fromUser: {
           select: {
             id: true,
             fullName: true,
@@ -42,14 +27,14 @@ export async function GET(request: NextRequest) {
     // Soruları formatla
     const formattedQuestions = questions.map((question: any) => ({
       id: question.id,
-      content: question.content,
-      tags: question.tags || '',
+      content: question.body,
+      tags: question.subject.includes('[') ? question.subject.split(']')[0].replace('[', '') : '',
       createdAt: question.createdAt.toISOString(),
       user: {
-        fullName: question.user.fullName,
-        email: question.user.email
+        fullName: question.fromUser?.fullName || 'Bilinmeyen',
+        email: question.fromUser?.email || ''
       },
-      isAnswered: question.isAnswered || false
+      isAnswered: question.unread === false
     }));
 
     return NextResponse.json({
