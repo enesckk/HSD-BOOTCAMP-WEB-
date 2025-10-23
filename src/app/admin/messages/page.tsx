@@ -45,7 +45,7 @@ export default function AdminMessagesPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'compose'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'compose' | 'ask-instructor'>('inbox');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -85,10 +85,17 @@ export default function AdminMessagesPage() {
 
   const fetchMessages = async () => {
     try {
-      const box = activeTab === 'sent' ? 'sent' : 'inbox';
-      const response = await fetch(`/api/messages?box=${box}`);
-      const data = await response.json();
-      setMessages(data.messages || []);
+      if (activeTab === 'ask-instructor') {
+        // Eğitmene Sor mesajlarını getir
+        const response = await fetch('/api/private-messages');
+        const data = await response.json();
+        setMessages(data.messages || []);
+      } else {
+        const box = activeTab === 'sent' ? 'sent' : 'inbox';
+        const response = await fetch(`/api/messages?box=${box}`);
+        const data = await response.json();
+        setMessages(data.messages || []);
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -296,6 +303,17 @@ export default function AdminMessagesPage() {
               Gönderilen Mesajlar
             </button>
             <button
+              onClick={() => setActiveTab('ask-instructor')}
+              className={`px-6 py-4 text-sm font-semibold flex items-center gap-2 transition-colors ${
+                activeTab === 'ask-instructor' 
+                  ? 'text-red-600 border-b-2 border-red-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              Eğitmene Sor
+            </button>
+            <button
               onClick={() => setActiveTab('compose')}
               className={`px-6 py-4 text-sm font-semibold flex items-center gap-2 transition-colors ${
                 activeTab === 'compose' 
@@ -471,6 +489,11 @@ export default function AdminMessagesPage() {
                               Gönderen: {message.fromUser?.fullName || 'Sistem'}
                             </span>
                           )}
+                          {activeTab === 'ask-instructor' && (
+                            <span>
+                              Gönderen: {message.fromUser?.fullName || 'Bilinmeyen Kullanıcı'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -553,13 +576,20 @@ export default function AdminMessagesPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Alıcı</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {activeTab === 'ask-instructor' ? 'Gönderen' : 'Alıcı'}
+                    </label>
                     <p className="text-gray-900">
-                      {selectedMessage.toUser ? 
-                        `${selectedMessage.toUser.fullName} (${selectedMessage.toUser.email})` :
-                        selectedMessage.toRole === 'participant' ? 'Tüm Katılımcılar' : 
-                        'Belirtilmemiş'
-                      }
+                      {activeTab === 'ask-instructor' ? (
+                        selectedMessage.fromUser ? 
+                          `${selectedMessage.fromUser.fullName} (${selectedMessage.fromUser.email})` :
+                          'Bilinmeyen Kullanıcı'
+                      ) : (
+                        selectedMessage.toUser ? 
+                          `${selectedMessage.toUser.fullName} (${selectedMessage.toUser.email})` :
+                          selectedMessage.toRole === 'participant' ? 'Tüm Katılımcılar' : 
+                          'Belirtilmemiş'
+                      )}
                     </p>
                   </div>
 
