@@ -18,7 +18,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ eyebrow, title, lead, cla
       className={`text-center mb-20 ${className ?? ''}`}
     >
       {eyebrow && (
-        <div className="inline-flex items-center space-x-2 bg-white border border-[#2563EB]/30 text-[#2563EB] px-6 py-2 rounded-full text-sm font-semibold mb-6">
+        <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur border border-[color:var(--accent)]/30 text-[color:var(--accent)] px-5 py-1.5 rounded-full text-sm font-semibold mb-6">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[color:var(--accent)]" />
           <span>{eyebrow}</span>
         </div>
       )}

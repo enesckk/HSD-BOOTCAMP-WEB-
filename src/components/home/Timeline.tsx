@@ -15,229 +15,181 @@ import {
   Play,
   Flag,
   ArrowRight,
-  CheckCircle2
+  BookOpen
 } from 'lucide-react';
 
 const Timeline: React.FC = () => {
   const timelineEvents = [
     {
-      date: "Hafta 1",
-      time: "Salı & Perşembe 15:00",
+      week: "Hafta 1",
       title: "Kubernetes Temelleri",
       description: "Deployment, Pod, Service, Namespace gibi temel Kubernetes kaynakları ve CCE platformu tanıtımı.",
-      icon: <Zap className="w-5 h-5" />,
-      status: "training",
-      badge: "Eğitim Haftası"
+      icon: <Zap className="w-6 h-6" />,
+      duration: "4 Saat",
+      topics: ["Kubernetes Temelleri", "CCE Platformu", "Pod ve Container"]
     },
     {
-      date: "Hafta 2",
-      time: "Salı & Perşembe 15:00",
+      week: "Hafta 2",
       title: "Konfigürasyon & Veri Yönetimi",
       description: "ConfigMap, Secret, Persistent Volume ve Huawei OBS entegrasyonu ile veri yönetimi.",
-      icon: <Target className="w-5 h-5" />,
-      status: "training",
-      badge: "Eğitim Haftası"
+      icon: <Target className="w-6 h-6" />,
+      duration: "4 Saat",
+      topics: ["ConfigMap & Secret", "Persistent Volume", "Huawei OBS"]
     },
     {
-      date: "Hafta 3",
-      time: "Salı & Perşembe 15:00",
+      week: "Hafta 3",
       title: "İzleme & Container Yönetimi",
       description: "AOM servisi ile monitoring, SWR ile container imaj yönetimi ve CCE deployment.",
-      icon: <Play className="w-5 h-5" />,
-      status: "training",
-      badge: "Eğitim Haftası"
+      icon: <Play className="w-6 h-6" />,
+      duration: "4 Saat",
+      topics: ["AOM Monitoring", "SWR Container", "CCE Deployment"]
     },
     {
-      date: "Hafta 4",
-      time: "Salı & Perşembe 15:00",
+      week: "Hafta 4",
       title: "Ağ Yönetimi & Sertifikasyon",
       description: "Ingress ile ağ yönetimi, proje geliştirme ve HCCDA-Cloud Native sertifikasyon hazırlığı.",
-      icon: <Flag className="w-5 h-5" />,
-      status: "project",
-      badge: "Sertifikasyon Haftası"
+      icon: <Flag className="w-6 h-6" />,
+      duration: "4 Saat",
+      topics: ["Ingress Ağ Yönetimi", "Proje Geliştirme", "HCCDA Sertifikasyon"]
     }
   ];
 
   return (
-    <section id="timeline" className="relative py-24 bg-white">
-      {/* Subtle Background Pattern - Apple Style */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+    <section id="timeline" className="relative py-20 bg-[#F8FAFC]">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           
-          {/* Section Header - Professional Style */}
+          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-white border border-[#2563EB]/30 text-[#2563EB] px-6 py-2 rounded-full text-sm font-semibold mb-8">
-              <Calendar className="w-4 h-4 text-[#2563EB]" />
-              <span>Etkinlik Takvimi</span>
+            <div className="inline-flex items-center space-x-2 bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              <Calendar className="w-4 h-4" />
+              <span>Eğitim Programı</span>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              Eğitim <span className="text-red-600">Programı</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
+              Eğitim <span className="text-[var(--primary)]">Takvimi</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              4 haftalık online eğitim programı ile <span className="font-semibold text-red-600">Kubernetes ve container yönetimi</span> konusunda 
-              uzmanlaşın ve HCCDA sertifikası kazanın
+            <p className="text-lg text-[var(--text-muted)] max-w-4xl mx-auto leading-relaxed">
+              4 haftalık online eğitim programı ile Kubernetes ve container yönetimi konusunda uzmanlaşın ve HCCDA sertifikası kazanın
             </p>
           </motion.div>
 
-          {/* Professional Zigzag Timeline */}
+          {/* Timeline */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="relative max-w-6xl mx-auto"
+            className="relative"
           >
             {/* Timeline Line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#2563EB] via-[#2563EB] to-[#E31B23] transform -translate-x-1/2 rounded-full"></div>
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--primary)] to-[var(--accent)]"></div>
             
-            <div className="space-y-16">
-              {timelineEvents.map((event, index) => {
-                const isLeft = index % 2 === 0;
-                return (
-                  <motion.div
-                    key={event.date}
-                    initial={{ opacity: 0, x: isLeft ? -80 : 80 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: index * 0.15 }}
-                    viewport={{ once: true }}
-                    className="relative w-full"
-                  >
-                    {/* Left Side Card */}
-                    {isLeft && (
-                      <div className="w-5/12 pr-8 relative z-10 float-left">
-                        <motion.div
-                          whileHover={{ scale: 1.02, y: -5 }}
-                          className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
-                        >
-                          {/* Top Accent Line */}
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-                          
-                          {/* Badge */}
-                          <div className="inline-flex items-center space-x-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 border border-red-100">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                            <span>{event.badge}</span>
-                          </div>
-
-                          {/* Date and Time */}
-                          <div className="flex items-center space-x-4 mb-4">
-                            <div className="flex items-center space-x-2 text-gray-500">
-                              <Calendar className="w-3 h-3" />
-                              <span className="text-xs font-medium">{event.date}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              <span className="text-xs font-medium">{event.time}</span>
-                            </div>
-                          </div>
-
-                          {/* Title */}
-                          <h3 className="text-xl font-bold text-gray-900 mb-4 leading-tight">{event.title}</h3>
-
-                          {/* Description */}
-                          <p className="text-gray-600 leading-relaxed mb-6 text-sm">{event.description}</p>
-
-                          {/* Action Indicator */}
-                          <div className="flex items-center space-x-2 text-red-600 group">
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                            <span className="text-xs font-semibold">
-                              {event.status === 'training' 
-                                ? 'Eğitim modülü' 
-                                : event.status === 'project' 
-                                ? 'Proje geliştirme' 
-                                : 'Eğitim süreci'
-                              }
-                            </span>
-                          </div>
-                        </motion.div>
-                      </div>
-                    )}
-
-                    {/* Center Icon */}
-                    <div className="absolute left-1/2 transform -translate-x-1/2 z-20">
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-xl border-3 border-white relative"
-                      >
-                        <div className="text-white text-lg">
-                          {event.icon}
-                        </div>
-                        {/* Glow Effect */}
-                        <div className="absolute inset-0 bg-red-500 rounded-full opacity-20 blur-md"></div>
-                      </motion.div>
+            <div className="space-y-12">
+              {timelineEvents.map((event, index) => (
+                <motion.div
+                  key={event.week}
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="relative flex items-start space-x-8"
+                >
+                  {/* Timeline Dot */}
+                  <div className="flex-shrink-0 relative z-10">
+                    <div className="w-16 h-16 bg-[var(--primary)] rounded-2xl flex items-center justify-center shadow-lg">
+                      <div className="text-white">{event.icon}</div>
                     </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {index + 1}
+                    </div>
+                  </div>
 
-                    {/* Right Side Card */}
-                    {!isLeft && (
-                      <div className="w-5/12 pl-8 relative z-10 float-right">
-                        <motion.div
-                          whileHover={{ scale: 1.02, y: -5 }}
-                          className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
-                        >
-                          {/* Top Accent Line */}
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
-                          
-                          {/* Badge */}
-                          <div className="inline-flex items-center space-x-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 border border-red-100">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                            <span>{event.badge}</span>
+                  {/* Content Card */}
+                  <div className="flex-1">
+                    <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <div className="inline-flex items-center space-x-2 bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full text-sm font-semibold mb-3">
+                            <span>{event.week}</span>
                           </div>
-
-                          {/* Date and Time */}
-                          <div className="flex items-center space-x-4 mb-4">
-                            <div className="flex items-center space-x-2 text-gray-500">
-                              <Calendar className="w-3 h-3" />
-                              <span className="text-xs font-medium">{event.date}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              <span className="text-xs font-medium">{event.time}</span>
-                            </div>
-                          </div>
-
-                          {/* Title */}
-                          <h3 className="text-xl font-bold text-gray-900 mb-4 leading-tight">{event.title}</h3>
-
-                          {/* Description */}
-                          <p className="text-gray-600 leading-relaxed mb-6 text-sm">{event.description}</p>
-
-                          {/* Action Indicator */}
-                          <div className="flex items-center space-x-2 text-red-600 group">
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                            <span className="text-xs font-semibold">
-                              {event.status === 'training' 
-                                ? 'Eğitim modülü' 
-                                : event.status === 'project' 
-                                ? 'Proje geliştirme' 
-                                : 'Eğitim süreci'
-                              }
-                            </span>
-                          </div>
-                        </motion.div>
+                          <h3 className="text-2xl font-bold text-[var(--text)] mb-2">{event.title}</h3>
+                          <p className="text-[var(--text-muted)] leading-relaxed">{event.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-[var(--text-muted)] mb-1">Süre</div>
+                          <div className="text-lg font-bold text-[var(--primary)]">{event.duration}</div>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Clear float */}
-                    <div className="clear-both"></div>
-                  </motion.div>
-                );
-              })}
+                      {/* Topics */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {event.topics.map((topic, topicIndex) => (
+                          <div key={topicIndex} className="flex items-center space-x-2 bg-[var(--accent)]/5 rounded-lg p-3">
+                            <CheckCircle className="w-4 h-4 text-[var(--accent)] flex-shrink-0" />
+                            <span className="text-sm text-[var(--text-muted)]">{topic}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
+
+          {/* Summary Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            viewport={{ once: true }}
+            className="mt-16"
+          >
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-[var(--text)] mb-4">Program Özeti</h3>
+                <p className="text-[var(--text-muted)]">4 haftalık eğitim programının genel bilgileri</p>
+              </div>
+              
+              <div className="grid md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-[var(--primary)] rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-[var(--text)] mb-1">4</div>
+                  <div className="text-sm text-[var(--text-muted)]">Hafta</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-[var(--accent)] rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Clock className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-[var(--text)] mb-1">16</div>
+                  <div className="text-sm text-[var(--text-muted)]">Saat</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-[var(--primary)] rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-[var(--text)] mb-1">4</div>
+                  <div className="text-sm text-[var(--text-muted)]">Modül</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-[var(--accent)] rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Award className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-[var(--text)] mb-1">1</div>
+                  <div className="text-sm text-[var(--text-muted)]">Sertifika</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
         </div>
       </div>
     </section>

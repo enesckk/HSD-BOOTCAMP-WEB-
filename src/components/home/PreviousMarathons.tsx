@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   Calendar,
   Users,
@@ -14,8 +14,47 @@ import {
   CheckCircle,
   ExternalLink,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Play,
+  Clock,
+  BookOpen
 } from 'lucide-react';
+
+// Animasyonlu sayaç bileşeni
+const AnimatedCounter: React.FC<{ 
+  target: number; 
+  suffix?: string; 
+  duration?: number;
+  prefix?: string;
+}> = ({ target, suffix = '', duration = 1200, prefix = '' }) => {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isInView) return;
+    
+    let startTime: number;
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(target * easeOutQuart));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [isInView, target, duration]);
+
+  return (
+    <span ref={ref} className="font-bold text-3xl">
+      {prefix}{count}{suffix}
+    </span>
+  );
+};
 
 const PreviousMarathons: React.FC = () => {
   const [currentSlide1, setCurrentSlide1] = useState(0);
@@ -30,6 +69,7 @@ const PreviousMarathons: React.FC = () => {
       location: "Online",
       participants: "50+",
       projects: "15+",
+      duration: "8 Hafta",
       description: "Huawei Cloud AI teknolojileri üzerine kapsamlı eğitim programı. Katılımcılar AI/ML servisleri ile pratik deneyim kazandı.",
       achievements: [
         "50+ katılımcı eğitim aldı",
@@ -52,6 +92,7 @@ const PreviousMarathons: React.FC = () => {
       location: "Online",
       participants: "40+",
       projects: "12+",
+      duration: "6 Hafta",
       description: "DevOps metodolojileri ve sürekli entegrasyon süreçleri üzerine yoğun eğitim programı. Huawei Cloud DevOps araçları ile pratik deneyim.",
       achievements: [
         "40+ DevOps uzmanı yetiştirildi",
@@ -67,13 +108,14 @@ const PreviousMarathons: React.FC = () => {
       link: "https://developer.huawei.com/tr/activity/devops-bootcamp-2023"
     },
     {
-      id: 4,
+      id: 3,
       year: "2022",
       title: "Afet Yönetimi Teknolojileri Fikir Maratonu",
       subtitle: "Deprem ve Doğal Afet Yönetimi",
       location: "İstanbul",
       participants: "25+",
       projects: "6+",
+      duration: "2 Gün",
       description: "Deprem ve doğal afetlerin teknoloji ile yönetimi konusunda fikir maratonu. Katılımcılar erken uyarı sistemleri, hasar tespiti ve koordinasyon çözümleri geliştirdi.",
       achievements: [
         "25+ katılımcı ile başarılı maraton",
@@ -149,19 +191,9 @@ const PreviousMarathons: React.FC = () => {
   };
 
   return (
-    <section className="relative py-20 bg-white">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+    <section className="relative py-20 bg-[#F8FAFC]">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           
           {/* Section Header */}
           <motion.div
@@ -169,80 +201,87 @@ const PreviousMarathons: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center space-x-2 bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] px-4 py-2 rounded-full text-sm font-semibold mb-6">
               <Calendar className="w-4 h-4" />
               <span>Geçmiş Başarılar</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Geçmiş <span className="text-red-600">Bootcamp ve Maratonlar</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
+              Geçmiş <span className="text-[var(--primary)]">Bootcamp ve Maratonlar</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Huawei Türkiye tarafından düzenlenen geçmiş bootcamp ve maratonların başarıları ve 
-              genç yeteneklerin geliştirdiği dijital çözümler.
+            <p className="text-lg text-[var(--text-muted)] max-w-4xl mx-auto leading-relaxed">
+              Huawei Türkiye tarafından düzenlenen geçmiş bootcamp ve maratonların başarıları ve genç yeteneklerin geliştirdiği dijital çözümler.
             </p>
           </motion.div>
 
           {/* Event Cards */}
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="mb-20 space-y-16"
+            className="space-y-12 mb-16"
           >
             {previousEvents.map((event, index) => (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 relative"
+                className="bg-white rounded-2xl shadow-lg border border-[var(--border)] overflow-hidden hover:shadow-xl transition-all duration-300"
               >
                 {/* Top Accent Line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+                <div className="h-1 bg-gradient-to-r from-[var(--accent)] to-[var(--primary)]"></div>
+                
                 <div className="p-8 lg:p-12">
-                  <div className="grid lg:grid-cols-2 gap-12 items-center">
+                  <div className="grid lg:grid-cols-2 gap-8 items-center">
                     {/* Text Content */}
                     <div>
-                      <div className="inline-flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-                        <Calendar className="w-4 h-4" />
-                        <span>{event.year}</span>
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="inline-flex items-center space-x-2 bg-[var(--primary)] text-white px-4 py-2 rounded-full text-sm font-semibold">
+                          <Calendar className="w-4 h-4" />
+                          <span>{event.year}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[var(--text-muted)] text-sm">
+                          <MapPin className="w-4 h-4" />
+                          <span>{event.location}</span>
+                        </div>
                       </div>
-                      <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                      
+                      <h3 className="text-2xl lg:text-3xl font-bold text-[var(--text)] mb-3">
                         {event.title}
                       </h3>
-                      <p className="text-xl text-red-600 mb-6 font-medium">
+                      <p className="text-lg text-[var(--primary)] mb-4 font-semibold">
                         {event.subtitle}
                       </p>
-                      <p className="text-gray-700 leading-relaxed mb-8 text-lg">
+                      <p className="text-[var(--text-muted)] leading-relaxed mb-6">
                         {event.description}
                       </p>
                       
-                      {/* Stats */}
-                      <div className="grid grid-cols-2 gap-6 mb-8">
-                        <div className="text-center bg-gray-50 rounded-xl p-6">
-                          <div className="text-3xl font-bold text-red-600 mb-2">
-                            {event.participants}
-                          </div>
-                          <div className="text-sm text-gray-600 font-medium">Katılımcı</div>
+                      {/* Event Details */}
+                      <div className="grid grid-cols-3 gap-4 mb-6">
+                        <div className="bg-[var(--accent)]/10 rounded-xl p-4 text-center">
+                          <div className="text-2xl font-bold text-[var(--accent)] mb-1">{event.participants}</div>
+                          <div className="text-sm text-[var(--text-muted)] font-medium">Katılımcı</div>
                         </div>
-                        <div className="text-center bg-gray-50 rounded-xl p-6">
-                          <div className="text-3xl font-bold text-red-600 mb-2">
-                            {event.projects}
-                          </div>
-                          <div className="text-sm text-gray-600 font-medium">Proje</div>
+                        <div className="bg-[var(--primary)]/10 rounded-xl p-4 text-center">
+                          <div className="text-2xl font-bold text-[var(--primary)] mb-1">{event.projects}</div>
+                          <div className="text-sm text-[var(--text-muted)] font-medium">Proje</div>
+                        </div>
+                        <div className="bg-[var(--accent)]/10 rounded-xl p-4 text-center">
+                          <div className="text-2xl font-bold text-[var(--accent)] mb-1">{event.duration}</div>
+                          <div className="text-sm text-[var(--text-muted)] font-medium">Süre</div>
                         </div>
                       </div>
 
                       {/* Achievements */}
-                      <div className="grid grid-cols-1 gap-3 mb-8">
+                      <div className="space-y-2 mb-6">
                         {event.achievements.map((achievement, achievementIndex) => (
                           <div key={achievementIndex} className="flex items-center space-x-3">
-                            <CheckCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                            <span className="text-gray-700 font-medium">{achievement}</span>
+                            <CheckCircle className="w-4 h-4 text-[var(--primary)] flex-shrink-0" />
+                            <span className="text-[var(--text-muted)] text-sm">{achievement}</span>
                           </div>
                         ))}
                       </div>
@@ -252,7 +291,7 @@ const PreviousMarathons: React.FC = () => {
                         href={event.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        className="inline-flex items-center space-x-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-lg"
                       >
                         <span>Detaylı Bilgi</span>
                         <ExternalLink className="w-4 h-4" />
@@ -261,7 +300,7 @@ const PreviousMarathons: React.FC = () => {
 
                     {/* Image Carousel */}
                     <div className="relative">
-                      <div className="relative h-80 lg:h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-red-50 to-red-100">
+                      <div className="relative h-64 lg:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/10 to-[var(--primary)]/10">
                         <AnimatePresence mode="wait">
                           <motion.div
                             key={event.id === 1 ? currentSlide1 : currentSlide2}
@@ -274,15 +313,15 @@ const PreviousMarathons: React.FC = () => {
                               backgroundImage: `url(${event.images[event.id === 1 ? currentSlide1 : currentSlide2]})`
                             }}
                           >
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                               <div className="text-center text-white">
-                                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                  <Trophy className="w-10 h-10 text-white" />
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                  <Trophy className="w-8 h-8 text-white" />
                                 </div>
                                 <p className="text-white font-bold text-lg">
                                   {event.title}
                                 </p>
-                                <p className="text-white/80 text-sm mt-2">
+                                <p className="text-white/80 text-sm mt-1">
                                   {event.location} • {event.year}
                                 </p>
                               </div>
@@ -293,13 +332,13 @@ const PreviousMarathons: React.FC = () => {
                         {/* Navigation Arrows */}
                         <button
                           onClick={() => prevSlide(event.id)}
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white transition-all duration-300 z-20 shadow-lg"
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-[var(--text)] hover:bg-white transition-all duration-300 z-20 shadow-lg"
                         >
                           <ChevronLeft className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => nextSlide(event.id)}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white transition-all duration-300 z-20 shadow-lg"
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-[var(--text)] hover:bg-white transition-all duration-300 z-20 shadow-lg"
                         >
                           <ChevronRight className="w-5 h-5" />
                         </button>
@@ -309,7 +348,7 @@ const PreviousMarathons: React.FC = () => {
                           {event.images.map((_, imageIndex) => (
                             <div
                               key={imageIndex}
-                              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
                                 (event.id === 1 ? currentSlide1 : currentSlide2) === imageIndex
                                   ? 'bg-white shadow-lg'
                                   : 'bg-white/50'
@@ -325,7 +364,7 @@ const PreviousMarathons: React.FC = () => {
             ))}
           </motion.div>
 
-          {/* Overall Statistics */}
+          {/* Overall Statistics - 2 Column Layout */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -333,36 +372,65 @@ const PreviousMarathons: React.FC = () => {
             viewport={{ once: true }}
             className="mb-16"
           >
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                Maraton <span className="text-red-600">İstatistikleri</span>
-              </h3>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Huawei Fikir Maratonlarının toplam başarıları ve etkileri
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {highlights.map((highlight, index) => (
-                <motion.div
-                  key={highlight.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 text-center"
-                >
-                  <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <div className="text-white">
-                      {highlight.icon}
-                    </div>
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Left Column - Statistics Grid */}
+              <div>
+                <div className="grid grid-cols-2 gap-6">
+                  {highlights.map((highlight, index) => (
+                    <motion.div
+                      key={highlight.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 text-center group"
+                    >
+                      <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="text-[var(--primary)]">{highlight.icon}</div>
+                      </div>
+                      <div className="text-3xl font-bold text-[var(--text)] mb-2">
+                        <AnimatedCounter target={parseInt(highlight.number.replace('+', '')) || 0} suffix={highlight.number.includes('+') ? '+' : ''} />
+                      </div>
+                      <div className="text-sm font-semibold text-[var(--text)] mb-1">{highlight.title}</div>
+                      <div className="text-xs text-[var(--text-muted)] leading-relaxed">
+                        {highlight.title === "Toplam Katılımcı" && "Teknoloji uzmanları eğitim aldı"}
+                        {highlight.title === "Geliştirilen Proje" && "Pratik projeler tamamlandı"}
+                        {highlight.title === "Huawei Desteği" && "Teknoloji ve mentorluk desteği"}
+                        {highlight.title === "Sertifikasyon" && "Başarılı sertifikasyon programı"}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column - Explanation */}
+              <div>
+                
+                <h3 className="text-3xl md:text-4xl font-bold text-[var(--text)] mb-6">
+                  Maraton <span className="text-[var(--primary)]">İstatistikleri</span>
+                </h3>
+                <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
+                  Huawei Fikir Maratonlarının toplam başarıları ve etkileri. Geçmiş yıllarda düzenlenen bootcamp ve maratonlarımızın genel başarı metrikleri ve katılımcılarımızın elde ettiği sonuçlar.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-[var(--text-muted)]">145+ teknoloji uzmanı eğitim aldı</span>
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">{highlight.number}</div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-3">{highlight.title}</h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">{highlight.description}</p>
-                </motion.div>
-              ))}
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-[var(--text-muted)]">41+ pratik proje tamamlandı</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-[var(--text-muted)]">100% Huawei teknoloji ve mentorluk desteği</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-[var(--text-muted)]">90+ başarılı sertifikasyon programı</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 

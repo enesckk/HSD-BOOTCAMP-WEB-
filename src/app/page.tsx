@@ -1,6 +1,7 @@
 import Header from '@/components/layout/Header';
 import Hero from '@/components/home/Hero';
 import About from '@/components/home/About';
+import WaveDivider from '@/components/ui/WaveDivider';
 import ActiveBootcamp from '@/components/home/ActiveBootcamp';
 import Timeline from '@/components/home/Timeline';
 import Requirements from '@/components/home/Requirements';
@@ -14,6 +15,7 @@ export default function HomePage() {
     <main className="min-h-screen">
       <Header />
       <Hero />
+      <WaveDivider className="-mt-16 md:-mt-10" flow colorCycle flowSpeed={10} cycleSpeed={12} />
       <About />
       <PreviousMarathons />
       <ActiveBootcamp />
