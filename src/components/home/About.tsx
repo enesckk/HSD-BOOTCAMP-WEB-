@@ -107,7 +107,7 @@ const About: React.FC = () => {
               <span>Hakkımızda</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
-              <span className="text-[var(--primary)]">HSD Türkiye</span> Bootcamp Platformu
+              <span className="text-[var(--primary)]">Afet Fikir Teknolojileri</span> Maratonu
             </h2>
             
           </motion.div>

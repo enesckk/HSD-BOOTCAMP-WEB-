@@ -1,6 +1,6 @@
-# 🚀 HSD Türkiye Bootcamp Platform
+# 🚀 Afet Fikir Teknolojileri Maratonu Platform
 
-> **Huawei Türkiye ve Habitat Derneği iş birliğiyle düzenlenen teknoloji eğitimleri platformu**
+> **Deprem ve Doğal Afet Yönetimi için teknoloji çözümleri platformu**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -20,7 +20,7 @@
 
 ## 🎯 Proje Hakkında
 
-HSD Türkiye Bootcamp Platform, Huawei Türkiye ve Habitat Derneği iş birliğiyle düzenlenen teknoloji eğitimleri için geliştirilmiş modern bir web platformudur. Platform, katılımcıların eğitim süreçlerini takip etmelerini, kaynaklara erişmelerini ve toplulukla etkileşim kurmalarını sağlar.
+Afet Fikir Teknolojileri Maratonu Platform, deprem ve doğal afet yönetimi için teknoloji çözümleri geliştirmek amacıyla oluşturulmuş modern bir web platformudur. Platform, katılımcıların afet yönetimi süreçlerini takip etmelerini, kaynaklara erişmelerini ve toplulukla etkileşim kurmalarını sağlar.
 
 ### 🎓 Eğitim Programları
 - **Kubernetes Bootcamp** - Container orkestrasyonu ve cloud native teknolojiler
