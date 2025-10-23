@@ -152,18 +152,26 @@ export default function AdminChannelsPage() {
   };
 
   const deleteChannel = async (id: string) => {
-    if (!confirm('Bu kanalı silmek istediğinizden emin misiniz?')) return;
+    if (!confirm('Bu kanalı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve kanaldaki tüm mesajlar silinecektir.')) return;
 
     try {
+      setError('');
       const response = await fetch(`/api/admin/channels/${id}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
         fetchChannels();
+        alert('Kanal başarıyla silindi!');
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Kanal silinemedi');
+        alert('Kanal silinemedi: ' + (errorData.error || 'Bilinmeyen hata'));
       }
     } catch (error) {
       console.error('Error deleting channel:', error);
+      setError('Bağlantı hatası');
+      alert('Kanal silinemedi: Bağlantı hatası');
     }
   };
 
@@ -217,6 +225,18 @@ export default function AdminChannelsPage() {
             <span>Yeni Kanal</span>
           </button>
         </div>
+
+        {/* Hata Mesajı */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <X className="w-3 h-3 text-white" />
+              </div>
+              <p className="text-sm text-red-800 font-medium">{error}</p>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
