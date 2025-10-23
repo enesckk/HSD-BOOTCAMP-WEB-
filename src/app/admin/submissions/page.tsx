@@ -52,9 +52,7 @@ const AdminSubmissions = () => {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
     fetchSubmissions();
@@ -74,33 +72,6 @@ const AdminSubmissions = () => {
     }
   };
 
-  const handleStatusChange = async (submissionId: string, newStatus: string) => {
-    try {
-      const response = await fetch(`/api/admin/submissions/${submissionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          status: newStatus,
-          feedback: feedback,
-        }),
-      });
-
-      if (response.ok) {
-        fetchSubmissions();
-        setShowFeedbackModal(false);
-        setFeedback('');
-        alert(`Ödev ${newStatus === 'APPROVED' ? 'onaylandı' : newStatus === 'NEEDS_REVISION' ? 'revizyon için işaretlendi' : 'reddedildi'}!`);
-      } else {
-        const errorData = await response.json();
-        alert('Hata: ' + (errorData.error || 'Bilinmeyen hata'));
-      }
-    } catch (error) {
-      console.error('Error updating submission:', error);
-      alert('Hata: ' + error);
-    }
-  };
 
   const filteredSubmissions = submissions.filter(submission => {
     const matchesSearch = submission.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -309,10 +280,13 @@ const AdminSubmissions = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
-                        {getFileIcon(submission.fileType)}
+                        <div className={`w-3 h-3 rounded-full ${
+                          submission.submissionType === 'FILE' ? 'bg-blue-500' : 'bg-green-500'
+                        }`}></div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {submission.submissionType === 'FILE' ? submission.fileName : 'Link'}
+                          <div className="text-sm font-medium text-gray-900 flex items-center space-x-1">
+                            <span>{submission.submissionType === 'FILE' ? '📁' : '🔗'}</span>
+                            <span>{submission.submissionType === 'FILE' ? (submission.fileName || 'Dosya') : 'Link'}</span>
                           </div>
                           {submission.fileSize && (
                             <div className="text-xs text-gray-500">
@@ -376,16 +350,6 @@ const AdminSubmissions = () => {
                           title="Detayları Görüntüle"
                         >
                           <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedSubmission(submission);
-                            setShowFeedbackModal(true);
-                          }}
-                          className="text-purple-600 hover:text-purple-900"
-                          title="Değerlendir"
-                        >
-                          <MessageSquare className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -584,57 +548,75 @@ const AdminSubmissions = () => {
                 </div>
               </div>
 
-              {/* Teslim Bilgileri */}
-              <div className="bg-green-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Teslim Bilgileri</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Teslim Türü</label>
-                    <p className="text-gray-900">
-                      {selectedSubmission.submissionType === 'FILE' ? 'Dosya Yükleme' : 'Link Paylaşımı'}
-                    </p>
-                  </div>
-                  
-                  {selectedSubmission.submissionType === 'FILE' && selectedSubmission.fileUrl && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Yüklenen Dosya</label>
-                      <div className="flex items-center space-x-3 mt-2">
-                        <FileText className="w-5 h-5 text-gray-500" />
-                        <span className="text-gray-900">{selectedSubmission.fileName || 'Dosya'}</span>
-                        <a
-                          href={selectedSubmission.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                        >
-                          İndir
-                        </a>
+                {/* Teslim Bilgileri */}
+                <div className="bg-green-50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Teslim Bilgileri</h4>
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-lg p-4 border">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          selectedSubmission.submissionType === 'FILE' ? 'bg-blue-500' : 'bg-green-500'
+                        }`}></div>
+                        <span className="font-semibold text-gray-900">
+                          {selectedSubmission.submissionType === 'FILE' ? '📁 Dosya Yükleme' : '🔗 Link Paylaşımı'}
+                        </span>
                       </div>
+                      
+                      {selectedSubmission.submissionType === 'FILE' && selectedSubmission.fileUrl && (
+                        <div className="bg-blue-50 rounded-lg p-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Yüklenen Dosya</label>
+                          <div className="flex items-center justify-between bg-white rounded-lg p-3 border">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-5 h-5 text-blue-500" />
+                              <span className="text-gray-900 font-medium">{selectedSubmission.fileName || 'Dosya'}</span>
+                            </div>
+                            <a
+                              href={selectedSubmission.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            >
+                              📥 İndir
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedSubmission.submissionType === 'LINK' && selectedSubmission.linkUrl && (
+                        <div className="bg-green-50 rounded-lg p-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Paylaşılan Link</label>
+                          <div className="bg-white rounded-lg p-3 border">
+                            <div className="flex items-center space-x-3">
+                              <a
+                                href={selectedSubmission.linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline font-medium break-all"
+                              >
+                                {selectedSubmission.linkUrl}
+                              </a>
+                            </div>
+                            <div className="mt-2">
+                              <a
+                                href={selectedSubmission.linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                              >
+                                🔗 Linki Aç
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  {selectedSubmission.submissionType === 'LINK' && selectedSubmission.linkUrl && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Paylaşılan Link</label>
-                      <div className="flex items-center space-x-3 mt-2">
-                        <a
-                          href={selectedSubmission.linkUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                          {selectedSubmission.linkUrl}
-                        </a>
-                      </div>
+                    
+                    <div className="bg-white rounded-lg p-3 border">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Teslim Tarihi</label>
+                      <p className="text-gray-900 font-medium">{new Date(selectedSubmission.submittedAt).toLocaleString('tr-TR')}</p>
                     </div>
-                  )}
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Teslim Tarihi</label>
-                    <p className="text-gray-900">{new Date(selectedSubmission.submittedAt).toLocaleString('tr-TR')}</p>
                   </div>
                 </div>
-              </div>
 
               {/* Durum Bilgileri */}
               <div className="bg-yellow-50 rounded-lg p-4">
