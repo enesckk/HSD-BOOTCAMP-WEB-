@@ -87,13 +87,26 @@ export default function AdminMessagesPage() {
     try {
       if (activeTab === 'ask-instructor') {
         // Eğitmene Sor mesajlarını getir
-        const response = await fetch('/api/private-messages', {
-          headers: {
-            'x-user-id': user?.id || ''
-          }
-        });
+        const response = await fetch('/api/instructor/questions');
         const data = await response.json();
-        setMessages(data.messages || []);
+        if (data.success) {
+          // API'den gelen formatı Message interface'ine uyarla
+          const formattedMessages = data.questions.map((q: any) => ({
+            id: q.id,
+            subject: 'Eğitmene Sor',
+            body: q.content,
+            fromUserId: q.user?.fullName || 'Bilinmeyen',
+            toUserId: 'admin',
+            fromUser: { fullName: q.user?.fullName || 'Bilinmeyen', email: q.user?.email || '' },
+            toUser: { fullName: 'Admin', email: 'admin@hsd.com' },
+            unread: !q.isAnswered,
+            createdAt: q.createdAt,
+            updatedAt: q.createdAt
+          }));
+          setMessages(formattedMessages);
+        } else {
+          setMessages([]);
+        }
       } else {
         const box = activeTab === 'sent' ? 'sent' : 'inbox';
         const response = await fetch(`/api/messages?box=${box}`);
