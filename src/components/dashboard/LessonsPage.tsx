@@ -298,12 +298,12 @@ const LessonsPage = () => {
                       >
                         {tag.trim()}
                       </span>
-                    )
+                    )}
                     {lesson.tags.split(',').length > 3 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
                         +{lesson.tags.split(',').length - 3}
                       </span>
-                    )
+                    )}
                   </div>
                 )}
 
