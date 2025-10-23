@@ -38,27 +38,38 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    console.log('Deleting channel with ID:', id);
 
     // Önce kanaldaki tüm mesajları sil
-    await prisma.channelMessage.deleteMany({
+    const deletedMessages = await prisma.channelMessage.deleteMany({
       where: { channelId: id }
     });
+    console.log('Deleted messages:', deletedMessages.count);
 
     // Kanal okuma kayıtlarını sil
-    await prisma.userChannelRead.deleteMany({
+    const deletedReads = await prisma.userChannelRead.deleteMany({
       where: { channelId: id }
     });
+    console.log('Deleted read records:', deletedReads.count);
 
     // Sonra kanalı sil
-    await prisma.channel.delete({
+    const deletedChannel = await prisma.channel.delete({
       where: { id }
     });
+    console.log('Deleted channel:', deletedChannel.name);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Kanal başarıyla silindi',
+      deletedChannel: deletedChannel.name 
+    });
   } catch (error) {
     console.error('Error deleting channel:', error);
     return NextResponse.json(
-      { error: 'Kanal silinemedi' },
+      { 
+        success: false,
+        error: 'Kanal silinemedi: ' + error.message 
+      },
       { status: 500 }
     );
   }

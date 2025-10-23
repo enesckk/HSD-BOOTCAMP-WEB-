@@ -156,22 +156,32 @@ export default function AdminChannelsPage() {
 
     try {
       setError('');
+      console.log('Attempting to delete channel with ID:', id);
+      
       const response = await fetch(`/api/admin/channels/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (response.ok) {
-        fetchChannels();
-        alert('Kanal başarıyla silindi!');
+      console.log('Delete response status:', response.status);
+      const responseData = await response.json();
+      console.log('Delete response data:', responseData);
+
+      if (response.ok && responseData.success) {
+        console.log('Channel deleted successfully');
+        await fetchChannels(); // Kanal listesini yenile
+        alert(`Kanal "${responseData.deletedChannel}" başarıyla silindi!`);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Kanal silinemedi');
-        alert('Kanal silinemedi: ' + (errorData.error || 'Bilinmeyen hata'));
+        console.error('Delete failed:', responseData);
+        setError(responseData.error || 'Kanal silinemedi');
+        alert('Kanal silinemedi: ' + (responseData.error || 'Bilinmeyen hata'));
       }
     } catch (error) {
       console.error('Error deleting channel:', error);
-      setError('Bağlantı hatası');
-      alert('Kanal silinemedi: Bağlantı hatası');
+      setError('Bağlantı hatası: ' + error.message);
+      alert('Kanal silinemedi: Bağlantı hatası - ' + error.message);
     }
   };
 
