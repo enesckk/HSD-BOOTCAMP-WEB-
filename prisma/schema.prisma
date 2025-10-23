@@ -35,6 +35,7 @@ model User {
   userMutes      UserMute[]    @relation("UserMutes")
   mutedBy        UserMute[]    @relation("UserMutedBy")
   channelReads   UserChannelRead[]
+  notifications  Notification[] @relation("UserNotifications")
 
   @@map("users")
 }
@@ -162,10 +163,14 @@ model Notification {
   type        NotificationType
   title       String
   message     String
+  userId      String?          // Kullanıcıya özel bildirimler için
   read        Boolean          @default(false)
   actionUrl   String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  // Relations
+  user        User?            @relation("UserNotifications", fields: [userId], references: [id])
 
   @@map("notifications")
 }
