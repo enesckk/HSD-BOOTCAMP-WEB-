@@ -59,10 +59,14 @@ const LessonsPage = () => {
         if (filterType !== 'all') params.append('category', filterType);
         if (filterStatus !== 'all') params.append('week', filterStatus);
 
+        console.log('Fetching lessons with params:', params.toString());
         const response = await fetch(`/api/lessons?${params.toString()}`);
         const data = await response.json();
-        
+
+        console.log('Lessons API response:', data);
+
         if (data.success) {
+          console.log('Setting lessons:', data.lessons);
           setLessons(data.lessons);
         } else {
           console.error('Error fetching lessons:', data.error);
@@ -213,6 +217,7 @@ const LessonsPage = () => {
 
         {/* Lessons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {console.log('Rendering lessons:', filteredLessons)}
           {filteredLessons.map((lesson) => (
             <motion.div
               key={lesson.id}
