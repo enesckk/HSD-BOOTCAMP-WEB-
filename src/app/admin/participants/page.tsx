@@ -155,7 +155,6 @@ export default function AdminParticipantsPage() {
                   <th className="px-4 py-3 text-left">Telefon</th>
                   <th className="px-4 py-3 text-left">Üniversite</th>
                   <th className="px-4 py-3 text-left">Bölüm</th>
-                  <th className="px-4 py-3 text-left">Rolü Değiştir</th>
                   <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
                   <th className="px-4 py-3 text-left">İşlemler</th>
                 </tr>
@@ -169,36 +168,6 @@ export default function AdminParticipantsPage() {
                     <td className="px-4 py-3">{p.phone}</td>
                     <td className="px-4 py-3">{p.university}</td>
                     <td className="px-4 py-3">{p.department}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        {['LIDER','TEKNIK_SORUMLU','TASARIMCI'].map(r => (
-                          <button
-                            key={r}
-                            onClick={async () => {
-                              try {
-                                const response = await fetch('/api/users', { 
-                                  method: 'PATCH', 
-                                  headers: { 'Content-Type': 'application/json' }, 
-                                  body: JSON.stringify({ userId: p.id, teamRole: r }) 
-                                });
-                                if (response.ok) {
-                                  fetchParticipants();
-                                }
-                              } catch (error) {
-                                console.error('Error updating team role:', error);
-                              }
-                            }}
-                            className={`px-2 py-1 text-xs rounded border transition-colors ${
-                              p.teamRole===r 
-                                ? 'bg-red-600 text-white border-red-600' 
-                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                            }`}
-                          >
-                            {r==='LIDER'?'Lider':r==='TEKNIK_SORUMLU'?'Teknik':'Tasarımcı'}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
                     <td className="px-4 py-3">{new Date(p.createdAt).toLocaleDateString('tr-TR')}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
