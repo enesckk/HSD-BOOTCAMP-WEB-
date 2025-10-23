@@ -45,6 +45,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Kanal adının benzersiz olup olmadığını kontrol et
+    const existingChannel = await prisma.channel.findUnique({
+      where: { name }
+    });
+
+    if (existingChannel) {
+      return NextResponse.json(
+        { error: 'Bu kanal adı zaten kullanılıyor' },
+        { status: 400 }
+      );
+    }
+
     const channel = await prisma.channel.create({
       data: {
         name,

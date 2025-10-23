@@ -48,6 +48,7 @@ export default function AdminChannelsPage() {
     type: 'public',
     isPrivate: false
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -85,6 +86,7 @@ export default function AdminChannelsPage() {
       type: 'public',
       isPrivate: false
     });
+    setError('');
   };
 
   const openEditModal = (channel: Channel) => {
@@ -102,6 +104,7 @@ export default function AdminChannelsPage() {
 
   const handleCreateChannel = async () => {
     try {
+      setError('');
       const response = await fetch('/api/admin/channels', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,9 +115,13 @@ export default function AdminChannelsPage() {
         setShowCreateModal(false);
         resetForm();
         fetchChannels();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Kanal oluşturulamadı');
       }
     } catch (error) {
       console.error('Error creating channel:', error);
+      setError('Bağlantı hatası');
     }
   };
 
@@ -122,6 +129,7 @@ export default function AdminChannelsPage() {
     if (!editingChannel) return;
 
     try {
+      setError('');
       const response = await fetch(`/api/admin/channels/${editingChannel.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -133,9 +141,13 @@ export default function AdminChannelsPage() {
         setEditingChannel(null);
         resetForm();
         fetchChannels();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Kanal güncellenemedi');
       }
     } catch (error) {
       console.error('Error updating channel:', error);
+      setError('Bağlantı hatası');
     }
   };
 
@@ -317,6 +329,12 @@ export default function AdminChannelsPage() {
                 </div>
                 
                 <div className="p-6 space-y-6">
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-sm text-red-800">{error}</p>
+                    </div>
+                  )}
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Kanal Adı</label>
                     <input
@@ -444,6 +462,12 @@ export default function AdminChannelsPage() {
                 </div>
                 
                 <div className="p-6 space-y-6">
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-sm text-red-800">{error}</p>
+                    </div>
+                  )}
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Kanal Adı</label>
                     <input
