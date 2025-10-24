@@ -119,9 +119,6 @@ const Hero: React.FC = () => {
                       </motion.a>
                     ))}
                   </div>
-                  <span className="text-sm sm:text-base font-medium ml-2">
-                    Bizi takip edin
-                  </span>
                 </div>
               </motion.div>
 
