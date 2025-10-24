@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Sparkles, Target, GraduationCap } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, Twitter } from 'lucide-react';
 import Image from 'next/image';
 import { APP_NAME, ACTIVE_CITY_POINTS, getTotalsFromCities } from '@/utils/constants';
 import TurkeyMap from './TurkeyMap';
@@ -94,22 +94,21 @@ const Hero: React.FC = () => {
                 className="mb-10"
               >
                 <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-white/90 backdrop-blur border border-[#E5E7EB] text-[#0B0F19] shadow-sm">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     {[
-                      { name: 'LinkedIn', icon: '💼', url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
-                      { name: 'Medium', icon: '📝', url: 'https://medium.com/@huaweiturkey', color: 'hover:text-green-600' },
-                      { name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
-                      { name: 'X (Twitter)', icon: '🐦', url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' },
-                      { name: 'YouTube', icon: '📺', url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' }
+                      { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
+                      { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
+                      { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
+                      { name: 'X (Twitter)', icon: <Twitter className="w-6 h-6" />, url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' }
                     ].map((social, index) => (
                       <motion.a
                         key={social.name}
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        whileHover={{ scale: 1.3, rotate: 5 }}
+                        whileHover={{ scale: 1.2, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`text-2xl transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                        className={`text-gray-600 transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
                         title={social.name}
                       >
                         {social.icon}
