@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, X, BookOpen } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, X, PenTool } from 'lucide-react';
 import Image from 'next/image';
 import { APP_NAME, ACTIVE_CITY_POINTS, getTotalsFromCities } from '@/utils/constants';
 import TurkeyMap from './TurkeyMap';
@@ -99,7 +99,7 @@ const Hero: React.FC = () => {
                       { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
                       { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
                       { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
-                      { name: 'Medium', icon: <BookOpen className="w-6 h-6" />, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
+                      { name: 'Medium', icon: <PenTool className="w-6 h-6" />, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
                       { name: 'X (Twitter)', icon: <X className="w-6 h-6" />, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
                     ].map((social, index) => (
                       <motion.a
