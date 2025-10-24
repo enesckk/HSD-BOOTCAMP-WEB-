@@ -97,6 +97,7 @@ const Hero: React.FC = () => {
                   <div className="flex items-center gap-4">
                     {[
                       { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
+                      { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
                       { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
                       { name: 'Medium', icon: <span className="text-2xl font-bold text-gray-600">M</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
                       { name: 'X (Twitter)', icon: <X className="w-6 h-6" />, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
