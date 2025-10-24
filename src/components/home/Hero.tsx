@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Sparkles, Target, GraduationCap } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, X, PenTool } from 'lucide-react';
 import Image from 'next/image';
 import { APP_NAME, ACTIVE_CITY_POINTS, getTotalsFromCities } from '@/utils/constants';
 import TurkeyMap from './TurkeyMap';
@@ -86,7 +86,7 @@ const Hero: React.FC = () => {
                 Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
               </motion.p>
 
-              {/* Toplam kapsayıcı bilgi */}
+              {/* Sosyal Medya İkonları */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -94,12 +94,30 @@ const Hero: React.FC = () => {
                 className="mb-10"
               >
                 <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-white/90 backdrop-blur border border-[#E5E7EB] text-[#0B0F19] shadow-sm">
-                  <div className="flex items-center -space-x-2">
-                    <span className="w-8 h-8 rounded-lg bg-[#E31B23]/10 text-[#E31B23] flex items-center justify-center"><Users className="w-4 h-4" /></span>
-                    <span className="w-8 h-8 rounded-lg bg-[color:var(--accent)]/10 text-[color:var(--accent)] flex items-center justify-center"><GraduationCap className="w-4 h-4" /></span>
+                  <div className="flex items-center gap-4">
+                    {[
+                      { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
+                      { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
+                      { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
+                      { name: 'Medium', icon: <span className="font-bold text-sm text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
+                      { name: 'X (Twitter)', icon: <X className="w-6 h-6" />, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
+                    ].map((social, index) => (
+                      <motion.a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.2, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`text-gray-600 transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                        title={social.name}
+                      >
+                        {social.icon}
+                      </motion.a>
+                    ))}
                   </div>
-                  <span className="text-sm sm:text-base font-medium">
-                    Toplam <strong>{totals.cityCount}</strong> şehir ve <strong>{totals.totalUniversities}</strong> üniversitede aktifiz
+                  <span className="text-sm sm:text-base font-medium ml-2">
+                    Bizi takip edin
                   </span>
                 </div>
               </motion.div>

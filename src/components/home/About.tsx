@@ -47,49 +47,27 @@ const About: React.FC = () => {
 
   const coreValues = [
     {
-      title: 'Cloud Computing',
-      description: 'Huawei Cloud altyapısı üzerinde modern bulut teknolojilerini öğrenin',
+      title: 'Teknoloji Eğitimleri',
+      description: 'En güncel teknoloji trendleri ve yazılım geliştirme konularında eğitimler',
       icon: <Zap className="w-6 h-6" />,
     },
     {
-      title: 'Yapay Zeka',
-      description: 'AI/ML algoritmaları ve uygulamaları ile geleceğin teknolojisini keşfedin',
+      title: 'Liderlik Gelişimi',
+      description: 'Topluluk önünde konuşma, organizasyon düzenleme ve liderlik becerileri',
       icon: <Lightbulb className="w-6 h-6" />,
     },
     {
-      title: 'DevOps',
-      description: 'Sürekli entegrasyon ve dağıtım süreçlerini öğrenin',
+      title: 'Kariyer Rehberliği',
+      description: 'Kariyer planlama, network kurma ve profesyonel gelişim desteği',
       icon: <Target className="w-6 h-6" />,
     },
     {
-      title: 'Proje Geliştirme',
-      description: 'Gerçek dünya problemlerini çözen projeler üretin',
+      title: 'Topluluk Kurma',
+      description: 'Kendi üniversitelerinde topluluk kurma ve geliştirme deneyimi',
       icon: <Award className="w-6 h-6" />,
     },
   ];
 
-  const stats = [
-    {
-      number: 40,
-      label: 'Saat Eğitim',
-      icon: <Calendar className="w-6 h-6" />,
-    },
-    {
-      number: 100,
-      label: 'Pratik',
-      icon: <Target className="w-6 h-6" />,
-    },
-    {
-      number: 1000,
-      label: 'Katılımcı',
-      icon: <Users className="w-6 h-6" />,
-    },
-    {
-      number: 8,
-      label: 'Hafta Program',
-      icon: <Award className="w-6 h-6" />,
-    },
-  ];
 
   return (
     <section id="about" className="relative py-20 bg-white">
@@ -107,7 +85,7 @@ const About: React.FC = () => {
               <span>Hakkımızda</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
-              <span className="text-[var(--primary)]">Afet Fikir Teknolojileri</span> Maratonu
+              <span className="text-[var(--primary)]">Huawei Student Developers</span> (HSD)
             </h2>
             
           </motion.div>
@@ -121,33 +99,37 @@ const About: React.FC = () => {
             viewport={{ once: true }}
             className="grid lg:grid-cols-2 gap-12 mb-16"
           >
-            {/* Left Column - Statistics Grid */}
+            {/* Left Column - Social Media Icons */}
             <div>
-              <div className="grid grid-cols-2 gap-6">
-                {stats.map((stat, index) => (
-                <motion.div
-                    key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                    className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 text-center group"
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-[var(--text)] mb-2">Bizi Takip Edin</h3>
+                <p className="text-[var(--text-muted)]">HSD topluluğu ile bağlantıda kalın</p>
+              </div>
+              <div className="flex justify-center space-x-6">
+                {[
+                  { name: 'LinkedIn', icon: '💼', url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
+                  { name: 'Medium', icon: '📝', url: 'https://medium.com/@huaweiturkey', color: 'hover:text-green-600' },
+                  { name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
+                  { name: 'X (Twitter)', icon: '🐦', url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' },
+                  { name: 'YouTube', icon: '📺', url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' }
+                ].map((social, index) => (
+                  <motion.a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.2, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`text-4xl transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                    title={social.name}
                   >
-                    <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <div className="text-[var(--primary)]">{stat.icon}</div>
-                    </div>
-                    <div className="text-3xl font-bold text-[var(--text)] mb-2">
-                      <AnimatedCounter target={stat.number} suffix={stat.number >= 1000 ? '+' : ''} />
-                    </div>
-                    <div className="text-sm font-semibold text-[var(--text)] mb-1">{stat.label}</div>
-                    <div className="text-xs text-[var(--text-muted)] leading-relaxed">
-                      {stat.number === 40 && "Saatlik eğitim programı ile kapsamlı öğrenme deneyimi"}
-                      {stat.number === 100 && "Pratik odaklı projeler ile gerçek dünya deneyimi"}
-                      {stat.number === 1000 && "Aktif katılımcı ile geniş topluluk"}
-                      {stat.number === 8 && "Haftalık yoğun eğitim programı"}
-                  </div>
-                </motion.div>
-              ))}
+                    {social.icon}
+                  </motion.a>
+                ))}
               </div>
             </div>
 
@@ -156,24 +138,24 @@ const About: React.FC = () => {
             
              
               <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
-                HSD Türkiye Bootcamp, teknoloji ve inovasyon alanında kendini geliştirmek isteyen katılımcılar için özel olarak tasarlanmış teknik ve kişisel gelişim odaklı bir eğitim platformudur. Bu platform, yeni nesil teknolojileri tanıtmak, katılımcıların pratik projelerle deneyim kazanmasını sağlamak ve sektörel farkındalıklarını artırmak amacıyla oluşturulmuştur.
+                Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır. Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                  <span className="text-[var(--text-muted)]">Gerçek dünya problemlerini çözen projeler üretir</span>
+                  <span className="text-[var(--text-muted)]">Teknoloji, yazılım, liderlik ve kariyer konularında eğitimler</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                  <span className="text-[var(--text-muted)]">Huawei Cloud altyapısı üzerinde uygulamalı deneyim kazanır</span>
+                  <span className="text-[var(--text-muted)]">Kendi üniversitelerinde topluluk kurma ve geliştirme fırsatı</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                  <span className="text-[var(--text-muted)]">Mentor desteği ile bireysel gelişimlerini destekler</span>
+                  <span className="text-[var(--text-muted)]">Liderlik, topluluk önünde konuşma ve organizasyon deneyimi</span>
                 </div>
                 <div className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-[var(--primary)] mr-3 mt-1 flex-shrink-0" />
-                  <span className="text-[var(--text-muted)]">Haftalık görevler, videolar ve kaynaklarla düzenli ilerleme sağlar</span>
+                  <span className="text-[var(--text-muted)]">Yazılım alanında uygulamalı bilgi ve deneyim kazanma</span>
                 </div>
               </div>
             </div>
@@ -189,8 +171,8 @@ const About: React.FC = () => {
             className="mb-16"
           >
             <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">Eğitim Programımız</h3>
-              <p className="text-lg text-[var(--text-muted)] max-w-3xl mx-auto">Bootcamp'imizin temelini oluşturan eğitim modülleri ve hedeflerimiz</p>
+              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">HSD Nasıl Çalışır?</h3>
+              <p className="text-lg text-[var(--text-muted)] max-w-3xl mx-auto">Huawei Student Developers Programı; teknoloji, yazılım, liderlik, kariyer gibi konularda ekosistemindeki üyelere eğitimler verir ve etkinlikler düzenler.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -213,29 +195,87 @@ const About: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* YouTube Channel Info */}
-                <motion.div
+          {/* HSD Elçisi Olma Bölümü */}
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-                  viewport={{ once: true }}
+            viewport={{ once: true }}
             className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/90 rounded-2xl p-8 mb-16 text-white"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-bold mb-4">HSD Elçisi Olmak İster misiniz?</h3>
+              <p className="text-lg text-white/90 max-w-3xl mx-auto">
+                Huawei Student Developers (HSD) elçisi olmak için gerekenler:
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-4">
+                <h4 className="text-xl font-semibold mb-4">Gereksinimler:</h4>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-white/90">Gelişime ve öğrenmeye açık, teknolojiye meraklı</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-white/90">Takımını yönlendirerek, deneyim sahibi olmak isteyen</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-white/90">En az 1 yıl üniversitesinde aktif olabilecek</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
+                    <span className="text-white/90">Lisans ya da lisansüstü öğrencisi olmak</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-white/20 rounded-xl p-6 mb-6">
+                  <h4 className="text-xl font-semibold mb-2">Başvuru Yapın</h4>
+                  <p className="text-white/90 mb-4">
+                    HSD elçisi olmak için başvurunuzu aşağıdaki linkten yapabilirsiniz
+                  </p>
+                  <a
+                    href="https://developer.huawei.com/consumer/en/programs/hsd/ambassador"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white text-[var(--primary)] px-6 py-3 rounded-xl font-semibold hover:bg-white/90 transition-colors duration-200 inline-flex items-center space-x-2"
+                  >
+                    <span>Başvuru Yap</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* YouTube Channel Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            viewport={{ once: true }}
+            className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-8 text-white"
           >
             <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-6">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <Play className="w-6 h-6" />
-                  </div>
-                  <div>
-                  <h3 className="text-xl font-bold">Huawei Developer Groups Türkiye</h3>
-                  <p className="text-white/80">Bootcamp'lerimiz YouTube kanalımızda canlı olarak yayınlanmaktadır</p>
                 </div>
-                  </div>
+                <div>
+                  <h3 className="text-xl font-bold">Huawei Developer Groups Türkiye</h3>
+                  <p className="text-white/80">HSD etkinlikleri ve eğitimleri YouTube kanalımızda canlı olarak yayınlanmaktadır</p>
+                </div>
+              </div>
               <a
                 href="https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white text-[var(--primary)] px-6 py-3 rounded-xl font-semibold hover:bg-white/90 transition-colors duration-200 flex items-center space-x-2"
+                className="bg-white text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-white/90 transition-colors duration-200 flex items-center space-x-2"
               >
                 <span>Kanalı Ziyaret Et</span>
                 <ArrowRight className="w-4 h-4" />

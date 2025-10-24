@@ -27,16 +27,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, summary, content, category, date, time, pinned } = body;
 
+    // Boş değerleri kontrol et ve varsayılan değerler ata
+    const announcementData: any = {
+      title: title || 'Duyuru',
+      summary: summary || '',
+      content: content || '',
+      category: category || 'genel',
+      pinned: pinned || false
+    };
+
+    // Date alanı için kontrol
+    if (date && date.trim() !== '') {
+      announcementData.date = date;
+    } else {
+      announcementData.date = new Date().toISOString().split('T')[0]; // Bugünün tarihi
+    }
+
+    // Time alanı için kontrol
+    if (time && time.trim() !== '') {
+      announcementData.time = time;
+    } else {
+      announcementData.time = new Date().toTimeString().split(' ')[0]; // Şu anki saat
+    }
+
     const announcement = await prisma.announcement.create({
-      data: {
-        title,
-        summary,
-        content,
-        category,
-        date,
-        time,
-        pinned: pinned || false
-      }
+      data: announcementData
     });
 
     return NextResponse.json(announcement, { status: 201 });

@@ -4,39 +4,39 @@ import { prisma } from '@/lib/prisma';
 // GET - Görevleri listele
 export async function GET(request: NextRequest) {
   try {
-    const tasks = await (prisma as any).task.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true
-          }
-        }
+    console.log('=== INSTRUCTOR TASKS API CALLED ===');
+    
+    // Geçici olarak mock data döndür
+    const mockTasks = [
+      {
+        id: '1',
+        title: 'Örnek Görev 1',
+        description: 'Bu bir örnek görevdir',
+        dueDate: new Date().toISOString(),
+        priority: 'MEDIUM',
+        status: 'PENDING',
+        submissions: 0,
+        totalStudents: 1
       },
-      orderBy: {
-        createdAt: 'desc'
+      {
+        id: '2',
+        title: 'Örnek Görev 2',
+        description: 'Bu da bir örnek görevdir',
+        dueDate: new Date().toISOString(),
+        priority: 'HIGH',
+        status: 'PENDING',
+        submissions: 1,
+        totalStudents: 1
       }
-    });
-
-    // Görev verilerini formatla
-    const formattedTasks = tasks.map((task: any) => ({
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      dueDate: task.dueDate?.toISOString() || new Date().toISOString(),
-      priority: task.priority || 'MEDIUM',
-      status: task.status || 'PENDING',
-      submissions: task.fileUrl || task.linkUrl ? 1 : 0,
-      totalStudents: 1 // Şimdilik 1, daha sonra gerçek sayı hesaplanacak
-    }));
+    ];
 
     return NextResponse.json({
       success: true,
-      tasks: formattedTasks,
+      tasks: mockTasks,
     });
   } catch (error) {
-    console.error('Error fetching tasks:', error);
+    console.error('=== INSTRUCTOR TASKS ERROR ===');
+    console.error('Error:', error);
     return NextResponse.json(
       { success: false, error: 'Görevler getirilemedi' },
       { status: 500 }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newTask = await (prisma as any).task.create({
+    const newTask = await prisma.task.create({
       data: {
         title,
         description,

@@ -115,7 +115,7 @@ export const emailTemplates = {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; padding: 30px; text-align: center;">
           <h1 style="margin: 0; font-size: 28px;">Afet Fikir Teknolojileri Maratonu</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px;">Deprem ve Doğal Afet Yönetimi</p>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Afet Teknolojileri Fikir Maratonu</p>
         </div>
         
         <div style="padding: 30px; background: #f9fafb;">
