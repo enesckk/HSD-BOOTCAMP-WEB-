@@ -7,7 +7,7 @@ import {
   Phone,
   MapPin,
   Linkedin,
-  Twitter,
+  X,
   Instagram,
   Youtube,
   ArrowUp,
@@ -55,8 +55,14 @@ const Footer: React.FC = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-5 h-5" />,
-      url: "https://www.linkedin.com/company/huawei-turkey",
+      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all",
       followers: "150K+"
+    },
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-5 h-5" />,
+      url: "https://www.instagram.com/hsdturkiye/",
+      followers: "80K+"
     },
     {
       name: "YouTube",
@@ -65,15 +71,9 @@ const Footer: React.FC = () => {
       followers: "50K+"
     },
     {
-      name: "Instagram",
-      icon: <Instagram className="w-5 h-5" />,
-      url: "https://www.instagram.com/huaweiturkey",
-      followers: "80K+"
-    },
-    {
-      name: "X (Twitter)",
-      icon: <Twitter className="w-5 h-5" />,
-      url: "https://twitter.com/HuaweiTurkey",
+      name: "X",
+      icon: <span className="font-bold text-lg text-white">𝕏</span>,
+      url: "https://x.com/turkiye_hsd",
       followers: "120K+"
     }
   ];
