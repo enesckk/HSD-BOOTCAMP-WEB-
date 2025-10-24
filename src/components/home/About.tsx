@@ -68,28 +68,6 @@ const About: React.FC = () => {
     },
   ];
 
-  const stats = [
-    {
-      number: 41,
-      label: 'Şehir',
-      icon: <Users className="w-6 h-6" />,
-    },
-    {
-      number: 41,
-      label: 'Üniversite',
-      icon: <Target className="w-6 h-6" />,
-    },
-    {
-      number: 100,
-      label: 'Etkinlik',
-      icon: <Calendar className="w-6 h-6" />,
-    },
-    {
-      number: 3,
-      label: 'Yıl Deneyim',
-      icon: <Award className="w-6 h-6" />,
-    },
-  ];
 
   return (
     <section id="about" className="relative py-20 bg-white">
@@ -121,33 +99,37 @@ const About: React.FC = () => {
             viewport={{ once: true }}
             className="grid lg:grid-cols-2 gap-12 mb-16"
           >
-            {/* Left Column - Statistics Grid */}
+            {/* Left Column - Social Media Icons */}
             <div>
-              <div className="grid grid-cols-2 gap-6">
-                {stats.map((stat, index) => (
-                <motion.div
-                    key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                    className="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 text-center group"
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-[var(--text)] mb-2">Bizi Takip Edin</h3>
+                <p className="text-[var(--text-muted)]">HSD topluluğu ile bağlantıda kalın</p>
+              </div>
+              <div className="flex justify-center space-x-6">
+                {[
+                  { name: 'LinkedIn', icon: '💼', url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
+                  { name: 'Medium', icon: '📝', url: 'https://medium.com/@huaweiturkey', color: 'hover:text-green-600' },
+                  { name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
+                  { name: 'X (Twitter)', icon: '🐦', url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' },
+                  { name: 'YouTube', icon: '📺', url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' }
+                ].map((social, index) => (
+                  <motion.a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.2, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`text-4xl transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                    title={social.name}
                   >
-                    <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <div className="text-[var(--primary)]">{stat.icon}</div>
-                    </div>
-                    <div className="text-3xl font-bold text-[var(--text)] mb-2">
-                      <AnimatedCounter target={stat.number} suffix={stat.number >= 1000 ? '+' : ''} />
-                    </div>
-                    <div className="text-sm font-semibold text-[var(--text)] mb-1">{stat.label}</div>
-                    <div className="text-xs text-[var(--text-muted)] leading-relaxed">
-                      {stat.number === 41 && stat.label === 'Şehir' && "Türkiye genelinde 41 şehirde aktif HSD toplulukları"}
-                      {stat.number === 41 && stat.label === 'Üniversite' && "41 üniversitede HSD toplulukları ile yaygın ağ"}
-                      {stat.number === 100 && "Yıllık düzenlenen etkinlik ve eğitim sayısı"}
-                      {stat.number === 3 && "Türkiye'de HSD programının deneyim süresi"}
-                  </div>
-                </motion.div>
-              ))}
+                    {social.icon}
+                  </motion.a>
+                ))}
               </div>
             </div>
 
