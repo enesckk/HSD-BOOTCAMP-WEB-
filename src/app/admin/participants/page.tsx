@@ -66,6 +66,64 @@ export default function AdminParticipantsPage() {
     p.university.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleEditUser = async (userId: string, currentUser: Participant) => {
+    const newName = prompt('Yeni Ad Soyad:', currentUser.fullName);
+    const newEmail = prompt('Yeni Email:', currentUser.email);
+    const newPhone = prompt('Yeni Telefon:', currentUser.phone);
+    const newUniversity = prompt('Yeni Üniversite:', currentUser.university);
+    const newDepartment = prompt('Yeni Bölüm:', currentUser.department);
+    
+    if (newName && newEmail && newPhone && newUniversity && newDepartment) {
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fullName: newName,
+            email: newEmail,
+            phone: newPhone,
+            university: newUniversity,
+            department: newDepartment,
+          }),
+        });
+
+        if (response.ok) {
+          alert('Kullanıcı başarıyla güncellendi!');
+          fetchParticipants(); // Listeyi yenile
+        } else {
+          const error = await response.json();
+          alert(`Hata: ${error.message || 'Kullanıcı güncellenemedi'}`);
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+        alert('Kullanıcı güncellenirken bir hata oluştu!');
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (confirm(`${userName} kullanıcısını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Kullanıcı başarıyla silindi!');
+          fetchParticipants(); // Listeyi yenile
+        } else {
+          const error = await response.json();
+          alert(`Hata: ${error.message || 'Kullanıcı silinemedi'}`);
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Kullanıcı silinirken bir hata oluştu!');
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -182,26 +240,14 @@ export default function AdminParticipantsPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            // Kullanıcıyı düzenle
-                            const newName = prompt('Yeni Ad Soyad:', p.fullName);
-                            const newEmail = prompt('Yeni Email:', p.email);
-                            if (newName && newEmail) {
-                              // API çağrısı yapılabilir
-                              alert('Düzenleme özelliği yakında eklenecek!');
-                            }
-                          }}
+                          onClick={() => handleEditUser(p.id, p)}
                           className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
                           title="Düzenle"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`${p.fullName} kullanıcısını silmek istediğinizden emin misiniz?`)) {
-                              alert('Silme özelliği yakında eklenecek!');
-                            }
-                          }}
+                          onClick={() => handleDeleteUser(p.id, p.fullName)}
                           className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                           title="Sil"
                         >
