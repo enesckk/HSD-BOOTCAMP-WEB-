@@ -309,12 +309,6 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            {/* Subtle Wave Bottom */}
-            <div className="relative">
-              <svg className="w-full h-16" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M0,120L48,110C96,100,192,80,288,80C384,80,480,100,576,110C672,120,768,100,864,90C960,80,1056,80,1152,90C1248,100,1344,100,1392,100L1440,100L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" fill="#F8FAFC" fillOpacity="0.8"/>
-              </svg>
-            </div>
           </motion.div>
 
         </div>

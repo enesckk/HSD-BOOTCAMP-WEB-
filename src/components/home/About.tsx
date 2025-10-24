@@ -70,8 +70,11 @@ const About: React.FC = () => {
 
 
   return (
-    <section id="about" className="relative py-20 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="relative pt-0 pb-20 bg-white z-10">
+      {/* Dalga efektinin About üzerine binmesi için - sınır çizgisi tamamen kaldırıldı */}
+      <div className="absolute -top-0 left-0 right-0 h-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-20" />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
           <motion.div

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import {
   Mail,
   Phone,
@@ -12,12 +13,9 @@ import {
   Youtube,
   ArrowUp,
   Globe,
-  Award,
-  Users,
-  Calendar,
-  BookOpen,
   Shield,
-  Heart
+  Heart,
+  BookOpen
 } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -33,7 +31,7 @@ const Footer: React.FC = () => {
     { name: "Eğitim Programı", href: "#timeline" },
     { name: "Katılım Kriterleri", href: "#requirements" },
     { name: "Geçmiş Programlar", href: "#previous" },
-    { name: "Sıkça Sorulan Sorular", href: "#faq" },
+    { name: "SSS", href: "#faq" },
     { name: "İletişim", href: "#contact" }
   ];
 
@@ -55,37 +53,37 @@ const Footer: React.FC = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-5 h-5" />,
-      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all"
+      href: "https://linkedin.com/company/huawei"
+    },
+    {
+      name: "Twitter",
+      icon: <X className="w-5 h-5" />,
+      href: "https://twitter.com/huawei"
     },
     {
       name: "Instagram",
       icon: <Instagram className="w-5 h-5" />,
-      url: "https://www.instagram.com/hsdturkiye/"
+      href: "https://instagram.com/huawei"
     },
     {
       name: "YouTube",
       icon: <Youtube className="w-5 h-5" />,
-      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye"
+      href: "https://youtube.com/huawei"
     },
     {
       name: "Medium",
-      icon: <span className="font-bold text-xs text-white">M</span>,
-      url: "https://medium.com/huawei-developers"
-    },
-    {
-      name: "X",
-      icon: <span className="font-bold text-lg text-white">𝕏</span>,
-      url: "https://x.com/turkiye_hsd"
+      icon: <span className="w-5 h-5 flex items-center justify-center font-bold text-sm">M</span>,
+      href: "https://medium.com/huawei"
     }
   ];
 
   return (
     <footer className="bg-white border-t border-[var(--border)]">
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 mb-12">
+        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 mb-8">
           
           {/* Company Info */}
           <div className="lg:col-span-1">
@@ -95,34 +93,48 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-[var(--primary)] rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">HW</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[var(--text)]">Huawei Türkiye</h3>
-                  <p className="text-[var(--text-muted)] text-sm">HSD Bootcamp</p>
-                </div>
-              </div>
-              
-              <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6">
-                Genç yetenekleri destekliyor, yenilikçi çözümler geliştiriyoruz. 
-                Teknoloji alanında uzmanlaşmak isteyen herkesi aramızda görmek istiyoruz.
-              </p>
+               {/* Logolar */}
+               <div className="flex items-center space-x-4 mb-6">
+                 <div className="hover:scale-105 transition-transform duration-200">
+                   <Image
+                     src="/Huawei-Logo.png"
+                     alt="Huawei Logo"
+                     width={60}
+                     height={45}
+                     className="object-contain"
+                   />
+                 </div>
+                 <div className="h-8 w-px bg-gray-300"></div>
+                 <div className="hover:scale-105 transition-transform duration-200">
+                   <Image
+                     src="/hsd-logo.png"
+                     alt="HSD Logo"
+                     width={60}
+                     height={45}
+                     className="object-contain"
+                   />
+                 </div>
+               </div>
+               
+               <h3 className="text-xl font-bold text-[var(--text)] mb-2">HSD Türkiye Bootcamp</h3>
+               <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6">
+                 Genç yetenekleri destekliyor, yenilikçi çözümler geliştiriyoruz. 
+                 Teknoloji alanında uzmanlaşmak isteyen herkesi aramızda görmek istiyoruz.
+               </p>
 
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 text-[var(--text-muted)] text-sm">
+                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
                   <Mail className="w-4 h-4 text-[var(--primary)]" />
-                  <span>info@huawei.com.tr</span>
+                  <span className="text-sm">info@huawei.com.tr</span>
                 </div>
-                <div className="flex items-center space-x-3 text-[var(--text-muted)] text-sm">
+                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
                   <Phone className="w-4 h-4 text-[var(--primary)]" />
-                  <span>+90 212 123 45 67</span>
+                  <span className="text-sm">+90 212 123 45 67</span>
                 </div>
-                <div className="flex items-center space-x-3 text-[var(--text-muted)] text-sm">
+                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
                   <MapPin className="w-4 h-4 text-[var(--primary)]" />
-                  <span>İstanbul, Türkiye</span>
+                  <span className="text-sm">İstanbul, Türkiye</span>
                 </div>
               </div>
             </motion.div>
@@ -137,17 +149,18 @@ const Footer: React.FC = () => {
               viewport={{ once: true }}
             >
               <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Hızlı Linkler</h4>
-              <div className="space-y-3">
+              <ul className="space-y-3">
                 {quickLinks.map((link, index) => (
-                  <a
-                    key={index}
-                    href={link.href}
-                    className="block text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm hover:translate-x-1 transform"
-                  >
-                    {link.name}
-                  </a>
+                  <li key={index}>
+                    <a
+                      href={link.href}
+                      className="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm"
+                    >
+                      {link.name}
+                    </a>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </motion.div>
           </div>
 
@@ -160,21 +173,22 @@ const Footer: React.FC = () => {
               viewport={{ once: true }}
             >
               <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Programlar</h4>
-              <div className="space-y-3">
+              <ul className="space-y-3">
                 {programs.map((program, index) => (
-                  <a
-                    key={index}
-                    href={program.href}
-                    className="block text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm hover:translate-x-1 transform"
-                  >
-                    {program.name}
-                  </a>
+                  <li key={index}>
+                    <a
+                      href={program.href}
+                      className="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm"
+                    >
+                      {program.name}
+                    </a>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </motion.div>
           </div>
 
-          {/* Resources & Social */}
+          {/* Resources */}
           <div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -183,46 +197,86 @@ const Footer: React.FC = () => {
               viewport={{ once: true }}
             >
               <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Kaynaklar</h4>
-              <div className="space-y-3 mb-8">
+              <ul className="space-y-3">
                 {resources.map((resource, index) => (
-                  <a
-                    key={index}
-                    href={resource.href}
-                    className="block text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm hover:translate-x-1 transform"
-                  >
-                    {resource.name}
-                  </a>
+                  <li key={index}>
+                    <a
+                      href={resource.href}
+                      className="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 text-sm"
+                    >
+                      {resource.name}
+                    </a>
+                  </li>
                 ))}
-              </div>
-
-              <h4 className="text-lg font-semibold text-[var(--text)] mb-4">Sosyal Medya</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {socialMedia.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-3 p-3 bg-[var(--bg)] rounded-xl hover:bg-[var(--accent)]/10 transition-all duration-300 group"
-                  >
-                    <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                      {social.icon}
-                    </div>
-                    <div>
-                      <div className="text-[var(--text)] text-sm font-medium">{social.name}</div>
-                    </div>
-                  </a>
-                ))}
-              </div>
+              </ul>
             </motion.div>
           </div>
+        </div>
 
+        {/* Social Media & Newsletter */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          
+          {/* Social Media */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Sosyal Medya</h4>
+            <div className="flex space-x-4">
+              {socialMedia.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 ${
+                    social.name === 'LinkedIn' 
+                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                      : social.name === 'Twitter'
+                      ? 'bg-black text-white hover:bg-gray-800'
+                      : social.name === 'Instagram'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
+                      : social.name === 'Medium'
+                      ? 'bg-gray-800 text-white hover:bg-gray-900'
+                      : 'bg-red-600 text-white hover:bg-red-700'
+                  }`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {social.icon}
+                </a>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Newsletter */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Bülten</h4>
+            <p className="text-[var(--text-muted)] text-sm mb-4">
+              En son haberler ve güncellemeler için bültenimize abone olun.
+            </p>
+            <div className="flex space-x-2">
+              <input
+                type="email"
+                placeholder="E-posta adresiniz"
+                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+              />
+              <button className="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-hover)] transition-colors duration-200">
+                Abone Ol
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="border-t border-[var(--border)] bg-[var(--bg)]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             
             {/* Copyright */}

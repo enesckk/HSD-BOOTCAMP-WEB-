@@ -23,11 +23,14 @@ const Hero: React.FC = () => {
   const totals = useMemo(() => getTotalsFromCities(ACTIVE_CITY_POINTS), []);
 
   return (
-    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-28 bg-[#F7F7F8]">
-      {/* Arka plan tintleri (beyaz-lacivert) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-[#F7F9FF] to-[#EEF2FF]" />
+    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden pt-28 bg-[#F7F7F8] z-20">
+      {/* Arka plan tintleri (beyaz-lacivert) - WaveDivider ile uyumlu */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-[#F7F7F8] to-[#F7F7F8]" />
       <div className="pointer-events-none absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full opacity-[0.08]" style={{background:"radial-gradient(50% 50% at 50% 50%, #E31B23 0%, rgba(227,27,35,0) 70%)"}} />
       <div className="pointer-events-none absolute -bottom-24 -left-24 w-[520px] h-[520px] rounded-full opacity-[0.07]" style={{background:"radial-gradient(50% 50% at 50% 50%, var(--accent) 0%, rgba(30,58,138,0) 70%)"}} />
+      
+      {/* Alt geçiş efekti - WaveDivider ile seamless bağlantı */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F7F7F8] to-transparent pointer-events-none" />
 
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">

@@ -86,12 +86,12 @@ const Header: React.FC = () => {
       animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? 'bg-[var(--accent)] backdrop-blur-xl shadow-lg border-b border-[var(--accent)]/20'
-          : 'bg-white/95 backdrop-blur-md shadow-sm border-b border-[var(--border)]'
+          ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent)]/90 backdrop-blur-xl shadow-2xl border-b border-[var(--accent)]/20'
+          : 'bg-gradient-to-r from-white/95 to-white/90 backdrop-blur-md shadow-lg border-b border-[var(--border)]'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           
           {/* Logo ve Site Adı */}
           <motion.div
@@ -101,37 +101,36 @@ const Header: React.FC = () => {
           >
             <div className="flex items-center space-x-3">
               <Image
-                src="/huaweilogo.png"
+                src="/Huawei-Logo.png"
                 alt="Huawei Logo"
-                width={80}
-                height={50}
-                className="object-contain"
+                width={60}
+                height={45}
+                className="object-contain w-14 h-10 sm:w-16 sm:h-12 hover:scale-105 transition-transform duration-200 drop-shadow-sm"
                 priority
               />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="flex items-center"
-              >
-                <div className="w-15 h-8 animate-pulse">
-                  <svg width="60" height="30" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Sol Chevron */}
-                    <path d="M20 10 L10 30 L20 50 L25 50 L15 30 L25 10 Z" fill="#E31B23"/>
-                    {/* Sağ Chevron */}
-                    <path d="M100 10 L110 30 L100 50 L95 50 L105 30 L95 10 Z" fill="#E31B23"/>
-                    {/* Orta HSD Metni */}
-                    <text x="60" y="40" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="bold" fill="#E31B23">HSD</text>
-                  </svg>
-                </div>
-              </motion.div>
+              <div className={`h-8 w-px ${
+                isScrolled ? 'bg-white/30' : 'bg-gray-300'
+              }`}></div>
+              <Image
+                src={isScrolled ? "/hsd-logo-white.png" : "/hsd-logo.png"}
+                alt="HSD Logo"
+                width={60}
+                height={45}
+                className="object-contain w-14 h-10 sm:w-16 sm:h-12 hover:scale-105 transition-transform duration-200 drop-shadow-sm"
+                priority
+              />
             </div>
             <div className="hidden sm:block">
-              <h1 className={`font-semibold text-xl lg:text-2xl ${
+              <h1 className={`font-bold text-2xl lg:text-3xl ${
                 isScrolled ? 'text-white' : 'text-[var(--text)]'
               }`}>
                 {APP_NAME}
               </h1>
+              <p className={`text-sm ${
+                isScrolled ? 'text-white/80' : 'text-[var(--text-muted)]'
+              }`}>
+                Türkiye Bootcamp Programı
+              </p>
             </div>
           </motion.div>
 

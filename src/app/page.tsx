@@ -15,7 +15,18 @@ export default function HomePage() {
     <main className="min-h-screen">
       <Header />
       <Hero />
-      <WaveDivider className="-mt-16 md:-mt-10" flow colorCycle flowSpeed={10} cycleSpeed={12} />
+      <WaveDivider 
+        className="-mt-8 md:-mt-6 relative z-40" 
+        flow 
+        colorCycle 
+        flowSpeed={5} 
+        cycleSpeed={6}
+        topColor="#F7F7F8"
+        accentColor="var(--accent)"
+        bottomColor="#FFFFFF"
+        height={{ mobile: 300, desktop: 480 }}
+        variant="smooth"
+      />
       <About />
       <PreviousMarathons />
       <ActiveBootcamp />
@@ -23,6 +34,30 @@ export default function HomePage() {
       <Requirements />
       <FAQ />
       <Contact />
+      
+      {/* Wave Decoration - İletişim ile Footer arası */}
+      <div className="relative w-full">
+        <svg
+          className="w-full h-20 md:h-24 lg:h-28"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,60 C150,120 350,0 600,60 C850,120 1050,0 1200,60 L1200,120 L0,120 Z"
+            fill="url(#mainWaveGradient)"
+          />
+          <defs>
+            <linearGradient id="mainWaveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#F8FAFC" />
+              <stop offset="50%" stopColor="#E2E8F0" />
+              <stop offset="100%" stopColor="#CBD5E1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      
       <Footer />
       </main>
   );

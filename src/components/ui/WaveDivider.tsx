@@ -46,52 +46,59 @@ const WaveDivider: React.FC<WaveDividerProps> = ({
           <path d="M0,28 C 240,58 480,18 720,40 C 960,62 1200,26 1440,50 L1440,320 L0,320 Z" fill={topColor as string} />
         )}
 
-        {/* Lacivert accent katmanları (derinlik) + akış */}
+        {/* 4 Katmanlı Dalga Sistemi - Hero'dan About'a organik geçiş */}
         {flow ? (
           <>
+            {/* 1. Katman - Hero ile aynı renk (seamless bağlantı) */}
             <g>
               <g>
-                <path d="M0,80 C 180,60 360,100 540,80 S 900,100 1080,80 S 1260,60 1440,80 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.12}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.10;0.16;0.10" dur={`${cycleSpeed}s`} repeatCount="indefinite" />)}
+                <path d="M0,40 C 180,20 360,60 540,40 S 900,60 1080,40 S 1260,20 1440,40 L1440,320 L0,320 Z" fill={topColor as string} fillOpacity={1.0}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.95;1.0;0.95" dur={`${cycleSpeed}s`} repeatCount="indefinite" />)}
                 </path>
-                <path d="M0,80 C 180,60 360,100 540,80 S 900,100 1080,80 S 1260,60 1440,80 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.12}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.10;0.16;0.10" dur={`${cycleSpeed}s`} repeatCount="indefinite" />)}
+                <path d="M0,40 C 180,20 360,60 540,40 S 900,60 1080,40 S 1260,20 1440,40 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={topColor as string} fillOpacity={1.0}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.95;1.0;0.95" dur={`${cycleSpeed}s`} repeatCount="indefinite" />)}
                 </path>
               </g>
               <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
             </g>
+            
+            {/* 2. Katman - Hafif koyulaşma */}
             <g>
               <g>
-                <path d="M0,120 C 180,100 360,140 540,120 S 900,140 1080,120 S 1260,100 1440,120 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.20}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.18;0.26;0.18" dur={`${cycleSpeed*1.2}s`} repeatCount="indefinite" />)}
+                <path d="M0,80 C 180,60 360,100 540,80 S 900,100 1080,80 S 1260,60 1440,80 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.35}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.30;0.40;0.30" dur={`${cycleSpeed*1.1}s`} repeatCount="indefinite" />)}
                 </path>
-                <path d="M0,120 C 180,100 360,140 540,120 S 900,140 1080,120 S 1260,100 1440,120 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.20}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.18;0.26;0.18" dur={`${cycleSpeed*1.2}s`} repeatCount="indefinite" />)}
+                <path d="M0,80 C 180,60 360,100 540,80 S 900,100 1080,80 S 1260,60 1440,80 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.35}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.30;0.40;0.30" dur={`${cycleSpeed*1.1}s`} repeatCount="indefinite" />)}
                 </path>
               </g>
-              <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed*1.4}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
+              <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed*1.2}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
             </g>
+            
+            {/* 3. Katman - Orta ton */}
             <g>
               <g>
-                <path d="M0,160 C 180,140 360,180 540,160 S 900,180 1080,160 S 1260,140 1440,160 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.28}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.24;0.32;0.24" dur={`${cycleSpeed*1.5}s`} repeatCount="indefinite" />)}
+                <path d="M0,140 C 180,120 360,160 540,140 S 900,160 1080,140 S 1260,120 1440,140 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.50}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.45;0.55;0.45" dur={`${cycleSpeed*1.3}s`} repeatCount="indefinite" />)}
                 </path>
-                <path d="M0,160 C 180,140 360,180 540,160 S 900,180 1080,160 S 1260,140 1440,160 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.28}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.24;0.32;0.24" dur={`${cycleSpeed*1.5}s`} repeatCount="indefinite" />)}
+                <path d="M0,140 C 180,120 360,160 540,140 S 900,160 1080,140 S 1260,120 1440,140 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.50}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.45;0.55;0.45" dur={`${cycleSpeed*1.3}s`} repeatCount="indefinite" />)}
+                </path>
+              </g>
+              <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed*1.5}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
+            </g>
+            
+            {/* 4. Katman - En koyu (About'a taşan) */}
+            <g>
+              <g>
+                <path d="M0,180 C 180,160 360,200 540,180 S 900,200 1080,180 S 1260,160 1440,180 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.75}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.70;0.80;0.70" dur={`${cycleSpeed*1.5}s`} repeatCount="indefinite" />)}
+                </path>
+                <path d="M0,180 C 180,160 360,200 540,180 S 900,200 1080,180 S 1260,160 1440,180 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.75}>
+                  {colorCycle && (<animate attributeName="fill-opacity" values="0.70;0.80;0.70" dur={`${cycleSpeed*1.5}s`} repeatCount="indefinite" />)}
                 </path>
               </g>
               <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed*2}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
-            </g>
-            <g>
-              <g>
-                <path d="M0,200 C 180,180 360,220 540,200 S 900,220 1080,200 S 1260,180 1440,200 L1440,320 L0,320 Z" fill={accentColor as string} fillOpacity={0.36}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.32;0.40;0.32" dur={`${cycleSpeed*1.8}s`} repeatCount="indefinite" />)}
-                </path>
-                <path d="M0,200 C 180,180 360,220 540,200 S 900,220 1080,200 S 1260,180 1440,200 L1440,320 L0,320 Z" transform="translate(1440,0)" fill={accentColor as string} fillOpacity={0.36}>
-                  {colorCycle && (<animate attributeName="fill-opacity" values="0.32;0.40;0.32" dur={`${cycleSpeed*1.8}s`} repeatCount="indefinite" />)}
-                </path>
-              </g>
-              <animateTransform attributeName="transform" type="translate" dur={`${flowSpeed*2.5}s`} repeatCount="indefinite" from={`${direction==='left' ? '0 0' : '-1440 0'}`} to={`${direction==='left' ? '-1440 0' : '0 0'}`} />
             </g>
           </>
         ) : (
@@ -114,11 +121,11 @@ const WaveDivider: React.FC<WaveDividerProps> = ({
           </g>
         )}
 
-        {/* Alt taban: About arka plan rengine maskelenir */}
+        {/* Alt taban: About arka plan rengine maskelenir - beyaz yapıldı */}
         {variant === 'sharp' ? (
-          <path d="M0,218 L120,188 C 240,160 360,208 480,188 C 600,170 720,216 840,196 C 960,178 1080,228 1200,210 C 1320,194 1440,232 1440,320 L0,320 Z" fill={bottomColor as string} />
+          <path d="M0,218 L120,188 C 240,160 360,208 480,188 C 600,170 720,216 840,196 C 960,178 1080,228 1200,210 C 1320,194 1440,232 1440,320 L0,320 Z" fill={bottomColor as string} fillOpacity={1.0} />
         ) : (
-          <path d="M0,208 C 240,238 480,160 720,200 C 960,236 1200,176 1440,216 L1440,320 L0,320 Z" fill={bottomColor as string} />
+          <path d="M0,208 C 240,238 480,160 720,200 C 960,236 1200,176 1440,216 L1440,320 L0,320 Z" fill={bottomColor as string} fillOpacity={1.0} />
         )}
       </svg>
       <style>{`
