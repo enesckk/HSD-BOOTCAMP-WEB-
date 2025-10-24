@@ -113,7 +113,7 @@ const AdminSubmissions = () => {
       if (response.ok) {
         setShowEvaluationModal(false);
         setSelectedSubmission(null);
-        fetchSubmissions(); // Listeyi yenile
+        await fetchSubmissions(); // Listeyi yenile
         alert('Değerlendirme başarıyla kaydedildi!');
       } else {
         const errorData = await response.json();
@@ -146,6 +146,8 @@ const AdminSubmissions = () => {
         return <XCircle className="w-5 h-5 text-red-600" />;
       case 'NEEDS_REVISION':
         return <AlertCircle className="w-5 h-5 text-yellow-600" />;
+      case 'SUBMITTED':
+        return <Upload className="w-5 h-5 text-blue-600" />;
       case 'PENDING':
         return <Clock className="w-5 h-5 text-blue-600" />;
       default:
@@ -161,6 +163,8 @@ const AdminSubmissions = () => {
         return 'Reddedildi';
       case 'NEEDS_REVISION':
         return 'Revizyon Gerekli';
+      case 'SUBMITTED':
+        return 'Teslim Edildi';
       case 'PENDING':
         return 'Beklemede';
       default:
@@ -176,6 +180,8 @@ const AdminSubmissions = () => {
         return 'bg-red-100 text-red-800 border-red-200';
       case 'NEEDS_REVISION':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'SUBMITTED':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'PENDING':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
@@ -240,6 +246,7 @@ const AdminSubmissions = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 bg-white"
             >
               <option value="ALL">Tümü</option>
+              <option value="SUBMITTED">Teslim Edildi</option>
               <option value="PENDING">Beklemede</option>
               <option value="APPROVED">Onaylandı</option>
               <option value="REJECTED">Reddedildi</option>
@@ -361,13 +368,13 @@ const AdminSubmissions = () => {
                       {new Date(submission.submittedAt).toLocaleDateString('tr-TR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {submission.feedback ? (
+                      {submission.status === 'SUBMITTED' ? (
+                        <span className="text-gray-400">Değerlendirilmedi</span>
+                      ) : (
                         <div className="flex items-center space-x-1">
                           <MessageSquare className="w-4 h-4 text-blue-500" />
                           <span className="text-blue-600">Değerlendirildi</span>
                         </div>
-                      ) : (
-                        <span className="text-gray-400">Değerlendirilmedi</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -480,7 +487,7 @@ const AdminSubmissions = () => {
                           )}
                         </div>
                         <a
-                          href={selectedSubmission.fileUrl}
+                          href={`/api/files/${selectedSubmission.fileName}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-red-600 hover:text-red-700"
@@ -603,7 +610,7 @@ const AdminSubmissions = () => {
                               <span className="text-gray-900 font-medium">{selectedSubmission.fileName || 'Dosya'}</span>
                             </div>
                             <a
-                              href={selectedSubmission.fileUrl}
+                              href={`/api/files/${selectedSubmission.fileName}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"

@@ -5,11 +5,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const announcement = await prisma.announcement.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
     if (!announcement) {
       return NextResponse.json({ error: 'Announcement not found' }, { status: 404 });
@@ -23,14 +24,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { title, summary, content, category, date, time, pinned } = body;
 
     const updated = await prisma.announcement.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { title, summary, content, category, date, time, pinned },
     });
     return NextResponse.json(updated);
@@ -42,10 +44,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.announcement.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.announcement.delete({ where: { id: id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting announcement:', error);

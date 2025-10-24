@@ -71,8 +71,8 @@ export default function AdminAnnouncementsPage() {
     if (Object.keys(nextErrors).length > 0) return;
     const body = {
       ...form,
-      date: form.date || null,
-      time: form.time || null,
+      date: form.date || new Date().toISOString().split('T')[0],
+      time: form.time || new Date().toTimeString().split(' ')[0],
     };
     if (editing) {
       await fetch(`/api/announcements/${editing.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

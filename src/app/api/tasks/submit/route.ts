@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 // POST - Görev teslimi yap
 export async function POST(request: NextRequest) {
@@ -37,14 +39,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Dosya yükleme (basit implementasyon)
+    // Dosya yükleme işlemi
     let fileUrl = null;
     let linkUrlValue = null;
     
     if ((uploadType === 'FILE' || uploadType === 'file') && file) {
-      // Burada gerçek dosya yükleme işlemi yapılacak
-      // Şimdilik mock URL
-      fileUrl = `/uploads/${Date.now()}-${file.name}`;
+      try {
+        // Uploads klasörünü oluştur
+        const uploadsDir = join(process.cwd(), 'public', 'uploads');
+        await mkdir(uploadsDir, { recursive: true });
+        
+        // Dosya adını oluştur
+        const fileName = `${Date.now()}-${file.name}`;
+        const filePath = join(uploadsDir, fileName);
+        
+        // Dosyayı yaz
+        const bytes = await file.arrayBuffer();
+        await writeFile(filePath, Buffer.from(bytes));
+        
+        fileUrl = `/uploads/${fileName}`;
+        console.log('File uploaded successfully:', fileUrl);
+      } catch (fileError) {
+        console.error('File upload error:', fileError);
+        return NextResponse.json(
+          { success: false, error: 'Dosya yüklenemedi' },
+          { status: 500 }
+        );
+      }
     } else if ((uploadType === 'LINK' || uploadType === 'link') && linkUrl) {
       linkUrlValue = linkUrl;
     }

@@ -40,9 +40,9 @@ const AboutPage = () => {
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
             <Info className="w-8 h-8 text-white" />
           </div>
-          <div>
-            <p className="text-red-100">HSD Türkiye Bootcamp Programı</p>
-          </div>
+        <div>
+          <p className="text-red-100">HSD Türkiye Bootcamp Programı</p>
+        </div>
         </div>
         <p className="text-lg text-red-100 leading-relaxed">
           Huawei Türkiye ve Habitat Derneği iş birliğiyle düzenlenen teknoloji eğitimleri platformu. 

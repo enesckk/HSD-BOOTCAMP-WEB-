@@ -518,26 +518,32 @@ const TasksPage = () => {
                   </div>
                 </div>
               ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-20"
-            >
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz görev yok</h3>
-                  <p className="text-gray-600 mb-6">Yüklediğiniz görevler burada görünecek.</p>
-              <motion.button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveTab('upload')}
-              >
-                <Upload className="w-5 h-5" />
-                <span>Görev Yükle</span>
-              </motion.button>
-            </motion.div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                    Yüklediğiniz Görevler (0)
+                  </h3>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200"
+                  >
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Henüz görev yok</h4>
+                    <p className="text-gray-600 mb-4">Yüklediğiniz görevler burada görünecek.</p>
+                    <motion.button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('upload')}
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Görev Yükle</span>
+                    </motion.button>
+                  </motion.div>
+                </div>
               )}
 
               {/* Mevcut Görevler (Admin Tarafından Oluşturulan) */}

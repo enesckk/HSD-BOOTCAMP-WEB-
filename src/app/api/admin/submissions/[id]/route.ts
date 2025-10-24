@@ -66,9 +66,9 @@ export async function PUT(
     const { status, feedback, score } = body;
     const { id } = await params;
 
+    // Sadece not ekleme - durum değişikliği yok
     const updateData: any = {};
     
-    if (status) updateData.status = status;
     if (feedback !== undefined) updateData.notes = feedback;
     if (score !== undefined) updateData.score = score;
 
@@ -86,39 +86,13 @@ export async function PUT(
       },
     });
 
-    // Revizyon durumunda kullanıcıya bildirim gönder
-    if (status === 'NEEDS_REVISION' && submission.userId) {
+    // Sadece bilgi notu gönder - durum değişikliği yok
+    if (feedback && submission.userId) {
       await prisma.notification.create({
         data: {
           type: 'TASK',
-          title: 'Ödev Revizyon Gerekli',
-          message: `Ödeviniz revizyon gerektiriyor: ${feedback || 'Lütfen ödevinizi gözden geçirin.'}`,
-          userId: submission.userId,
-          read: false
-        }
-      });
-    }
-
-    // Onay durumunda kullanıcıya bildirim gönder
-    if (status === 'APPROVED' && submission.userId) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK',
-          title: 'Ödev Onaylandı',
-          message: `Ödeviniz onaylandı!${score ? ` Puanınız: ${score}/100` : ''}`,
-          userId: submission.userId,
-          read: false
-        }
-      });
-    }
-
-    // Red durumunda kullanıcıya bildirim gönder
-    if (status === 'REJECTED' && submission.userId) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK',
-          title: 'Ödev Reddedildi',
-          message: `Ödeviniz reddedildi: ${feedback || 'Lütfen ödevinizi yeniden gözden geçirin.'}`,
+          title: 'Ödev Hakkında Bilgi',
+          message: `Ödeviniz hakkında bilgi: ${feedback}`,
           userId: submission.userId,
           read: false
         }
