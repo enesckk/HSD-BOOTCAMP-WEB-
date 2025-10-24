@@ -107,11 +107,11 @@ const About: React.FC = () => {
               </div>
               <div className="flex justify-center space-x-6">
                 {[
-                  { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
-                  { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
-                  { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
-                  { name: 'Medium', icon: <span className="font-bold text-sm text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
-                  { name: 'X (Twitter)', icon: <span className="font-bold text-lg text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
+                  { name: 'LinkedIn', icon: <Linkedin className="w-8 h-8" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
+                  { name: 'Instagram', icon: <Instagram className="w-8 h-8" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
+                  { name: 'YouTube', icon: <Youtube className="w-8 h-8" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
+                  { name: 'Medium', icon: <span className="font-bold text-lg text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
+                  { name: 'X (Twitter)', icon: <span className="font-bold text-xl text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
                 ].map((social, index) => (
                   <motion.a
                     key={social.name}
@@ -124,7 +124,7 @@ const About: React.FC = () => {
                     viewport={{ once: true }}
                     whileHover={{ scale: 1.2, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`text-4xl transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                    className={`transition-all duration-300 ${social.color} hover:drop-shadow-lg flex items-center justify-center`}
                     title={social.name}
                   >
                     {social.icon}
