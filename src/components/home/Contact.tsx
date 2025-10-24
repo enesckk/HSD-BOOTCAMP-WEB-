@@ -155,43 +155,6 @@ const Contact: React.FC = () => {
             ))}
           </motion.div>
 
-          {/* Social Media */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <div className="text-center mb-8">
-              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">
-                Sosyal <span className="text-[var(--accent)]">Medya</span>
-              </h3>
-              <p className="text-lg text-[var(--text-muted)]">Bizi takip edin ve güncel kalın</p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {socialMedia.map((social, index) => (
-                <motion.a
-                  key={social.name}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white border border-[var(--border)] rounded-xl p-4 hover:shadow-lg transition-all duration-300 text-center group"
-                >
-                  <div className="w-12 h-12 bg-[var(--accent)] rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <div className="text-white">{social.icon}</div>
-                  </div>
-                  <h4 className="font-bold text-[var(--text)] mb-1">{social.name}</h4>
-                </motion.a>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Quick Actions */}
           <motion.div
