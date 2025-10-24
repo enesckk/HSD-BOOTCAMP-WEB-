@@ -6,33 +6,48 @@ export async function GET(request: NextRequest) {
   try {
     console.log('=== INSTRUCTOR TASKS API CALLED ===');
     
-    // Geçici olarak mock data döndür
-    const mockTasks = [
-      {
-        id: '1',
-        title: 'Örnek Görev 1',
-        description: 'Bu bir örnek görevdir',
-        dueDate: new Date().toISOString(),
-        priority: 'MEDIUM',
-        status: 'PENDING',
-        submissions: 0,
-        totalStudents: 1
+    // Veritabanından tüm görevleri çek
+    const tasks = await prisma.task.findMany({
+      where: {
+        status: {
+          in: ['PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED', 'NEEDS_REVISION']
+        }
       },
-      {
-        id: '2',
-        title: 'Örnek Görev 2',
-        description: 'Bu da bir örnek görevdir',
-        dueDate: new Date().toISOString(),
-        priority: 'HIGH',
-        status: 'PENDING',
-        submissions: 1,
-        totalStudents: 1
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
-    ];
+    });
+
+    // Görevleri formatla
+    const formattedTasks = tasks.map((task: any) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      startDate: task.startDate ? task.startDate.toISOString() : null,
+      dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+      priority: task.priority,
+      status: task.status,
+      submissions: 0, // Şimdilik 0, daha sonra hesaplanabilir
+      totalStudents: 1, // Şimdilik 1, daha sonra hesaplanabilir
+      assignedTo: task.user ? task.user.fullName : null,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString()
+    }));
+
+    console.log('Instructor tasks found:', formattedTasks.length);
 
     return NextResponse.json({
       success: true,
-      tasks: mockTasks,
+      tasks: formattedTasks,
     });
   } catch (error) {
     console.error('=== INSTRUCTOR TASKS ERROR ===');

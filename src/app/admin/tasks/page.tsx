@@ -46,6 +46,8 @@ export default function AdminTasksPage() {
     dueDate: '',
     status: 'PENDING' as 'PENDING' | 'COMPLETED' | 'REJECTED'
   });
+  const [editingField, setEditingField] = useState<{ taskId: string; field: string } | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
@@ -210,6 +212,52 @@ export default function AdminTasksPage() {
     setShowEditModal(true);
   };
 
+  const startEditing = (taskId: string, field: string, currentValue: string) => {
+    setEditingField({ taskId, field });
+    setEditValue(currentValue);
+  };
+
+  const cancelEditing = () => {
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const saveEdit = async (taskId: string, field: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const updateData: any = { id: taskId };
+      updateData[field] = editValue;
+
+      const response = await fetch('/api/admin/tasks', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Local state'i güncelle
+        setTasks(tasks.map(t => 
+          t.id === taskId 
+            ? { ...t, [field]: editValue, updatedAt: new Date().toISOString() }
+            : t
+        ));
+        setEditingField(null);
+        setEditValue('');
+      } else {
+        alert('Güncelleme başarısız: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Güncelleme sırasında hata oluştu');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -299,20 +347,166 @@ export default function AdminTasksPage() {
                     <tr key={task.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{task.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{task.description}</p>
+                          {editingField?.taskId === task.id && editingField?.field === 'title' ? (
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="text"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => saveEdit(task.id, 'title')}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <h3 
+                              className="font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                              onClick={() => startEditing(task.id, 'title', task.title)}
+                            >
+                              {task.title}
+                            </h3>
+                          )}
+                          {editingField?.taskId === task.id && editingField?.field === 'description' ? (
+                            <div className="flex items-center space-x-2 mt-1">
+                              <textarea
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                rows={2}
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => saveEdit(task.id, 'description')}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <p 
+                              className="text-sm text-gray-600 mt-1 line-clamp-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                              onClick={() => startEditing(task.id, 'description', task.description)}
+                            >
+                              {task.description}
+                            </p>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)}`}>
-                          {getStatusText(task.status)}
-                        </span>
+                        {editingField?.taskId === task.id && editingField?.field === 'status' ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            >
+                              <option value="PENDING">Beklemede</option>
+                              <option value="COMPLETED">Tamamlandı</option>
+                              <option value="REJECTED">Reddedildi</option>
+                            </select>
+                            <button
+                              onClick={() => saveEdit(task.id, 'status')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span 
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 ${getStatusColor(task.status)}`}
+                            onClick={() => startEditing(task.id, 'status', task.status)}
+                          >
+                            {getStatusText(task.status)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-'}
+                        {editingField?.taskId === task.id && editingField?.field === 'startDate' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="date"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveEdit(task.id, 'startDate')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span 
+                            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            onClick={() => startEditing(task.id, 'startDate', task.startDate ? task.startDate.split('T')[0] : '')}
+                          >
+                            {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : '-'}
+                        {editingField?.taskId === task.id && editingField?.field === 'dueDate' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="date"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveEdit(task.id, 'dueDate')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span 
+                            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            onClick={() => startEditing(task.id, 'dueDate', task.dueDate ? task.dueDate.split('T')[0] : '')}
+                          >
+                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : '-'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(task.createdAt).toLocaleDateString('tr-TR')}

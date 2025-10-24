@@ -110,19 +110,19 @@ export const sendBulkEmail = async ({
 // E-posta şablonları
 export const emailTemplates = {
   welcome: {
-    subject: 'Afet Fikir Teknolojileri Maratonu - Hoş Geldiniz!',
+    subject: 'HSD Türkiye Bootcamp - Hoş Geldiniz!',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">Afet Fikir Teknolojileri Maratonu</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px;">Afet Teknolojileri Fikir Maratonu</p>
+          <h1 style="margin: 0; font-size: 28px;">HSD Türkiye Bootcamp</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Huawei Student Developers</p>
         </div>
         
         <div style="padding: 30px; background: #f9fafb;">
           <h2 style="color: #1f2937; margin-bottom: 20px;">Merhaba {{fullName}}!</h2>
           
           <p style="color: #374151; line-height: 1.6; margin-bottom: 20px;">
-            Afet Fikir Teknolojileri Maratonu'na katıldığınız için sizi tebrik ederiz! 
+            HSD Türkiye Bootcamp programına katıldığınız için sizi tebrik ederiz! 
             Bu heyecan verici yolculukta sizinle birlikte olmaktan mutluluk duyuyoruz.
           </p>
           
@@ -151,7 +151,7 @@ export const emailTemplates = {
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center;">
           <p style="margin: 0; font-size: 14px;">
-            © 2024 Afet Fikir Teknolojileri Maratonu. Tüm hakları saklıdır.
+            © 2024 HSD Türkiye Bootcamp. Tüm hakları saklıdır.
           </p>
         </div>
       </div>
@@ -193,7 +193,7 @@ export const emailTemplates = {
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center;">
           <p style="margin: 0; font-size: 14px;">
-            © 2024 Afet Fikir Teknolojileri Maratonu. Tüm hakları saklıdır.
+            © 2024 HSD Türkiye Bootcamp. Tüm hakları saklıdır.
           </p>
         </div>
       </div>
@@ -236,7 +236,7 @@ export const emailTemplates = {
         
         <div style="background: #1f2937; color: white; padding: 20px; text-align: center;">
           <p style="margin: 0; font-size: 14px;">
-            © 2024 Afet Fikir Teknolojileri Maratonu. Tüm hakları saklıdır.
+            © 2024 HSD Türkiye Bootcamp. Tüm hakları saklıdır.
           </p>
         </div>
       </div>

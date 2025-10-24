@@ -85,8 +85,23 @@ export default function AdminAnnouncementsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
-    await load();
+    try {
+      const response = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      
+      if (result.success) {
+        // Local state'i güncelle - API'yi tekrar çağırmadan
+        setItems(items.filter(item => item.id !== id));
+      } else {
+        console.error('Delete failed:', result.error);
+        // Hata durumunda sayfayı yenile
+        await load();
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      // Hata durumunda sayfayı yenile
+      await load();
+    }
   };
 
   const togglePin = async (item: Announcement) => {

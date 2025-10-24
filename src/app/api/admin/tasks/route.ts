@@ -113,3 +113,55 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PUT - Görev güncelle
+export async function PUT(request: NextRequest) {
+  console.log('=== UPDATE ADMIN TASK API CALLED ===');
+  
+  try {
+    const body = await request.json();
+    const { id, title, description, startDate, dueDate, status } = body;
+    
+    console.log('Update request:', { id, title, description, startDate, dueDate, status });
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Görev ID gereklidir' },
+        { status: 400 }
+      );
+    }
+
+    // Görevi güncelle
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: {
+        ...(title && { title: title.trim() }),
+        ...(description && { description: description.trim() }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(status && { status: status as any })
+      }
+    });
+
+    console.log('Task updated successfully:', updatedTask);
+
+    return NextResponse.json({
+      success: true,
+      task: updatedTask,
+      message: 'Görev başarıyla güncellendi'
+    });
+
+  } catch (error: any) {
+    console.error('=== UPDATE ADMIN TASK ERROR ===');
+    console.error('Error:', error);
+    
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Görev güncellenemedi', 
+        detail: error?.message || 'Bilinmeyen hata' 
+      },
+      { status: 500 }
+    );
+  }
+}

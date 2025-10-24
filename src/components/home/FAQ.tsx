@@ -26,7 +26,7 @@ const FAQ: React.FC = () => {
   const faqItems = [
     {
       question: "Bootcamp programları ne zaman düzenleniyor?",
-      answer: "Afet Fikir Teknolojileri Maratonu programları yıl boyunca farklı teknoloji alanlarında düzenlenmektedir. Aktif programlar için ana sayfadaki 'Aktif Bootcamp' bölümünü kontrol edebilirsiniz.",
+      answer: "HSD Türkiye Bootcamp programları yıl boyunca farklı teknoloji alanlarında düzenlenmektedir. Aktif programlar için ana sayfadaki 'Aktif Bootcamp' bölümünü kontrol edebilirsiniz.",
       icon: <Calendar className="w-5 h-5" />,
       category: "Program"
     },

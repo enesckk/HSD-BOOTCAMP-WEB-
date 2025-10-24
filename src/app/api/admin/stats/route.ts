@@ -7,11 +7,10 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     const totalUsers = await prisma.user.count();
-    const totalAnnouncements = await prisma.notification.count({
-      where: { type: 'ANNOUNCEMENT' }
-    });
+    const totalAnnouncements = await prisma.announcement.count();
     const totalMessages = await prisma.channelMessage.count();
     const totalNotifications = await prisma.notification.count();
+    const totalLessons = await prisma.lesson.count();
 
     const recentChannelMessages = await prisma.channelMessage.findMany({
       take: 5,
@@ -42,7 +41,8 @@ export async function GET(request: NextRequest) {
         totalUsers,
         totalAnnouncements,
         totalMessages,
-        totalNotifications
+        totalNotifications,
+        totalLessons
       },
       recentActivities: {
         channelMessages: recentChannelMessages,
