@@ -171,40 +171,6 @@ const Hero: React.FC = () => {
               transition={{ duration: 1, delay: 0.5 }}
               className="relative h-80 sm:h-96 lg:h-full flex items-center justify-center order-first lg:order-last"
             >
-              {/* Sosyal Medya Logoları - Harita Üstü */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                className="absolute top-4 left-4 right-4 z-10"
-              >
-                <div className="flex justify-center space-x-3">
-                  {[
-                    { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
-                    { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
-                    { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
-                    { name: 'Medium', icon: <span className="font-bold text-sm text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
-                    { name: 'X (Twitter)', icon: <span className="font-bold text-lg text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
-                  ].map((social, index) => (
-                    <motion.a
-                      key={social.name}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.9 + index * 0.1 }}
-                      whileHover={{ scale: 1.2, rotate: 5 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={`bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
-                      title={social.name}
-                    >
-                      {social.icon}
-                    </motion.a>
-                  ))}
-                </div>
-              </motion.div>
-
               <TurkeyMap />
             </motion.div>
           </div>
