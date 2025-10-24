@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
-  Users, Target, Award, Lightbulb, Zap, CheckCircle, ArrowRight, Calendar, MapPin, Play,
+  Users, Target, Award, Lightbulb, Zap, CheckCircle, ArrowRight, Calendar, MapPin, Play, Linkedin, Instagram, Youtube, X,
 } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 
@@ -107,11 +107,11 @@ const About: React.FC = () => {
               </div>
               <div className="flex justify-center space-x-6">
                 {[
-                  { name: 'LinkedIn', icon: '💼', url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
-                  { name: 'Medium', icon: '📝', url: 'https://medium.com/@huaweiturkey', color: 'hover:text-green-600' },
-                  { name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
-                  { name: 'X (Twitter)', icon: '🐦', url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' },
-                  { name: 'YouTube', icon: '📺', url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' }
+                  { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
+                  { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
+                  { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
+                  { name: 'Medium', icon: <span className="font-bold text-sm text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
+                  { name: 'X (Twitter)', icon: <span className="font-bold text-lg text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
                 ].map((social, index) => (
                   <motion.a
                     key={social.name}
