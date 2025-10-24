@@ -70,12 +70,12 @@ const About: React.FC = () => {
 
   const stats = [
     {
-      number: 10000,
-      label: 'Aktif Üye',
+      number: 41,
+      label: 'Şehir',
       icon: <Users className="w-6 h-6" />,
     },
     {
-      number: 50,
+      number: 41,
       label: 'Üniversite',
       icon: <Target className="w-6 h-6" />,
     },
@@ -141,8 +141,8 @@ const About: React.FC = () => {
                     </div>
                     <div className="text-sm font-semibold text-[var(--text)] mb-1">{stat.label}</div>
                     <div className="text-xs text-[var(--text-muted)] leading-relaxed">
-                      {stat.number === 10000 && "Türkiye'de aktif HSD üyesi ile güçlü topluluk"}
-                      {stat.number === 50 && "Üniversitede HSD toplulukları ile yaygın ağ"}
+                      {stat.number === 41 && stat.label === 'Şehir' && "Türkiye genelinde 41 şehirde aktif HSD toplulukları"}
+                      {stat.number === 41 && stat.label === 'Üniversite' && "41 üniversitede HSD toplulukları ile yaygın ağ"}
                       {stat.number === 100 && "Yıllık düzenlenen etkinlik ve eğitim sayısı"}
                       {stat.number === 3 && "Türkiye'de HSD programının deneyim süresi"}
                   </div>
@@ -156,7 +156,7 @@ const About: React.FC = () => {
             
              
               <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
-                Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır. Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
+                HSD Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start">
