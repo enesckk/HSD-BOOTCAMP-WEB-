@@ -41,7 +41,6 @@ const AboutPage = () => {
             <Info className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Hakkımızda</h1>
             <p className="text-red-100">HSD Türkiye Bootcamp Programı</p>
           </div>
         </div>
