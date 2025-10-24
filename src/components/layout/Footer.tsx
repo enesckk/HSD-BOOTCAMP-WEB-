@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
     },
     {
       name: "Medium",
-      icon: <span className="font-bold text-sm text-white">Medium</span>,
+      icon: <span className="font-bold text-xs text-white">M</span>,
       url: "https://medium.com/huawei-developers"
     },
     {
