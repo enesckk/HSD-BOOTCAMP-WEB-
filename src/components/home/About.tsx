@@ -156,7 +156,7 @@ const About: React.FC = () => {
             
              
               <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
-                HUAWEI Öğrenci Geliştiricileri (HSD), öncü teknolojilere tutku duyan üniversite öğrencileri için küresel bir programdır. Geliştirici olarak büyümek isteyen tüm lisans ve lisansüstü öğrencileri başvuruda bulunabilir. HSD, öğrencilere zenginleştirici eğitim kursları ve etkinlikler aracılığıyla dinamik bir akranlar arası öğrenme ortamında bilgi birikimlerini genişletme fırsatı sunar.
+                Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır. Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start">
