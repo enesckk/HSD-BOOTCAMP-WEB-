@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, Twitter } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, Target, GraduationCap, Linkedin, Instagram, Youtube, X } from 'lucide-react';
 import Image from 'next/image';
 import { APP_NAME, ACTIVE_CITY_POINTS, getTotalsFromCities } from '@/utils/constants';
 import TurkeyMap from './TurkeyMap';
@@ -99,7 +99,7 @@ const Hero: React.FC = () => {
                       { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/huawei-turkey', color: 'hover:text-blue-600' },
                       { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/huaweiturkey', color: 'hover:text-pink-600' },
                       { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
-                      { name: 'X (Twitter)', icon: <Twitter className="w-6 h-6" />, url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' }
+                      { name: 'X (Twitter)', icon: <X className="w-6 h-6" />, url: 'https://twitter.com/HuaweiTurkey', color: 'hover:text-black' }
                     ].map((social, index) => (
                       <motion.a
                         key={social.name}
