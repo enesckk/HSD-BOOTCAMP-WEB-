@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Globe,
   Linkedin,
-  Twitter,
+  X,
   Instagram,
   Facebook,
   Youtube,
@@ -54,26 +54,26 @@ const Contact: React.FC = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-5 h-5" />,
-      url: "https://www.linkedin.com/company/huawei-turkey",
-      followers: "10K+"
+      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all",
+      followers: "150K+"
+    },
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-5 h-5" />,
+      url: "https://www.instagram.com/hsdturkiye/",
+      followers: "80K+"
     },
     {
       name: "YouTube",
       icon: <Youtube className="w-5 h-5" />,
       url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye",
-      followers: "5K+"
-    },
-    {
-      name: "Instagram",
-      icon: <Instagram className="w-5 h-5" />,
-      url: "https://www.instagram.com/huaweiturkey",
-      followers: "3K+"
+      followers: "50K+"
     },
     {
       name: "X",
-      icon: <Twitter className="w-5 h-5" />,
-      url: "https://twitter.com/HuaweiTurkey",
-      followers: "2K+"
+      icon: <span className="font-bold text-lg text-white">𝕏</span>,
+      url: "https://x.com/turkiye_hsd",
+      followers: "120K+"
     }
   ];
 
