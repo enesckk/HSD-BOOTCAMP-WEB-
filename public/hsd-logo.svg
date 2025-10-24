@@ -1,0 +1,10 @@
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sol Chevron -->
+  <path d="M20 10 L10 30 L20 50 L25 50 L15 30 L25 10 Z" fill="#E31B23"/>
+  
+  <!-- Sağ Chevron -->
+  <path d="M100 10 L110 30 L100 50 L95 50 L105 30 L95 10 Z" fill="#E31B23"/>
+  
+  <!-- Orta HSD Metni -->
+  <text x="60" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#E31B23">HSD</text>
+</svg>

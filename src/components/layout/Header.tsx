@@ -99,14 +99,30 @@ const Header: React.FC = () => {
             className="flex items-center space-x-4 cursor-pointer"
             onClick={() => scrollToSection('home')}
           >
-            <Image
-              src="/huaweilogo.png"
-              alt="Huawei Logo"
-              width={100}
-              height={60}
-              className="object-contain"
-              priority
-            />
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/huaweilogo.png"
+                alt="Huawei Logo"
+                width={80}
+                height={50}
+                className="object-contain"
+                priority
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex items-center"
+              >
+                <Image
+                  src="/hsd-logo.svg"
+                  alt="HSD Logo"
+                  width={60}
+                  height={30}
+                  className="object-contain animate-pulse"
+                />
+              </motion.div>
+            </div>
             <div className="hidden sm:block">
               <h1 className={`font-semibold text-xl lg:text-2xl ${
                 isScrolled ? 'text-white' : 'text-[var(--text)]'
