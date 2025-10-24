@@ -91,3 +91,40 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    // Kullanıcının var olup olmadığını kontrol et
+    const user = await prisma.user.findUnique({
+      where: { id: id }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Kullanıcı bulunamadı' },
+        { status: 404 }
+      );
+    }
+
+    // Kullanıcıyı sil
+    await prisma.user.delete({
+      where: { id: id }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Kullanıcı başarıyla silindi'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return NextResponse.json(
+      { error: 'Kullanıcı silinirken bir hata oluştu' },
+      { status: 500 }
+    );
+  }
+}

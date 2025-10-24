@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { SuccessModal } from '@/components/ui/SuccessModal';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import { 
   Upload, 
   FileText, 
@@ -22,7 +24,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Edit,
-  XCircle
+  XCircle,
+  Trash2
 } from 'lucide-react';
 
 const TasksPage = () => {
@@ -39,6 +42,9 @@ const TasksPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     huaweiCloudAccount: '',
     file: null as File | null,
@@ -52,34 +58,14 @@ const TasksPage = () => {
       try {
         setIsLoading(true);
         
-        // Önce localStorage'dan görevleri yükle
+        // localStorage'ı temizle ve sadece API'den veri al
         if (user) {
-          const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
           console.log('=== PAGE LOAD ===');
           console.log('User ID:', user.id);
-          console.log('Saved tasks from localStorage:', savedTasks);
           
-          if (savedTasks) {
-            try {
-              const parsedTasks = JSON.parse(savedTasks);
-              if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
-                setTasks(parsedTasks);
-                console.log('✅ Tasks loaded from localStorage:', parsedTasks);
-                console.log('✅ Tasks count from localStorage:', parsedTasks.length);
-              } else {
-                console.log('❌ Invalid or empty localStorage data, clearing...');
-                localStorage.removeItem(`user_tasks_${user.id}`);
-                setTasks([]);
-              }
-            } catch (error) {
-              console.error('❌ Error parsing localStorage data:', error);
-              localStorage.removeItem(`user_tasks_${user.id}`);
-              setTasks([]);
-            }
-          } else {
-            console.log('❌ No localStorage data found');
-            setTasks([]);
-          }
+          // localStorage'ı temizle
+          localStorage.removeItem(`user_tasks_${user.id}`);
+          console.log('✅ localStorage cleared');
         }
         
         // Kullanıcının kendi görevlerini getir (sadece user varsa)
@@ -93,33 +79,16 @@ const TasksPage = () => {
               const userTasksArray = userTasksJson.tasks;
               console.log('✅ API tasks found:', userTasksArray);
               
-              // API'den veri gelirse, localStorage'ı güncelle
-          setTasks(userTasksArray);
-              localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(userTasksArray));
-              console.log('✅ Tasks updated from API and saved to localStorage');
+              // API'den veri gelirse, direkt set et
+              setTasks(userTasksArray);
+              console.log('✅ Tasks updated from API');
             } else {
-              console.log('❌ No tasks from API, keeping localStorage data');
-              // API'den veri gelmezse, localStorage'daki veriyi koru
-              const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
-              if (savedTasks) {
-                const parsedTasks = JSON.parse(savedTasks);
-                if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
-                  setTasks(parsedTasks);
-                  console.log('✅ Keeping localStorage data:', parsedTasks);
-                }
-              }
+              console.log('❌ No tasks from API');
+              setTasks([]);
             }
           } catch (apiError) {
-            console.error('❌ API error, keeping localStorage data:', apiError);
-            // API hatası durumunda localStorage'daki veriyi koru
-            const savedTasks = localStorage.getItem(`user_tasks_${user.id}`);
-            if (savedTasks) {
-              const parsedTasks = JSON.parse(savedTasks);
-              if (Array.isArray(parsedTasks) && parsedTasks.length > 0) {
-                setTasks(parsedTasks);
-                console.log('✅ Keeping localStorage data after API error:', parsedTasks);
-              }
-            }
+            console.error('❌ API error:', apiError);
+            setTasks([]);
           }
         }
         
@@ -141,7 +110,7 @@ const TasksPage = () => {
         console.log('Available tasks length:', availableTasksArray.length);
         
         // Debug: Her görev için detay
-        availableTasksArray.forEach((task, index) => {
+        availableTasksArray.forEach((task: any, index: number) => {
           console.log(`Task ${index + 1}:`, {
             id: task.id,
             title: task.title,
@@ -160,6 +129,36 @@ const TasksPage = () => {
       }
     };
     fetchTasks();
+  }, [user]);
+
+  // Sayfa focus olduğunda tasks'ları yenile
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+      
+      try {
+        console.log('=== FETCHING TASKS ON FOCUS ===');
+        const userTasksRes = await fetch(`/api/tasks?userId=${user.id}`);
+        const userTasksJson = await userTasksRes.json();
+        
+        if (userTasksJson.success && userTasksJson.tasks) {
+          setTasks(userTasksJson.tasks);
+          console.log('✅ Tasks refreshed on focus');
+        }
+      } catch (error) {
+        console.error('❌ Error refreshing tasks:', error);
+      }
+    };
+
+    const handleFocus = () => {
+      console.log('Page focused, refreshing tasks...');
+      if (user) {
+        fetchTasks();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [user]);
 
   const tabs = [
@@ -207,6 +206,11 @@ const TasksPage = () => {
       formDataToSend.append('huaweiCloudAccount', formData.huaweiCloudAccount);
       formDataToSend.append('uploadType', uploadType);
       
+      // Güncelleme durumunda editingTask'ın ID'sini de ekle
+      if (editingTask) {
+        formDataToSend.append('editingTaskId', editingTask.id);
+      }
+      
       if (uploadType === 'file' && formData.file) {
         formDataToSend.append('file', formData.file);
         console.log('File added to form data:', formData.file.name);
@@ -215,10 +219,15 @@ const TasksPage = () => {
         console.log('Link added to form data:', formData.fileLink);
       }
       
-      console.log('Sending request to /api/tasks/submit');
+      // Güncelleme mi yoksa yeni görev mi?
+      const isUpdate = editingTask !== null;
+      const endpoint = isUpdate ? '/api/tasks/update' : '/api/tasks/submit';
+      const method = isUpdate ? 'PUT' : 'POST';
       
-      const res = await fetch('/api/tasks/submit', {
-        method: 'POST',
+      console.log(`Sending request to ${endpoint} with method ${method}`);
+      
+      const res = await fetch(endpoint, {
+        method: method,
         body: formDataToSend
       });
       
@@ -240,44 +249,31 @@ const TasksPage = () => {
       }
       
       if (editingTask) {
-        const updatedTasks = (tasks || []).map(t => t.id === editingTask.id ? newTask.task : t);
+        console.log('=== UPDATING TASK ===');
+        console.log('Editing task ID:', editingTask.id);
+        console.log('New task from API:', newTask.task);
+        console.log('Current tasks before update:', tasks);
+        
+        const updatedTasks = (tasks || []).map(t => {
+          if (t.id === editingTask.id) {
+            console.log('Replacing task:', t, 'with:', newTask.task);
+            return newTask.task;
+          }
+          return t;
+        });
+        
+        console.log('Updated tasks array:', updatedTasks);
         setTasks(updatedTasks);
-        // localStorage'a kaydet
-        if (user) {
-          localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(updatedTasks));
-        }
         setSuccessMessage('Görev başarıyla güncellendi!');
+        setShowSuccessModal(true);
+        // Güncelleme sonrası editingTask'ı temizle
+        setEditingTask(null);
       } else {
         const newTasks = [newTask.task, ...(tasks || [])];
         console.log('New tasks array:', newTasks);
         setTasks(newTasks);
-        
-        // localStorage'a kaydet
-        if (user) {
-          console.log('=== SAVING TASK ===');
-          console.log('User ID:', user.id);
-          console.log('New tasks array:', newTasks);
-          console.log('New tasks count:', newTasks.length);
-          
-          localStorage.setItem(`user_tasks_${user.id}`, JSON.stringify(newTasks));
-          console.log('✅ Task saved to localStorage with key:', `user_tasks_${user.id}`);
-          console.log('✅ Saved data:', JSON.stringify(newTasks));
-          
-          // localStorage'ı kontrol et
-          const checkSaved = localStorage.getItem(`user_tasks_${user.id}`);
-          console.log('✅ Verification - localStorage contains:', checkSaved);
-          
-          // Parse edip kontrol et
-          try {
-            const parsedCheck = JSON.parse(checkSaved || '[]');
-            console.log('✅ Parsed verification:', parsedCheck);
-            console.log('✅ Parsed count:', parsedCheck.length);
-          } catch (error) {
-            console.error('❌ Verification parse error:', error);
-          }
-        }
-        
         setSuccessMessage('Görev başarıyla yüklendi!');
+        setShowSuccessModal(true);
         console.log('Task saved to localStorage:', newTask.task);
       }
       
@@ -289,6 +285,7 @@ const TasksPage = () => {
         notes: ''
       });
       setSelectedTaskForSubmission(null);
+      setEditingTask(null); // editingTask'ı da temizle
       setActiveTab('tasks');
       
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -302,8 +299,46 @@ const TasksPage = () => {
     }
   };
 
-  // handleEdit ve handleDelete fonksiyonları kaldırıldı
-  // Kullanıcılar sadece görevleri görüntüleyebilir, düzenleyemez/silemez
+  // handleDelete fonksiyonu eklendi
+  const handleDelete = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!user || !taskToDelete) return;
+    
+    console.log('=== DELETING TASK ===');
+    console.log('Task ID to delete:', taskToDelete);
+    console.log('Current tasks before delete:', tasks);
+    
+    try {
+      const response = await fetch(`/api/tasks/${taskToDelete}`, {
+        method: 'DELETE'
+      });
+      
+      console.log('Delete response status:', response.status);
+      console.log('Delete response ok:', response.ok);
+      
+      if (response.ok) {
+        // Görev listesinden kaldır
+        const filteredTasks = tasks.filter(task => task.id !== taskToDelete);
+        console.log('Filtered tasks after delete:', filteredTasks);
+        setTasks(filteredTasks);
+        setSuccessMessage('Görev başarıyla silindi!');
+        setShowSuccessModal(true);
+      } else {
+        const errorData = await response.json();
+        console.error('Delete API error:', errorData);
+        setError(errorData.error || 'Görev silinemedi');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      setError('Görev silinemedi');
+    } finally {
+      setTaskToDelete(null);
+    }
+  };
 
   const handleViewDetail = (task: any) => {
     setSelectedTask(task);
@@ -394,7 +429,19 @@ const TasksPage = () => {
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors shadow-lg"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setActiveTab('upload')}
+              onClick={() => {
+                // Form'u temizle
+                setFormData({
+                  huaweiCloudAccount: '',
+                  file: null,
+                  fileLink: '',
+                  notes: ''
+                });
+                setSelectedTaskForSubmission(null);
+                setEditingTask(null);
+                setUploadType('file');
+                setActiveTab('upload');
+              }}
             >
               <Upload className="w-5 h-5" />
               <span>Görev Yükle</span>
@@ -460,17 +507,17 @@ const TasksPage = () => {
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                             <div className="flex items-center space-x-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
-                              <span className="text-gray-500">Başlama:</span>
+                              <span className="text-gray-500">Yükleme:</span>
                               <span className="text-gray-900">
-                                {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                                {task.createdAt ? new Date(task.createdAt).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
                               </span>
                             </div>
                             
                             <div className="flex items-center space-x-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
-                              <span className="text-gray-500">Bitiş:</span>
+                              <span className="text-gray-500">Güncelleme:</span>
                               <span className="text-gray-900">
-                                {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                                {task.updatedAt ? new Date(task.updatedAt).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
                               </span>
                             </div>
                             
@@ -511,6 +558,15 @@ const TasksPage = () => {
                                 <Edit className="w-4 h-4" />
                               </button>
                             )}
+                            
+                            {/* Silme Butonu - Tüm görevler için */}
+                            <button 
+                              onClick={() => handleDelete(task.id)}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Görevi Sil"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
                       </motion.div>
@@ -537,7 +593,19 @@ const TasksPage = () => {
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveTab('upload')}
+                      onClick={() => {
+                        // Form'u temizle
+                        setFormData({
+                          huaweiCloudAccount: '',
+                          file: null,
+                          fileLink: '',
+                          notes: ''
+                        });
+                        setSelectedTaskForSubmission(null);
+                        setEditingTask(null);
+                        setUploadType('file');
+                        setActiveTab('upload');
+                      }}
                     >
                       <Upload className="w-4 h-4" />
                       <span>Görev Yükle</span>
@@ -595,6 +663,15 @@ const TasksPage = () => {
                           <div className="mt-4">
                             <motion.button
                               onClick={() => {
+                                // Form'u temizle
+                                setFormData({
+                                  huaweiCloudAccount: '',
+                                  file: null,
+                                  fileLink: '',
+                                  notes: ''
+                                });
+                                setEditingTask(null);
+                                setUploadType('file');
                                 setSelectedTaskForSubmission(task);
                                 setActiveTab('upload');
                               }}
@@ -919,7 +996,7 @@ const TasksPage = () => {
 
       {/* Detail Modal */}
       {showDetailModal && selectedTask && (
-        <div className="fixed inset-0 bg-white/10 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -964,7 +1041,7 @@ const TasksPage = () => {
                 </div>
               </div>
               
-              {selectedTask.fileUrl && (
+              {(selectedTask.fileUrl || selectedTask.linkUrl) && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h5 className="font-medium text-gray-900 mb-2">
                     {selectedTask.uploadType === 'FILE' ? 'Dosya' : 'Link'}
@@ -981,12 +1058,12 @@ const TasksPage = () => {
                     </a>
                   ) : (
                     <a 
-                      href={selectedTask.fileUrl} 
+                      href={selectedTask.linkUrl} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="text-red-600 hover:text-red-700 break-all"
                     >
-                      {selectedTask.fileUrl}
+                      {selectedTask.linkUrl}
                     </a>
                   )}
                 </div>
@@ -1005,6 +1082,25 @@ const TasksPage = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={successMessage}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmDelete}
+        title="Görev Silme Onayı"
+        message="Bu görevi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmText="Evet, Sil"
+        cancelText="İptal"
+        type="danger"
+      />
 
     </div>
   );

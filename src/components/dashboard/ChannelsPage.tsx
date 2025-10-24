@@ -2,14 +2,58 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Users, Hash, Send, HelpCircle, Lock, Globe, User, Mail } from 'lucide-react';
+import { MessageSquare, Users, Hash, Send, HelpCircle, Lock, Globe, User, Mail, Edit, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { SuccessModal } from '@/components/ui/SuccessModal';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
+
+interface Channel {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  category: string;
+  isPrivate: boolean;
+  messageCount: number;
+}
+
+interface Message {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    fullName: string;
+  };
+}
+
+interface PrivateMessage {
+  id: string;
+  body: string;
+  subject?: string;
+  createdAt: string;
+  fromUser?: {
+    fullName: string;
+  };
+}
+
+interface Question {
+  id: string;
+  content: string;
+  tags?: string;
+  createdAt: string;
+  replies?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    userId: string;
+  }[];
+}
 
 const ChannelsPage = () => {
   const { user } = useAuth();
-  const [channels, setChannels] = useState([]);
-  const [selectedChannel, setSelectedChannel] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   
@@ -17,13 +61,35 @@ const ChannelsPage = () => {
   const [askInstructorMessage, setAskInstructorMessage] = useState('');
   const [askInstructorTags, setAskInstructorTags] = useState('');
   const [isAskingInstructor, setIsAskingInstructor] = useState(false);
-  const [privateMessages, setPrivateMessages] = useState([]);
+  const [privateMessages, setPrivateMessages] = useState<PrivateMessage[]>([]);
   const [showAskInstructor, setShowAskInstructor] = useState(false);
+  
+  // Katılımcı için soru-cevap listesi
+  const [userQuestions, setUserQuestions] = useState<Question[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  
+  // Success Modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  // Question Edit/Delete
+  const [editingQuestion, setEditingQuestion] = useState<any>(null);
+  const [editQuestionText, setEditQuestionText] = useState('');
+  
+  // Confirmation Modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
+  
+  // Questions Modal
+  const [showQuestionsModal, setShowQuestionsModal] = useState(false);
 
   useEffect(() => {
     fetchChannels();
     fetchPrivateMessages();
-  }, []);
+    if (user?.role === 'PARTICIPANT') {
+      fetchUserQuestions();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (selectedChannel) {
@@ -60,7 +126,7 @@ const ChannelsPage = () => {
     }
   };
 
-  const fetchMessages = async (channelId) => {
+  const fetchMessages = async (channelId: string) => {
     try {
       const response = await fetch(`/api/chat/channels/${channelId}/messages`);
       if (response.ok) {
@@ -73,14 +139,47 @@ const ChannelsPage = () => {
   };
 
   const fetchPrivateMessages = async () => {
+    if (!user?.id) return;
+    
     try {
-      const response = await fetch('/api/private-messages');
+      const response = await fetch('/api/private-messages', {
+        headers: {
+          'x-user-id': user.id
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setPrivateMessages(data.messages || []);
+      } else {
+        console.error('Failed to fetch private messages:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching private messages:', error);
+    }
+  };
+
+  const fetchUserQuestions = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoadingQuestions(true);
+      const token = localStorage.getItem('afet_maratonu_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`/api/participant/questions?userId=${user.id}`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setUserQuestions(data.questions || []);
+      } else {
+        console.error('Failed to fetch questions:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching user questions:', error);
+    } finally {
+      setLoadingQuestions(false);
     }
   };
 
@@ -128,7 +227,7 @@ const ChannelsPage = () => {
         body: JSON.stringify({
           content: askInstructorMessage,
           tags: askInstructorTags,
-          toRole: 'ADMIN'
+          toRole: 'INSTRUCTOR'
         }),
       });
 
@@ -137,21 +236,100 @@ const ChannelsPage = () => {
       if (data.success) {
         setAskInstructorMessage('');
         setAskInstructorTags('');
-        alert('Sorunuz admin\'e özel mesaj olarak iletildi!');
+        setSuccessMessage('Sorunuz eğitmene özel mesaj olarak iletildi!');
+        setShowSuccessModal(true);
         fetchPrivateMessages();
+        fetchUserQuestions(); // Soru listesini yenile
       } else {
         console.error('Ask instructor failed:', data);
-        alert('Soru gönderilemedi: ' + data.error);
+        setSuccessMessage('Soru gönderilemedi: ' + data.error);
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error('Error asking instructor:', error);
-      alert('Soru gönderilemedi: ' + error);
+      setSuccessMessage('Soru gönderilemedi: ' + error);
+      setShowSuccessModal(true);
     } finally {
       setIsAskingInstructor(false);
     }
   };
 
-  const getChannelColor = (category) => {
+  const handleEditQuestion = (question: any) => {
+    setEditingQuestion(question);
+    setEditQuestionText(question.content);
+  };
+
+  const handleUpdateQuestion = async () => {
+    if (!editingQuestion || !editQuestionText.trim()) return;
+    
+    try {
+      const token = localStorage.getItem('afet_maratonu_token');
+      const response = await fetch(`/api/messages/${editingQuestion.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          body: editQuestionText
+        }),
+      });
+
+      if (response.ok) {
+        setEditingQuestion(null);
+        setEditQuestionText('');
+        setSuccessMessage('Sorunuz başarıyla güncellendi!');
+        setShowSuccessModal(true);
+        fetchUserQuestions();
+      } else {
+        const errorData = await response.json();
+        setSuccessMessage('Soru güncellenemedi: ' + (errorData.message || 'Bilinmeyen hata'));
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Error updating question:', error);
+      setSuccessMessage('Soru güncellenemedi: ' + error);
+      setShowSuccessModal(true);
+    }
+  };
+
+  const handleDeleteQuestion = (questionId: string) => {
+    setQuestionToDelete(questionId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDeleteQuestion = async () => {
+    if (!questionToDelete) return;
+    
+    try {
+      const token = localStorage.getItem('afet_maratonu_token');
+      const response = await fetch(`/api/messages/${questionToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setSuccessMessage('Sorunuz başarıyla silindi!');
+        setShowSuccessModal(true);
+        fetchUserQuestions();
+      } else {
+        const errorData = await response.json();
+        setSuccessMessage('Soru silinemedi: ' + (errorData.message || 'Bilinmeyen hata'));
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      setSuccessMessage('Soru silinemedi: ' + error);
+      setShowSuccessModal(true);
+    } finally {
+      setShowConfirmModal(false);
+      setQuestionToDelete(null);
+    }
+  };
+
+  const getChannelColor = (category: string) => {
     switch (category) {
       case 'GENEL': return 'bg-blue-500';
       case 'BOOTCAMP': return 'bg-red-500';
@@ -225,18 +403,28 @@ const ChannelsPage = () => {
             
             {/* Eğitmene Sor - Sadece Eğitmene Sor kanalı seçildiğinde ve katılımcılar için */}
             {showAskInstructor && user?.role === 'PARTICIPANT' && (
-              <div className="bg-red-50 border-b border-red-200 p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                    <HelpCircle className="w-5 h-5 text-white" />
+              <div className="bg-red-50 border-b border-red-200 p-6 flex-1 flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                      <HelpCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-red-900">Eğitmene Sor</h3>
+                      <p className="text-sm text-red-700">Özel sorularınızı admin'e iletebilirsiniz</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-red-900">Eğitmene Sor</h3>
-                    <p className="text-sm text-red-700">Özel sorularınızı admin'e iletebilirsiniz</p>
-                  </div>
+                  
+                  <button
+                    onClick={() => setShowQuestionsModal(true)}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center space-x-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Sorularım</span>
+                  </button>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="flex-1 flex flex-col justify-center space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sorunuz
@@ -246,7 +434,7 @@ const ChannelsPage = () => {
                       onChange={(e) => setAskInstructorMessage(e.target.value)}
                       placeholder="Sorunuzu buraya yazın..."
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white resize-none"
-                      rows={3}
+                      rows={4}
                     />
                   </div>
                   <div>
@@ -261,23 +449,26 @@ const ChannelsPage = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 placeholder-gray-500 bg-white"
                     />
                   </div>
-                  <button
-                    onClick={askInstructor}
-                    disabled={!askInstructorMessage.trim() || isAskingInstructor}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                  >
-                    {isAskingInstructor ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <HelpCircle className="w-5 h-5" />
-                    )}
-                    <span className="font-semibold">
-                      {isAskingInstructor ? 'Gönderiliyor...' : 'Soruyu Gönder'}
-                    </span>
-                  </button>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={askInstructor}
+                      disabled={!askInstructorMessage.trim() || isAskingInstructor}
+                      className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      {isAskingInstructor ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <HelpCircle className="w-5 h-5" />
+                      )}
+                      <span className="font-semibold">
+                        {isAskingInstructor ? 'Gönderiliyor...' : 'Soruyu Gönder'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
+
 
             {/* Admin/Eğitmen için Özel Mesaj Görüntüleme - Sadece Eğitmene Sor kanalı seçildiğinde */}
             {showAskInstructor && (user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
@@ -415,6 +606,196 @@ const ChannelsPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={successMessage}
+      />
+      
+      {/* Confirmation Modal */}
+      <div className={`fixed inset-0 z-[60] ${showConfirmModal ? 'block' : 'hidden'}`}>
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={confirmDeleteQuestion}
+          title="Soruyu Silme Onayı"
+          message="Bu soruyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          confirmText="Evet, Sil"
+          cancelText="İptal"
+          type="danger"
+        />
+      </div>
+      
+      {/* Questions Modal */}
+      {showQuestionsModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl shadow-2xl max-w-4xl w-full border border-gray-200 max-h-[90vh] flex flex-col"
+          >
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Sorularım ve Cevaplar</h3>
+                    <p className="text-sm text-gray-600">{userQuestions.length} soru</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowQuestionsModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                {loadingQuestions ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                    <p className="text-sm text-green-600 mt-2">Sorular yükleniyor...</p>
+                  </div>
+                ) : userQuestions.length > 0 ? (
+                  userQuestions.map((question, index) => (
+                    <div key={index} className="bg-white rounded-lg p-6 border border-green-200 shadow-sm">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-sm font-medium text-green-900">
+                          Soru #{index + 1}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-green-600">
+                            {new Date(question.createdAt).toLocaleString('tr-TR')}
+                          </span>
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => handleEditQuestion(question)}
+                              className="p-1 text-green-600 hover:text-green-800 hover:bg-green-100 rounded transition-colors"
+                              title="Soruyu Düzenle"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteQuestion(question.id)}
+                              className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors"
+                              title="Soruyu Sil"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-base text-green-800 mb-4 leading-relaxed">{question.content}</p>
+                      {question.tags && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {question.tags.split(',').map((tag, tagIndex) => (
+                            <span key={tagIndex} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Cevap varsa göster */}
+                      {question.replies && question.replies.length > 0 ? (
+                        <div className="mt-3 pt-3 border-t border-green-200">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">E</span>
+                            </div>
+                            <span className="text-sm font-medium text-green-900">Eğitmen Cevabı</span>
+                            <span className="text-xs text-green-600">
+                              {new Date(question.replies[0].createdAt).toLocaleString('tr-TR')}
+                            </span>
+                          </div>
+                          <p className="text-base text-green-800 bg-green-50 p-4 rounded-lg leading-relaxed">
+                            {question.replies[0].content}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-3 pt-3 border-t border-green-200">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs">⏳</span>
+                            </div>
+                            <span className="text-sm text-yellow-700">Cevap bekleniyor...</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p>Henüz soru sormadınız</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      
+      {/* Edit Question Modal */}
+      {editingQuestion && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full border border-gray-200"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Soruyu Düzenle</h3>
+                <button
+                  onClick={() => setEditingQuestion(null)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sorunuz
+                  </label>
+                  <textarea
+                    value={editQuestionText}
+                    onChange={(e) => setEditQuestionText(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="Sorunuzu yazın..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setEditingQuestion(null)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleUpdateQuestion}
+                  disabled={!editQuestionText.trim()}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  Güncelle
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

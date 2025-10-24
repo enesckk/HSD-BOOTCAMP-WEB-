@@ -1,76 +1,137 @@
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 
-// GET - Eğitmen derslerini listele
+const JWT_SECRET = 'your-super-secret-jwt-key-for-afet-maratonu-2024';
+
 export async function GET(request: NextRequest) {
   try {
-    const lessons = await (prisma as any).lesson.findMany({
+    console.log('=== LESSONS API START ===');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    console.log('Token exists:', !!token);
+    
+    if (!token) {
+      return NextResponse.json({ message: 'Token gerekli' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as any;
+      console.log('Token decoded successfully:', { userId: decoded.userId, role: decoded.role });
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
+      return NextResponse.json({ message: 'Geçersiz token' }, { status: 401 });
+    }
+
+    // Eğitmen kontrolü
+    if (decoded.role !== 'INSTRUCTOR') {
+      return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 403 });
+    }
+
+    // Dersleri getir
+    console.log('Fetching lessons...');
+    const lessons = await prisma.lesson.findMany({
       orderBy: {
         createdAt: 'desc'
       }
     });
 
+    console.log('Found lessons:', lessons.length);
+    console.log('Lessons data:', lessons);
+    
     return NextResponse.json({
       success: true,
-      lessons: lessons,
+      lessons,
+      total: lessons.length
     });
+
   } catch (error) {
-    console.error('Error fetching instructor lessons:', error);
-    return NextResponse.json(
-      { success: false, error: 'Dersler getirilemedi' },
-      { status: 500 }
-    );
+    console.error('Error fetching lessons:', error);
+    console.error('Error details:', error);
+    return NextResponse.json({ 
+      message: 'Sunucu hatası', 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.stack : 'No details'
+    }, { status: 500 });
   }
 }
 
-// POST - Yeni ders oluştur
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, description, youtubeUrl, duration, instructor, category, week, tags, showDate, prerequisites, objectives, resources } = body;
-
-    if (!title || !description || !youtubeUrl || !instructor) {
-      return NextResponse.json(
-        { success: false, error: 'Gerekli alanlar eksik' },
-        { status: 400 }
-      );
+    console.log('=== CREATE LESSON START ===');
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    console.log('Token exists:', !!token);
+    
+    if (!token) {
+      return NextResponse.json({ message: 'Token gerekli' }, { status: 401 });
     }
 
-    // YouTube URL'den video ID'yi çıkar
-    const youtubeId = youtubeUrl.split('v=')[1]?.split('&')[0];
-    const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as any;
+      console.log('Token decoded successfully:', { userId: decoded.userId, role: decoded.role });
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
+      return NextResponse.json({ message: 'Geçersiz token' }, { status: 401 });
+    }
 
-    // Veritabanına kaydet
-    const newLesson = await (prisma as any).lesson.create({
+    // Eğitmen kontrolü
+    if (decoded.role !== 'INSTRUCTOR') {
+      return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 403 });
+    }
+
+    const requestBody = await request.json();
+    console.log('Request body received:', requestBody);
+    const { 
+      title, 
+      description, 
+      youtubeUrl, 
+      duration, 
+      instructor, 
+      category, 
+      week, 
+      showDate, 
+      prerequisites, 
+      objectives, 
+      resources, 
+      tags 
+    } = requestBody;
+
+    // Ders oluştur
+    console.log('Creating lesson...');
+    const newLesson = await prisma.lesson.create({
       data: {
         title,
         description,
         youtubeUrl,
-        duration: duration || '00:00',
+        duration,
         instructor,
-        category: category || 'Genel',
-        week: week || 1,
-        isPublished: false,
-        thumbnailUrl,
-        tags: tags ? tags.split(',').map((tag: string) => tag.trim()).join(',') : '',
-        showDate: showDate ? new Date(showDate) : new Date(),
-        isActive: false,
-        order: 0,
-        prerequisites: prerequisites || '',
-        objectives: objectives || '',
-        resources: resources || ''
+        category,
+        week,
+        showDate: showDate ? new Date(showDate) : null,
+        prerequisites,
+        objectives,
+        resources,
+        tags,
+        isPublished: false, // Varsayılan olarak taslak
       }
     });
 
+    console.log('Lesson created successfully:', newLesson.id);
+    
     return NextResponse.json({
       success: true,
-      lesson: newLesson,
+      message: 'Ders başarıyla oluşturuldu',
+      lesson: newLesson
     });
+
   } catch (error) {
     console.error('Error creating lesson:', error);
-    return NextResponse.json(
-      { success: false, error: 'Ders oluşturulamadı' },
-      { status: 500 }
-    );
+    console.error('Error details:', error);
+    return NextResponse.json({ 
+      message: 'Sunucu hatası', 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.stack : 'No details'
+    }, { status: 500 });
   }
 }

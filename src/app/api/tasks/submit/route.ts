@@ -70,14 +70,27 @@ export async function POST(request: NextRequest) {
       linkUrlValue = linkUrl;
     }
 
+    // Orijinal görevi bul
+    const originalTask = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { title: true, description: true }
+    });
+
+    if (!originalTask) {
+      return NextResponse.json(
+        { success: false, error: 'Görev bulunamadı' },
+        { status: 404 }
+      );
+    }
+
     // Gerçek veritabanına görev oluştur
     console.log('Creating task in database...');
     const submittedTask = await prisma.task.create({
       data: {
-        title: 'Teslim Edilen Görev',
-        description: 'Kullanıcı tarafından teslim edilen görev',
+        title: originalTask.title,
+        description: originalTask.description,
         status: 'SUBMITTED', // Teslim edildi status'u - Prisma schema'da tanımlı
-        uploadType: uploadType || 'FILE',
+        uploadType: uploadType === 'file' ? 'FILE' : 'LINK',
         fileUrl: fileUrl,
         linkUrl: linkUrlValue,
         notes: notes || '',

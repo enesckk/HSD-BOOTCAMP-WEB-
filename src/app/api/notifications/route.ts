@@ -21,6 +21,33 @@ export async function GET(request: NextRequest) {
           { type: 'ADMIN_PRESENTATION' }
         ]
       };
+    } else if (panel === 'instructor') {
+      // Eğitmen paneli için bildirimler
+      if (userId) {
+        whereClause = {
+          OR: [
+            { type: 'ANNOUNCEMENT' }, // Duyurular
+            { type: 'MESSAGE' }, // Mesajlar
+            { type: 'TASK' }, // Görevler
+            { type: 'LESSON' }, // Dersler
+            { 
+              AND: [
+                { type: { in: ['TASK', 'PRESENTATION'] } },
+                { userId: userId } // Kişisel bildirimler
+              ]
+            }
+          ]
+        };
+      } else {
+        whereClause = {
+          OR: [
+            { type: 'ANNOUNCEMENT' },
+            { type: 'MESSAGE' },
+            { type: 'TASK' },
+            { type: 'LESSON' }
+          ]
+        };
+      }
     } else if (panel === 'participant') {
       // Katılımcı paneli için kişisel bildirimler
       if (userId) {

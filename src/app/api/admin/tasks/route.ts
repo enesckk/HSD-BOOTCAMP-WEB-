@@ -6,10 +6,23 @@ export async function GET(request: NextRequest) {
   console.log('=== GET ADMIN TASKS API CALLED ===');
   
   try {
-    // Gerçek veritabanından admin görevlerini getir
+    // Sadece admin görevlerini getir (userId null olan görevler)
     const adminTasks = await prisma.task.findMany({
       where: {
-        userId: null, // Admin tarafından oluşturulan görevler (userId null)
+        userId: null // Sadece admin tarafından oluşturulan görevler
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        startTime: true,
+        endTime: true,
+        dueDate: true,
+        createdAt: true,
+        updatedAt: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -17,6 +30,7 @@ export async function GET(request: NextRequest) {
     });
     
     console.log('Admin tasks found:', adminTasks.length);
+    console.log('Sample task data:', adminTasks[0]);
     
     return NextResponse.json({
       success: true,
@@ -45,32 +59,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('Request body:', body);
     
-    const { title, description, startDate, dueDate, status } = body;
+    const { title, description, startDate, endDate, startTime, endTime, dueDate, status } = body;
 
-    console.log('Parsed data:', { title, description, startDate, dueDate, status });
+    console.log('Parsed data:', { title, description, startDate, endDate, startTime, endTime, dueDate, status });
 
     // Basit validasyon
     if (!title || !description) {
       console.log('Validation failed: Missing title or description');
       return NextResponse.json(
         { success: false, error: 'Başlık ve açıklama gereklidir' },
-        { status: 400 }
-      );
-    }
-
-    if (!startDate || !dueDate) {
-      console.log('Validation failed: Missing dates');
-      return NextResponse.json(
-        { success: false, error: 'Başlama ve bitiş tarihi gereklidir' },
-        { status: 400 }
-      );
-    }
-
-    // Tarih kontrolü
-    if (new Date(startDate) >= new Date(dueDate)) {
-      console.log('Validation failed: Invalid date range');
-      return NextResponse.json(
-        { success: false, error: 'Bitiş tarihi başlama tarihinden sonra olmalıdır' },
         { status: 400 }
       );
     }
@@ -82,8 +79,11 @@ export async function POST(request: NextRequest) {
       data: {
         title: title.trim(),
         description: description.trim(),
-        startDate: new Date(startDate),
-        dueDate: new Date(dueDate),
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        startTime: startTime || null,
+        endTime: endTime || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
         status: (status || 'PENDING') as any, // TaskStatus enum'u
         userId: null, // Admin görevi (userId null)
         huaweiCloudAccount: '',
@@ -102,11 +102,66 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('=== CREATE ADMIN TASK ERROR ===');
     console.error('Error:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
     
     return NextResponse.json(
       { 
         success: false,
         error: 'Admin görevi oluşturulamadı', 
+        detail: error?.message || 'Bilinmeyen hata',
+        stack: error?.stack
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Görev güncelle
+export async function PUT(request: NextRequest) {
+  console.log('=== UPDATE ADMIN TASK API CALLED ===');
+  
+  try {
+    const body = await request.json();
+    const { id, title, description, startDate, dueDate, status } = body;
+    
+    console.log('Update request:', { id, title, description, startDate, dueDate, status });
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Görev ID gereklidir' },
+        { status: 400 }
+      );
+    }
+
+    // Görevi güncelle
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: {
+        ...(title && { title: title.trim() }),
+        ...(description && { description: description.trim() }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(status && { status: status as any })
+      }
+    });
+
+    console.log('Task updated successfully:', updatedTask);
+
+    return NextResponse.json({
+      success: true,
+      task: updatedTask,
+      message: 'Görev başarıyla güncellendi'
+    });
+
+  } catch (error: any) {
+    console.error('=== UPDATE ADMIN TASK ERROR ===');
+    console.error('Error:', error);
+    
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Görev güncellenemedi', 
         detail: error?.message || 'Bilinmeyen hata' 
       },
       { status: 500 }

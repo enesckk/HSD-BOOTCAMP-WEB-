@@ -66,11 +66,16 @@ export async function PUT(
     const { status, feedback, score } = body;
     const { id } = await params;
 
-    // Sadece not ekleme - durum değişikliği yok
+    // Durum ve not güncelleme
     const updateData: any = {};
     
+    console.log('Updating submission with:', { status, feedback, score });
+    
+    if (status !== undefined) updateData.status = status;
     if (feedback !== undefined) updateData.notes = feedback;
     if (score !== undefined) updateData.score = score;
+    
+    console.log('Update data:', updateData);
 
     const submission = await prisma.task.update({
       where: { id: id },
@@ -85,18 +90,45 @@ export async function PUT(
         },
       },
     });
+    
+    console.log('Updated submission:', {
+      id: submission.id,
+      status: submission.status,
+      notes: submission.notes,
+      score: submission.score
+    });
 
-    // Sadece bilgi notu gönder - durum değişikliği yok
-    if (feedback && submission.userId) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK',
-          title: 'Ödev Hakkında Bilgi',
-          message: `Ödeviniz hakkında bilgi: ${feedback}`,
-          userId: submission.userId,
-          read: false
-        }
-      });
+    // Durum değişikliği bildirimi gönder
+    if (submission.userId) {
+      let notificationTitle = '';
+      let notificationMessage = '';
+      
+      if (status === 'APPROVED') {
+        notificationTitle = 'Ödev Onaylandı';
+        notificationMessage = 'Tebrikler! Ödeviniz onaylandı.';
+      } else if (status === 'REJECTED') {
+        notificationTitle = 'Ödev Reddedildi';
+        notificationMessage = 'Ödeviniz reddedildi. Lütfen tekrar gözden geçirin.';
+      } else if (status === 'NEEDS_REVISION') {
+        notificationTitle = 'Ödev Revizyon Gerekli';
+        notificationMessage = 'Ödevinizde revizyon gerekiyor. Lütfen düzeltin.';
+      }
+      
+      if (feedback) {
+        notificationMessage += ` Geri bildirim: ${feedback}`;
+      }
+      
+      if (notificationTitle) {
+        await prisma.notification.create({
+          data: {
+            type: 'TASK',
+            title: notificationTitle,
+            message: notificationMessage,
+            userId: submission.userId,
+            read: false
+          }
+        });
+      }
     }
 
     return NextResponse.json({

@@ -62,10 +62,15 @@ class ApiClient {
   }
 
   private handleError(error: AxiosError): ApiError {
+    console.log('API Error:', error);
+    console.log('API Error Response:', error.response?.data);
+    
     if (error.response) {
       const data = error.response.data as any;
+      const message = data?.message || 'Bir hata oluştu';
+      console.log('API Error Message:', message);
       return {
-        message: data?.message || 'Bir hata oluştu',
+        message: message,
         code: data?.code || 'UNKNOWN_ERROR',
         details: data?.details,
       };

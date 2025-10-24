@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { LoginRequest } from '@/types/user';
 import { prisma } from '@/lib/prisma';
@@ -21,16 +21,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database (check both User and Admin tables)
+    // Find user in database
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    const admin = await prisma.admin.findUnique({
-      where: { email },
-    });
-
-    if (!user && !admin) {
+    if (!user) {
       return NextResponse.json(
         { message: 'Geçersiz e-posta veya şifre' },
         { status: 401 }
@@ -38,23 +34,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Password check
-    let isValid = false;
-    let principal: any = user || admin;
-
-    if (user) {
-      // Kullanıcılar için hash doğrulaması
-      if (!user.password) {
-        return NextResponse.json(
-          { message: 'Hesap şifresi ayarlı değil' },
-          { status: 401 }
-        );
-      }
-      isValid = await bcrypt.compare(password, user.password);
-    } else if (admin) {
-      // Admin için geçici parola kontrolü (gerekirse Admin modeline password alanı eklenebilir)
-      isValid = password === 'admin123';
+    if (!user.password) {
+      return NextResponse.json(
+        { message: 'Hesap şifresi ayarlı değil' },
+        { status: 401 }
+      );
     }
 
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return NextResponse.json(
         { message: 'Geçersiz e-posta veya şifre' },
@@ -63,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if active
-    if (!principal.isActive) {
+    if (!user.isActive) {
       return NextResponse.json(
         { message: 'Hesabınız deaktif durumda' },
         { status: 401 }
@@ -73,9 +60,9 @@ export async function POST(request: NextRequest) {
     // Generate tokens
     const token = jwt.sign(
       { 
-        userId: principal.id, 
-        email: principal.email, 
-        role: principal.role 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role 
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
@@ -83,9 +70,9 @@ export async function POST(request: NextRequest) {
 
     const refreshToken = jwt.sign(
       { 
-        userId: principal.id, 
-        email: principal.email, 
-        role: principal.role,
+        userId: user.id, 
+        email: user.email, 
+        role: user.role,
         type: 'refresh'
       },
       JWT_SECRET,
@@ -94,23 +81,18 @@ export async function POST(request: NextRequest) {
 
     // Format user data for response
     const userResponse = {
-      id: principal.id,
-      email: principal.email,
-      fullName: principal.fullName,
-      role: principal.role,
-      isActive: principal.isActive,
-      createdAt: principal.createdAt.toISOString(),
-      updatedAt: principal.updatedAt.toISOString(),
-      ...(user && {
-        marathonId: user.marathonId,
-        phone: user.phone,
-        university: user.university,
-        department: user.department,
-        teamRole: user.teamRole,
-      }),
-      ...(admin && {
-        phone: admin.phone,
-      }),
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      marathonId: user.marathonId,
+      phone: user.phone,
+      university: user.university,
+      department: user.department,
+      teamRole: user.teamRole,
     };
 
     return NextResponse.json({

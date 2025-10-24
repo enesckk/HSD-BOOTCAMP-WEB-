@@ -42,6 +42,12 @@ async function seedChannels() {
         displayName: '#duyurular',
         description: 'Resmi duyurular ve güncellemeler',
         type: 'chat'
+      },
+      {
+        name: 'egitmene-sor',
+        displayName: '#eğitmene-sor',
+        description: 'Eğitmenlere sorularınızı sorun',
+        type: 'chat'
       }
     ];
 

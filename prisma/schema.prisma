@@ -67,6 +67,8 @@ enum UserRole {
 
 enum TaskStatus {
   PENDING
+  IN_PROGRESS
+  COMPLETED
   SUBMITTED
   APPROVED
   REJECTED
@@ -100,6 +102,7 @@ model Message {
   body        String
   messageType String?  @default("text") // "text", "question", "announcement"
   unread      Boolean  @default(true)
+  isAnswered  Boolean  @default(false) // Soru cevaplandı mı
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -139,7 +142,10 @@ model Task {
   status            TaskStatus @default(PENDING)
   // Yeni alanlar
   startDate         DateTime? // Başlama tarihi
-  dueDate           DateTime? // Bitiş tarihi
+  endDate           DateTime? // Bitiş tarihi
+  startTime         String?   // Başlama saati
+  endTime           String?   // Bitiş saati
+  dueDate           DateTime? // Son teslim tarihi
   priority          TaskPriority @default(MEDIUM) // Öncelik
   category          String?   // Kategori
   tags              String?   // Etiketler

@@ -27,27 +27,39 @@ export async function GET(request: NextRequest) {
       take: 200,
     });
 
-    return NextResponse.json({
-      success: true,
-      submissions: tasks.map(task => ({
+    // Görevlere göre grupla
+    const groupedByTask = tasks.reduce((acc: any, task: any) => {
+      const taskTitle = task.title;
+      if (!acc[taskTitle]) {
+        acc[taskTitle] = {
+          taskTitle: taskTitle,
+          taskDescription: task.description,
+          submissions: []
+        };
+      }
+      acc[taskTitle].submissions.push({
         id: task.id,
         userId: task.userId,
         userName: task.user?.fullName || 'Bilinmeyen Kullanıcı',
         userEmail: task.user?.email || 'Bilinmeyen Email',
-        taskTitle: task.title,
-        taskDescription: task.description,
         submissionType: task.uploadType,
         fileUrl: task.fileUrl,
         linkUrl: task.linkUrl,
         fileName: task.fileUrl ? task.fileUrl.split('/').pop() : undefined,
-        fileSize: null, // Bu bilgi şu an mevcut değil
+        fileSize: null,
         fileType: task.fileUrl ? task.fileUrl.split('.').pop() : undefined,
         status: task.status,
         submittedAt: task.createdAt,
         reviewedAt: task.updatedAt,
         score: task.score,
         feedback: task.notes,
-      })),
+      });
+      return acc;
+    }, {});
+
+    return NextResponse.json({
+      success: true,
+      groupedSubmissions: Object.values(groupedByTask),
     });
   } catch (error) {
     console.error('Error fetching submissions:', error);

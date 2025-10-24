@@ -243,7 +243,7 @@ const ParticipantDashboard = () => {
               Hoş Geldiniz{user?.fullName ? `, ${user.fullName}` : ''}! 👋
             </h1>
             <p className="text-red-100 text-lg">
-              Afet Fikir Teknolojileri Maratonu'na katıldığınız için sizi tebrik ederiz!
+              HSD Türkiye Bootcamp programına katıldığınız için sizi tebrik ederiz!
             </p>
             <p className="text-red-200 mt-2">
               Eğitim programınızı takip edin ve teknoloji dünyasında uzmanlaşın!

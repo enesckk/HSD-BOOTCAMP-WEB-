@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AdminLayout from '@/components/dashboard/AdminLayout';
+import { SuccessModal } from '@/components/ui/SuccessModal';
 import { 
   Upload, 
   Download, 
@@ -20,7 +21,11 @@ import {
   Filter,
   Star,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  X
 } from 'lucide-react';
 
 interface Submission {
@@ -30,23 +35,22 @@ interface Submission {
   userEmail: string;
   taskTitle: string;
   taskDescription: string;
-  submissionType: 'FILE' | 'LINK';
+  submissionType: string;
   fileUrl?: string;
   linkUrl?: string;
   fileName?: string;
   fileSize?: number;
   fileType?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION';
+  status: string;
   submittedAt: string;
   reviewedAt?: string;
-  reviewedBy?: string;
   score?: number;
   feedback?: string;
   attachments?: string[];
 }
 
 const AdminSubmissions = () => {
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [groupedSubmissions, setGroupedSubmissions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -59,6 +63,9 @@ const AdminSubmissions = () => {
     feedback: ''
   });
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchSubmissions();
@@ -72,8 +79,8 @@ const AdminSubmissions = () => {
       const data = await response.json();
       console.log('API Response:', data);
       if (data.success) {
-        setSubmissions(data.submissions);
-        console.log('Submissions set:', data.submissions);
+        setGroupedSubmissions(data.groupedSubmissions);
+        console.log('Grouped submissions set:', data.groupedSubmissions);
       } else {
         console.error('API returned success: false');
       }
@@ -94,6 +101,16 @@ const AdminSubmissions = () => {
     setShowEvaluationModal(true);
   };
 
+  const toggleTaskExpansion = (taskTitle: string) => {
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskTitle)) {
+      newExpanded.delete(taskTitle);
+    } else {
+      newExpanded.add(taskTitle);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
   const handleEvaluation = async () => {
     if (!selectedSubmission) return;
 
@@ -104,39 +121,34 @@ const AdminSubmissions = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: evaluationData.status,
           feedback: evaluationData.feedback
         })
       });
 
       if (response.ok) {
+        console.log('Evaluation successful, refreshing submissions...');
         setShowEvaluationModal(false);
         setSelectedSubmission(null);
         await fetchSubmissions(); // Listeyi yenile
-        alert('Değerlendirme başarıyla kaydedildi!');
+        console.log('Submissions refreshed after evaluation');
+        setSuccessMessage('Değerlendirme başarıyla kaydedildi!');
+        setShowSuccessModal(true);
       } else {
         const errorData = await response.json();
-        alert('Hata: ' + (errorData.error || 'Değerlendirme kaydedilemedi'));
+        setSuccessMessage('Hata: ' + (errorData.error || 'Değerlendirme kaydedilemedi'));
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error('Error evaluating submission:', error);
       const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
-      alert('Bağlantı hatası: ' + errorMessage);
+      setSuccessMessage('Bağlantı hatası: ' + errorMessage);
+      setShowSuccessModal(true);
     } finally {
       setIsEvaluating(false);
     }
   };
-
-
-  const filteredSubmissions = submissions.filter(submission => {
-    const matchesSearch = submission.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        submission.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        submission.taskTitle.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || submission.status === statusFilter;
-    const matchesType = typeFilter === 'ALL' || submission.submissionType === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -149,7 +161,7 @@ const AdminSubmissions = () => {
       case 'SUBMITTED':
         return <Upload className="w-5 h-5 text-blue-600" />;
       case 'PENDING':
-        return <Clock className="w-5 h-5 text-blue-600" />;
+        return <Clock className="w-5 h-5 text-gray-600" />;
       default:
         return <Clock className="w-5 h-5 text-gray-600" />;
     }
@@ -166,9 +178,9 @@ const AdminSubmissions = () => {
       case 'SUBMITTED':
         return 'Teslim Edildi';
       case 'PENDING':
-        return 'Beklemede';
+        return 'Bekliyor';
       default:
-        return 'Bilinmiyor';
+        return 'Bilinmeyen';
     }
   };
 
@@ -183,7 +195,7 @@ const AdminSubmissions = () => {
       case 'SUBMITTED':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'PENDING':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -217,7 +229,7 @@ const AdminSubmissions = () => {
         </div>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600">
-            Toplam: {submissions.length} teslim
+            Toplam: {groupedSubmissions.reduce((total, group) => total + group.submissions.length, 0)} teslim
           </div>
         </div>
       </div>
@@ -247,14 +259,13 @@ const AdminSubmissions = () => {
             >
               <option value="ALL">Tümü</option>
               <option value="SUBMITTED">Teslim Edildi</option>
-              <option value="PENDING">Beklemede</option>
               <option value="APPROVED">Onaylandı</option>
               <option value="REJECTED">Reddedildi</option>
               <option value="NEEDS_REVISION">Revizyon Gerekli</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Teslim Türü</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tür</label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -281,420 +292,352 @@ const AdminSubmissions = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Teslimler yükleniyor...</p>
           </div>
+        ) : groupedSubmissions.length === 0 ? (
+          <div className="p-12 text-center">
+            <Upload className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz Teslim Yok</h3>
+            <p className="text-gray-600">Katılımcılar henüz görev teslim etmemiş.</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Katılımcı
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Görev
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Teslim
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Durum
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Tarih
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Değerlendirme
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredSubmissions.map((submission) => (
-                  <motion.tr
-                    key={submission.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {submission.userName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {submission.userEmail}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {submission.taskTitle}
-                      </div>
-                      <div className="text-sm text-gray-500 line-clamp-2">
-                        {submission.taskDescription}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-3 h-3 rounded-full ${
-                          submission.submissionType === 'FILE' ? 'bg-blue-500' : 'bg-green-500'
-                        }`}></div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 flex items-center space-x-1">
-                            <span>{submission.submissionType === 'FILE' ? '📁' : '🔗'}</span>
-                            <span>{submission.submissionType === 'FILE' ? (submission.fileName || 'Dosya') : 'Link'}</span>
-                          </div>
-                          {submission.fileSize && (
-                            <div className="text-xs text-gray-500">
-                              {formatFileSize(submission.fileSize)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(submission.status)}`}>
-                        {getStatusIcon(submission.status)}
-                        <span>{getStatusText(submission.status)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(submission.submittedAt).toLocaleDateString('tr-TR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {submission.status === 'SUBMITTED' ? (
-                        <span className="text-gray-400">Değerlendirilmedi</span>
+          <div className="space-y-4 p-6">
+            {groupedSubmissions.map((taskGroup) => (
+              <div key={taskGroup.taskTitle} className="border border-gray-200 rounded-lg">
+                <div 
+                  className="bg-gray-50 px-6 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => toggleTaskExpansion(taskGroup.taskTitle)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{taskGroup.taskTitle}</h3>
+                      <p className="text-sm text-gray-600">{taskGroup.taskDescription}</p>
+                      <p className="text-xs text-gray-500 mt-1">{taskGroup.submissions.length} teslim</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {expandedTasks.has(taskGroup.taskTitle) ? (
+                        <ChevronDown className="w-5 h-5 text-gray-500" />
                       ) : (
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare className="w-4 h-4 text-blue-500" />
-                          <span className="text-blue-600">Değerlendirildi</span>
-                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-500" />
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedSubmission(submission);
-                            setShowDetailModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
-                          title="Detayları Görüntüle"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openEvaluationModal(submission)}
-                          className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                          title="Değerlendir"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+                
+                {expandedTasks.has(taskGroup.taskTitle) && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Katılımcı
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Teslim
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Durum
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Tarih
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Değerlendirme
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            İşlemler
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {taskGroup.submissions.map((submission: Submission) => (
+                          <motion.tr
+                            key={submission.id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-10 w-10">
+                                  <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <User className="h-6 w-6 text-red-600" />
+                                  </div>
+                                </div>
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900">{submission.userName}</div>
+                                  <div className="text-sm text-gray-500">{submission.userEmail}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <button
+                                onClick={() => {
+                                  setSelectedSubmission(submission);
+                                  setShowDetailModal(true);
+                                }}
+                                className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-colors ${
+                                  submission.submissionType === 'FILE' 
+                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                }`}
+                              >
+                                {submission.submissionType === 'FILE' ? (
+                                  <FileText className="w-4 h-4" />
+                                ) : (
+                                  <ExternalLink className="w-4 h-4" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  {submission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
+                                </span>
+                              </button>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(submission.status)}`}>
+                                {getStatusIcon(submission.status)}
+                                <span>{getStatusText(submission.status)}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(submission.submittedAt).toLocaleDateString('tr-TR')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {submission.status === 'SUBMITTED' || submission.status === 'PENDING' ? (
+                                <span className="text-gray-400">Değerlendirilmedi</span>
+                              ) : (
+                                <div className="flex items-center space-x-1">
+                                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                                  <span className="text-blue-600">Değerlendirildi</span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setSelectedSubmission(submission);
+                                    setShowDetailModal(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                                  title="Detayları Görüntüle"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => openEvaluationModal(submission)}
+                                  className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                                  title="Değerlendir"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={successMessage}
+      />
+
       {/* Submission Detail Modal */}
       {selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div 
+          className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowDetailModal(false);
+              setSelectedSubmission(null);
+            }
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Teslim Detayları</h3>
-              <button
-                onClick={() => setSelectedSubmission(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Submission Info */}
-              <div className="space-y-4">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Teslim Detayları</h3>
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    setSelectedSubmission(null);
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Katılımcı Bilgileri */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Katılımcı</label>
-                  <p className="text-sm text-gray-900">{selectedSubmission.userName}</p>
-                  <p className="text-xs text-gray-500">{selectedSubmission.userEmail}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Görev</label>
-                  <p className="text-sm text-gray-900 font-medium">{selectedSubmission.taskTitle}</p>
-                  <p className="text-sm text-gray-600 mt-1">{selectedSubmission.taskDescription}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Teslim Türü</label>
-                  <p className="text-sm text-gray-900">
-                    {selectedSubmission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Durum</label>
-                  <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedSubmission.status)}`}>
-                    {getStatusIcon(selectedSubmission.status)}
-                    <span>{getStatusText(selectedSubmission.status)}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Teslim Tarihi</label>
-                  <p className="text-sm text-gray-900">
-                    {new Date(selectedSubmission.submittedAt).toLocaleString('tr-TR')}
-                  </p>
-                </div>
-
-                {selectedSubmission.score && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Puan</label>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Katılımcı Bilgileri</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm text-gray-900">{selectedSubmission.score}/100</span>
+                      <User className="w-5 h-5 text-red-600" />
+                      <span className="text-gray-500">Ad Soyad:</span>
+                      <span className="font-medium text-gray-900">{selectedSubmission.userName}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Submission Content */}
-              <div className="space-y-4">
-                {selectedSubmission.submissionType === 'FILE' && selectedSubmission.fileUrl && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Dosya</label>
-                    <div className="border border-gray-300 rounded-lg p-4">
-                      <div className="flex items-center space-x-3">
-                        {getFileIcon(selectedSubmission.fileType)}
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{selectedSubmission.fileName}</p>
-                          {selectedSubmission.fileSize && (
-                            <p className="text-xs text-gray-500">{formatFileSize(selectedSubmission.fileSize)}</p>
-                          )}
-                        </div>
-                        <a
-                          href={`/api/files/${selectedSubmission.fileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-500">Email:</span>
+                      <span className="font-medium text-gray-900">{selectedSubmission.userEmail}</span>
                     </div>
-                  </div>
-                )}
-
-                {selectedSubmission.submissionType === 'LINK' && selectedSubmission.linkUrl && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Link</label>
-                    <div className="border border-gray-300 rounded-lg p-4">
-                      <a
-                        href={selectedSubmission.linkUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-700 break-all"
-                      >
-                        {selectedSubmission.linkUrl}
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                {selectedSubmission.feedback && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Geri Bildirim</label>
-                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                      <p className="text-sm text-gray-900">{selectedSubmission.feedback}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setSelectedSubmission(null)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Kapat
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {showDetailModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900">Ödev Detayları</h3>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Kullanıcı Bilgileri */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Kullanıcı Bilgileri</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Ad Soyad</label>
-                    <p className="text-gray-900">{selectedSubmission.userName}</p>
-                  </div>
-              <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="text-gray-900">{selectedSubmission.userEmail}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Görev Bilgileri */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Görev Bilgileri</h4>
-                <div className="space-y-3">
+                
+                {/* Görev Bilgileri */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Görev Bilgileri</h4>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Görev Başlığı</label>
-                    <p className="text-gray-900 font-semibold">{selectedSubmission.taskTitle}</p>
-                  </div>
-              <div>
-                    <label className="block text-sm font-medium text-gray-700">Görev Açıklaması</label>
-                    <p className="text-gray-900 whitespace-pre-wrap">{selectedSubmission.taskDescription}</p>
+                    <h5 className="font-medium text-gray-900 mb-1">{selectedSubmission.taskTitle}</h5>
+                    <p className="text-gray-600">{selectedSubmission.taskDescription}</p>
                   </div>
                 </div>
-              </div>
-
+                
                 {/* Teslim Bilgileri */}
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Teslim Bilgileri</h4>
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-lg p-4 border">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          selectedSubmission.submissionType === 'FILE' ? 'bg-blue-500' : 'bg-green-500'
-                        }`}></div>
-                        <span className="font-semibold text-gray-900">
-                          {selectedSubmission.submissionType === 'FILE' ? '📁 Dosya Yükleme' : '🔗 Link Paylaşımı'}
-                        </span>
-                      </div>
-                      
-                      {selectedSubmission.submissionType === 'FILE' && selectedSubmission.fileUrl && (
-                        <div className="bg-blue-50 rounded-lg p-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Yüklenen Dosya</label>
-                          <div className="flex items-center justify-between bg-white rounded-lg p-3 border">
-                            <div className="flex items-center space-x-3">
-                              <FileText className="w-5 h-5 text-blue-500" />
-                              <span className="text-gray-900 font-medium">{selectedSubmission.fileName || 'Dosya'}</span>
-                            </div>
-                            <a
-                              href={`/api/files/${selectedSubmission.fileName}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                            >
-                              📥 İndir
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {selectedSubmission.submissionType === 'LINK' && selectedSubmission.linkUrl && (
-                        <div className="bg-green-50 rounded-lg p-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Paylaşılan Link</label>
-                          <div className="bg-white rounded-lg p-3 border">
-                            <div className="flex items-center space-x-3">
-                              <a
-                                href={selectedSubmission.linkUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline font-medium break-all"
-                              >
-                                {selectedSubmission.linkUrl}
-                              </a>
-                            </div>
-                            <div className="mt-2">
-                              <a
-                                href={selectedSubmission.linkUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                              >
-                                🔗 Linki Aç
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Teslim Bilgileri</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-500">Tür:</span>
+                      <span className="font-medium text-gray-900">
+                        {selectedSubmission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
+                      </span>
                     </div>
                     
-                    <div className="bg-white rounded-lg p-3 border">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Teslim Tarihi</label>
-                      <p className="text-gray-900 font-medium">{new Date(selectedSubmission.submittedAt).toLocaleString('tr-TR')}</p>
-                    </div>
+                    {selectedSubmission.submissionType === 'FILE' && selectedSubmission.fileUrl && (
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        <span className="text-gray-500">Dosya:</span>
+                        <a 
+                          href={selectedSubmission.fileUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline flex items-center space-x-1"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>Dosyayı İndir</span>
+                        </a>
+                      </div>
+                    )}
+                    
+                    {selectedSubmission.submissionType === 'LINK' && selectedSubmission.linkUrl && (
+                      <div className="flex items-center space-x-2">
+                        <ExternalLink className="w-5 h-5 text-green-600" />
+                        <span className="text-gray-500">Link:</span>
+                        <a 
+                          href={selectedSubmission.linkUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-green-600 hover:text-green-800 underline flex items-center space-x-1"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          <span>Linki Aç</span>
+                        </a>
+                      </div>
+                    )}
+                    
+                    {selectedSubmission.fileName && (
+                      <div>
+                        <span className="text-gray-500">Dosya Adı:</span>
+                        <p className="text-gray-900 mt-1">{selectedSubmission.fileName}</p>
+                      </div>
+                    )}
+                    
+                    {selectedSubmission.fileSize && (
+                      <div>
+                        <span className="text-gray-500">Dosya Boyutu:</span>
+                        <p className="text-gray-900 mt-1">{formatFileSize(selectedSubmission.fileSize)}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-              {/* Durum Bilgileri */}
-              <div className="bg-yellow-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Durum Bilgileri</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Mevcut Durum</label>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      selectedSubmission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      selectedSubmission.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                      selectedSubmission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                      'bg-orange-100 text-orange-800'
-                    }`}>
-                      {selectedSubmission.status === 'PENDING' ? 'Beklemede' :
-                       selectedSubmission.status === 'APPROVED' ? 'Onaylandı' :
-                       selectedSubmission.status === 'REJECTED' ? 'Reddedildi' :
-                       'Revizyon Gerekli'}
-                    </span>
-                  </div>
-                  
-                  {selectedSubmission.feedback && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Geri Bildirim</label>
-                      <p className="text-gray-900 whitespace-pre-wrap bg-white p-3 rounded-lg border">
-                        {selectedSubmission.feedback}
-                      </p>
+                
+                {/* Durum ve Değerlendirme */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Durum ve Değerlendirme</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-500">Durum:</span>
+                      <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedSubmission.status)}`}>
+                        {getStatusIcon(selectedSubmission.status)}
+                        <span>{getStatusText(selectedSubmission.status)}</span>
+                      </div>
                     </div>
-                  )}
+                    
+                    {selectedSubmission.score && (
+                      <div className="flex items-center space-x-2">
+                        <Star className="w-5 h-5 text-yellow-500" />
+                        <span className="text-gray-500">Puan:</span>
+                        <span className="font-medium text-gray-900">{selectedSubmission.score}/100</span>
+                      </div>
+                    )}
+                    
+                    {selectedSubmission.feedback && (
+                      <div>
+                        <span className="text-gray-500">Geri Bildirim:</span>
+                        <p className="text-gray-900 mt-1">{selectedSubmission.feedback}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Tarih Bilgileri */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Tarih Bilgileri</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-500">Teslim Tarihi:</span>
+                      <span className="text-gray-900">
+                        {new Date(selectedSubmission.submittedAt).toLocaleString('tr-TR')}
+                      </span>
+                    </div>
+                    {selectedSubmission.reviewedAt && (
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-500">Değerlendirme Tarihi:</span>
+                        <span className="text-gray-900">
+                          {new Date(selectedSubmission.reviewedAt).toLocaleString('tr-TR')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Kapat
-              </button>
+              
+              <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    setSelectedSubmission(null);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Kapat
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    openEvaluationModal(selectedSubmission);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Değerlendir
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -702,102 +645,78 @@ const AdminSubmissions = () => {
 
       {/* Evaluation Modal */}
       {showEvaluationModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div 
+          className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEvaluationModal(false);
+              setSelectedSubmission(null);
+            }
+          }}
+        >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl w-full"
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full border border-gray-200"
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900">Ödev Değerlendirme</h3>
-              <button
-                onClick={() => setShowEvaluationModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Ödev Bilgileri */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Ödev Bilgileri</h4>
-                <div className="space-y-2">
-                  <div>
-                    <span className="font-medium text-gray-700">Katılımcı:</span>
-                    <span className="ml-2 text-gray-900">{selectedSubmission.userName}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Görev:</span>
-                    <span className="ml-2 text-gray-900">{selectedSubmission.taskTitle}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Teslim Türü:</span>
-                    <span className="ml-2 text-gray-900">
-                      {selectedSubmission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
-                    </span>
-                  </div>
-                </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Değerlendirme</h3>
+                <button
+                  onClick={() => {
+                    setShowEvaluationModal(false);
+                    setSelectedSubmission(null);
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-
-              {/* Değerlendirme Formu */}
+              
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Değerlendirme Durumu
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Durum</label>
                   <select
                     value={evaluationData.status}
-                    onChange={(e) => setEvaluationData(prev => ({ 
-                      ...prev, 
-                      status: e.target.value as 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION' 
-                    }))}
+                    onChange={(e) => setEvaluationData({...evaluationData, status: e.target.value as any})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   >
-                    <option value="APPROVED">✅ Onaylandı</option>
-                    <option value="REJECTED">❌ Reddedildi</option>
-                    <option value="NEEDS_REVISION">🔄 Revizyon Gerekli</option>
+                    <option value="APPROVED">Onaylandı</option>
+                    <option value="REJECTED">Reddedildi</option>
+                    <option value="NEEDS_REVISION">Revizyon Gerekli</option>
                   </select>
                 </div>
-
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Değerlendirme Notu
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Geri Bildirim</label>
                   <textarea
                     value={evaluationData.feedback}
-                    onChange={(e) => setEvaluationData(prev => ({ ...prev, feedback: e.target.value }))}
-                    placeholder="Ödev hakkında detaylı değerlendirme notunuzu yazın..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 h-32 resize-none"
+                    onChange={(e) => setEvaluationData({...evaluationData, feedback: e.target.value})}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="Değerlendirme notlarınızı yazın..."
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowEvaluationModal(false)}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleEvaluation}
-                disabled={isEvaluating}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-              >
-                {isEvaluating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Değerlendiriliyor...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Değerlendirmeyi Kaydet</span>
-                  </>
-                )}
-              </button>
+              
+              <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowEvaluationModal(false);
+                    setSelectedSubmission(null);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleEvaluation}
+                  disabled={isEvaluating}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isEvaluating ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

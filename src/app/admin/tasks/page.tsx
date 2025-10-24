@@ -17,15 +17,23 @@ import {
   Target,
   AlertCircle,
   Save,
-  X
+  X,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  Download,
+  ExternalLink
 } from 'lucide-react';
 
 interface Task {
   id: string;
   title: string;
   description: string;
-  status: 'PENDING' | 'COMPLETED' | 'REJECTED';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED';
   startDate?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -43,9 +51,17 @@ export default function AdminTasksPage() {
     title: '',
     description: '',
     startDate: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
     dueDate: '',
-    status: 'PENDING' as 'PENDING' | 'COMPLETED' | 'REJECTED'
+    status: 'PENDING' as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED'
   });
+  const [editingField, setEditingField] = useState<{ taskId: string; field: string } | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user || user.role !== 'ADMIN')) {
@@ -71,7 +87,10 @@ export default function AdminTasksPage() {
       
       if (data.success) {
         console.log('Success: Setting tasks:', data.tasks?.length || 0, 'tasks');
-        setTasks(data.tasks || []);
+        const tasksData = data.tasks || [];
+        setTasks(tasksData);
+        
+        // Görevleri kullanıcıya göre grupla
       } else {
         console.error('API Error:', data.error);
         console.error('API Detail:', data.detail);
@@ -193,9 +212,35 @@ export default function AdminTasksPage() {
       title: '',
       description: '',
       startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
       dueDate: '',
       status: 'PENDING'
     });
+  };
+
+  const handleStatusChange = async (taskId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/admin/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus
+        }),
+      });
+
+      if (response.ok) {
+        // Görevleri yeniden yükle
+        fetchTasks();
+      } else {
+        console.error('Status update failed');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   const openEditModal = (task: Task) => {
@@ -204,14 +249,82 @@ export default function AdminTasksPage() {
       title: task.title,
       description: task.description,
       startDate: task.startDate ? task.startDate.split('T')[0] : '',
+      endDate: task.endDate ? task.endDate.split('T')[0] : '',
+      startTime: task.startTime || '',
+      endTime: task.endTime || '',
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
       status: task.status
     });
     setShowEditModal(true);
   };
 
+  const startEditing = (taskId: string, field: string, currentValue: string) => {
+    setEditingField({ taskId, field });
+    setEditValue(currentValue);
+  };
+
+  const cancelEditing = () => {
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const toggleTaskExpansion = (taskId: string) => {
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
+  const handleViewDetails = (task: Task) => {
+    setSelectedTask(task);
+    setShowDetailModal(true);
+  };
+
+  const saveEdit = async (taskId: string, field: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const updateData: any = { id: taskId };
+      updateData[field] = editValue;
+
+      const response = await fetch('/api/admin/tasks', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Local state'i güncelle
+        setTasks(tasks.map(t => 
+          t.id === taskId 
+            ? { ...t, [field]: editValue, updatedAt: new Date().toISOString() }
+            : t
+        ));
+        setEditingField(null);
+        setEditValue('');
+      } else {
+        alert('Güncelleme başarısız: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Güncelleme sırasında hata oluştu');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'IN_PROGRESS':
+        return 'bg-blue-100 text-blue-800';
       case 'COMPLETED':
         return 'bg-green-100 text-green-800';
       case 'REJECTED':
@@ -223,6 +336,10 @@ export default function AdminTasksPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'PENDING':
+        return 'Beklemede';
+      case 'IN_PROGRESS':
+        return 'Devam Ediyor';
       case 'COMPLETED':
         return 'Tamamlandı';
       case 'REJECTED':
@@ -299,20 +416,191 @@ export default function AdminTasksPage() {
                     <tr key={task.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{task.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{task.description}</p>
+                          {editingField?.taskId === task.id && editingField?.field === 'title' ? (
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="text"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => saveEdit(task.id, 'title')}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <h3 
+                              className="font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                              onClick={() => startEditing(task.id, 'title', task.title)}
+                            >
+                              {task.title}
+                            </h3>
+                          )}
+                          {editingField?.taskId === task.id && editingField?.field === 'description' ? (
+                            <div className="flex items-center space-x-2 mt-1">
+                              <textarea
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                rows={2}
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => saveEdit(task.id, 'description')}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <p 
+                              className="text-sm text-gray-600 mt-1 line-clamp-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                              onClick={() => startEditing(task.id, 'description', task.description)}
+                            >
+                              {task.description}
+                            </p>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)}`}>
-                          {getStatusText(task.status)}
-                        </span>
+                        {editingField?.taskId === task.id && editingField?.field === 'status' ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            >
+                              <option value="PENDING">Beklemede</option>
+                              <option value="COMPLETED">Tamamlandı</option>
+                              <option value="REJECTED">Reddedildi</option>
+                            </select>
+                            <button
+                              onClick={() => saveEdit(task.id, 'status')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)}`}>
+                              {getStatusText(task.status)}
+                            </span>
+                            <div className="flex space-x-1">
+                              {task.status === 'PENDING' && (
+                                <button
+                                  onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
+                                  className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+                                >
+                                  Başlat
+                                </button>
+                              )}
+                              {task.status === 'IN_PROGRESS' && (
+                                <button
+                                  onClick={() => handleStatusChange(task.id, 'COMPLETED')}
+                                  className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 hover:bg-green-200 rounded-full transition-colors"
+                                >
+                                  Bitir
+                                </button>
+                              )}
+                              {task.status === 'COMPLETED' && (
+                                <button
+                                  onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
+                                  className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+                                >
+                                  Tekrar Başlat
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-'}
+                        {editingField?.taskId === task.id && editingField?.field === 'startDate' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="date"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveEdit(task.id, 'startDate')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span 
+                            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            onClick={() => startEditing(task.id, 'startDate', task.startDate ? task.startDate.split('T')[0] : '')}
+                          >
+                            {task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : '-'}
+                        {editingField?.taskId === task.id && editingField?.field === 'dueDate' ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="date"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveEdit(task.id, 'dueDate')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span 
+                            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            onClick={() => startEditing(task.id, 'dueDate', task.dueDate ? task.dueDate.split('T')[0] : '')}
+                          >
+                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString('tr-TR') : '-'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(task.createdAt).toLocaleDateString('tr-TR')}
@@ -398,26 +686,56 @@ export default function AdminTasksPage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tarihi</label>
                       <input
                         type="date"
                         value={formData.startDate}
                         onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                        required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
                       <input
                         type="date"
-                        value={formData.dueDate}
-                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                        required
                       />
                     </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Saati</label>
+                      <input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Saati</label>
+                      <input
+                        type="time"
+                        value={formData.endTime}
+                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Son Teslim Tarihi</label>
+                    <input
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                    />
                   </div>
                 </div>
                 
@@ -495,18 +813,52 @@ export default function AdminTasksPage() {
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Başlama Tarihi</label>
-                    <input
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tarihi</label>
+                      <input
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
+                      <input
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Saati</label>
+                      <input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Saati</label>
+                      <input
+                        type="time"
+                        value={formData.endTime}
+                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
+                      />
+                    </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Son Teslim Tarihi</label>
                     <input
                       type="date"
                       value={formData.dueDate}
@@ -552,6 +904,85 @@ export default function AdminTasksPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Detail Modal */}
+        {showDetailModal && selectedTask && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-900">Görev Detayları</h3>
+                  <button
+                    onClick={() => setShowDetailModal(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Görev Bilgileri */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">{selectedTask.title}</h4>
+                    <p className="text-gray-600">{selectedTask.description}</p>
+                  </div>
+                  
+                  {/* Görev Bilgileri */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Target className="w-5 h-5 text-red-600" />
+                      <span className="text-gray-500">Durum:</span>
+                      <span className="font-medium text-gray-900">{getStatusText(selectedTask.status)}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-5 h-5 text-red-600" />
+                      <span className="text-gray-500">Son Teslim:</span>
+                      <span className="font-medium text-gray-900">
+                        {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Tarih Bilgileri */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <h5 className="font-medium text-gray-900 mb-3">Tarih Bilgileri</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-500">Oluşturulma:</span>
+                        <span className="text-gray-900">
+                          {new Date(selectedTask.createdAt).toLocaleString('tr-TR')}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-500">Güncelleme:</span>
+                        <span className="text-gray-900">
+                          {new Date(selectedTask.updatedAt).toLocaleString('tr-TR')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowDetailModal(false)}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
