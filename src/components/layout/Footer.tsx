@@ -7,7 +7,7 @@ import {
   Phone,
   MapPin,
   Linkedin,
-  Twitter,
+  X,
   Instagram,
   Youtube,
   ArrowUp,
@@ -55,26 +55,27 @@ const Footer: React.FC = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-5 h-5" />,
-      url: "https://www.linkedin.com/company/huawei-turkey",
-      followers: "150K+"
-    },
-    {
-      name: "YouTube",
-      icon: <Youtube className="w-5 h-5" />,
-      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye",
-      followers: "50K+"
+      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all"
     },
     {
       name: "Instagram",
       icon: <Instagram className="w-5 h-5" />,
-      url: "https://www.instagram.com/huaweiturkey",
-      followers: "80K+"
+      url: "https://www.instagram.com/hsdturkiye/"
     },
     {
-      name: "X (Twitter)",
-      icon: <Twitter className="w-5 h-5" />,
-      url: "https://twitter.com/HuaweiTurkey",
-      followers: "120K+"
+      name: "YouTube",
+      icon: <Youtube className="w-5 h-5" />,
+      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye"
+    },
+    {
+      name: "Medium",
+      icon: <span className="font-bold text-xs text-white">M</span>,
+      url: "https://medium.com/huawei-developers"
+    },
+    {
+      name: "X",
+      icon: <span className="font-bold text-lg text-white">𝕏</span>,
+      url: "https://x.com/turkiye_hsd"
     }
   ];
 
@@ -209,7 +210,6 @@ const Footer: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-[var(--text)] text-sm font-medium">{social.name}</div>
-                      <div className="text-[var(--text-muted)] text-xs">{social.followers} Takipçi</div>
                     </div>
                   </a>
                 ))}
