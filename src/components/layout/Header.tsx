@@ -126,11 +126,7 @@ const Header: React.FC = () => {
               }`}>
                 {APP_NAME}
               </h1>
-              <p className={`text-sm ${
-                isScrolled ? 'text-white/80' : 'text-[var(--text-muted)]'
-              }`}>
-                Türkiye Bootcamp Programı
-              </p>
+              
             </div>
           </motion.div>
 
