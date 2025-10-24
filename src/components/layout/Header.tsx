@@ -114,13 +114,16 @@ const Header: React.FC = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="flex items-center"
               >
-                <Image
-                  src="/hsd-logo.svg"
-                  alt="HSD Logo"
-                  width={60}
-                  height={30}
-                  className="object-contain animate-pulse"
-                />
+                <div className="w-15 h-8 animate-pulse">
+                  <svg width="60" height="30" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Sol Chevron */}
+                    <path d="M20 10 L10 30 L20 50 L25 50 L15 30 L25 10 Z" fill="#E31B23"/>
+                    {/* Sağ Chevron */}
+                    <path d="M100 10 L110 30 L100 50 L95 50 L105 30 L95 10 Z" fill="#E31B23"/>
+                    {/* Orta HSD Metni */}
+                    <text x="60" y="40" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="bold" fill="#E31B23">HSD</text>
+                  </svg>
+                </div>
               </motion.div>
             </div>
             <div className="hidden sm:block">
