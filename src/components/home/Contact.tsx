@@ -54,26 +54,27 @@ const Contact: React.FC = () => {
     {
       name: "LinkedIn",
       icon: <Linkedin className="w-5 h-5" />,
-      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all",
-      followers: "150K+"
+      url: "https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all"
     },
     {
       name: "Instagram",
       icon: <Instagram className="w-5 h-5" />,
-      url: "https://www.instagram.com/hsdturkiye/",
-      followers: "80K+"
+      url: "https://www.instagram.com/hsdturkiye/"
     },
     {
       name: "YouTube",
       icon: <Youtube className="w-5 h-5" />,
-      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye",
-      followers: "50K+"
+      url: "https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye"
+    },
+    {
+      name: "Medium",
+      icon: <span className="font-bold text-sm text-white">Medium</span>,
+      url: "https://medium.com/huawei-developers"
     },
     {
       name: "X",
       icon: <span className="font-bold text-lg text-white">𝕏</span>,
-      url: "https://x.com/turkiye_hsd",
-      followers: "120K+"
+      url: "https://x.com/turkiye_hsd"
     }
   ];
 
@@ -187,7 +188,6 @@ const Contact: React.FC = () => {
                     <div className="text-white">{social.icon}</div>
                   </div>
                   <h4 className="font-bold text-[var(--text)] mb-1">{social.name}</h4>
-                  <p className="text-[var(--text-muted)] text-sm">{social.followers} takipçi</p>
                 </motion.a>
               ))}
             </div>
