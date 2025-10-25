@@ -48,13 +48,13 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Tüm kullanıcılara bildirim gönder (duplicate kontrolü ile)
+    // Tüm kullanıcılara bildirim gönder (güçlü duplicate kontrolü ile)
     try {
       const allUsers = await prisma.user.findMany({
         select: { id: true }
       });
 
-      // Son 5 dakika içinde aynı duyuru için bildirim var mı kontrol et
+      // Son 1 saat içinde aynı başlıklı duyuru için bildirim var mı kontrol et
       const recentNotification = await prisma.notification.findFirst({
         where: {
           type: 'ANNOUNCEMENT',
@@ -63,33 +63,34 @@ export async function POST(request: NextRequest) {
             contains: title
           },
           createdAt: {
-            gte: new Date(Date.now() - 5 * 60 * 1000) // 5 dakika önce
+            gte: new Date(Date.now() - 60 * 60 * 1000) // 1 saat önce
           }
         }
       });
 
-      // Eğer son 5 dakika içinde aynı duyuru için bildirim yoksa gönder
+      // Eğer son 1 saat içinde aynı başlıklı duyuru için bildirim yoksa gönder
       if (!recentNotification) {
-        const notificationPromises = allUsers.map(user => 
-          prisma.notification.create({
-            data: {
-              type: 'ANNOUNCEMENT',
-              title: 'Yeni Duyuru',
-              message: `${title} - ${summary || content.substring(0, 50)}...`,
-              actionUrl: '/dashboard/announcements',
-              userId: user.id,
-              read: false
-            }
-          })
-        );
+        // Önce tüm kullanıcılar için aynı anda bildirim oluştur
+        const notifications = allUsers.map(user => ({
+          type: 'ANNOUNCEMENT' as const,
+          title: 'Yeni Duyuru',
+          message: `${title} - ${summary || content.substring(0, 50)}...`,
+          actionUrl: '/dashboard/announcements',
+          userId: user.id,
+          read: false
+        }));
 
-        await Promise.all(notificationPromises);
-        console.log(`Bildirim gönderildi: ${allUsers.length} kullanıcıya`);
+        // Bulk insert ile tek seferde tüm bildirimleri oluştur
+        await prisma.notification.createMany({
+          data: notifications
+        });
+
+        console.log(`✅ Bildirim gönderildi: ${allUsers.length} kullanıcıya - ${title}`);
       } else {
-        console.log('Duplicate bildirim engellendi - son 5 dakika içinde aynı duyuru için bildirim mevcut');
+        console.log(`⚠️ Duplicate bildirim engellendi - son 1 saat içinde "${title}" başlıklı duyuru için bildirim mevcut`);
       }
     } catch (notificationError) {
-      console.error('Bildirim gönderme hatası:', notificationError);
+      console.error('❌ Bildirim gönderme hatası:', notificationError);
       // Bildirim hatası duyuru oluşturmayı engellemez
     }
 
