@@ -242,69 +242,6 @@ const About: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* HSD Program Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/90 rounded-2xl p-8 mb-16 text-white"
-          >
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <h3 className="text-3xl font-bold mb-4">Huawei Student Developers (HSD)</h3>
-                <p className="text-lg text-white/90 mb-6">
-                  Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır. Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
-                </p>
-                
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-white/90">Teknoloji, yazılım, liderlik ve kariyer konularında eğitimler</span>
-                  </div>
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-white/90">Kendi üniversitelerinde topluluk kurma ve geliştirme fırsatı</span>
-                  </div>
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-white/90">Liderlik, topluluk önünde konuşma ve organizasyon deneyimi</span>
-                  </div>
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-white mr-3 mt-1 flex-shrink-0" />
-                    <span className="text-white/90">Yazılım alanında uygulamalı bilgi ve deneyim kazanma</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <span className="text-white/80">Bizi Takip Edin:</span>
-                  <div className="flex items-center space-x-3">
-                    <a href="https://medium.com/huawei-developers" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white transition-colors">
-                      <span className="font-bold text-sm">Medium</span>
-                    </a>
-                    <a href="https://x.com/turkiye_hsd" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white transition-colors">
-                      <span className="font-bold text-lg">𝕏</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              
-                <div className="relative">
-                  <div className="relative w-full max-w-lg mx-auto">
-                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                      <iframe
-                        className="absolute top-0 left-0 w-full h-full rounded-xl"
-                        src="https://www.youtube.com/embed/de8ANp2L52I?start=1"
-                        title="HSD Türkiye Tanıtım Videosu"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                    </div>
-                  </div>
-                </div>
-            </div>
-          </motion.div>
 
           {/* YouTube Channel Info */}
           <motion.div
