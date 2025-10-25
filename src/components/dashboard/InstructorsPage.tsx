@@ -197,9 +197,6 @@ const InstructorsPage = () => {
           <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
             Eğitmenlerle İletişime Geç
           </button>
-          <button className="bg-white hover:bg-gray-50 text-red-600 font-bold py-3 px-6 rounded-xl border border-red-200 transition-all duration-300">
-            Mentorluk Talep Et
-          </button>
         </div>
       </motion.div>
     </div>

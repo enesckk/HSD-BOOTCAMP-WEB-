@@ -35,13 +35,6 @@ const Contact: React.FC = () => {
       action: "E-posta Gönder"
     },
     {
-      icon: <Phone className="w-6 h-6" />,
-      title: "Telefon",
-      value: "+90 212 123 45 67",
-      description: "Hafta içi 09:00 - 18:00",
-      action: "Ara"
-    },
-    {
       icon: <MapPin className="w-6 h-6" />,
       title: "Adres",
       value: "Huawei Türkiye",

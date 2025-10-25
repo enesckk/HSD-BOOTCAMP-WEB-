@@ -110,9 +110,6 @@ const ActiveBootcamp: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
               Bu Eğitim <span className="text-[var(--primary)]">Başladı</span>
             </h2>
-            <p className="text-lg text-[var(--text-muted)] max-w-4xl mx-auto leading-relaxed">
-              Şu anda başvuruya açık olan bootcamp programımız. Hemen başvurun ve teknoloji dünyasında uzmanlaşın.
-            </p>
           </motion.div>
 
           {/* Main Bootcamp Card */}
@@ -133,27 +130,16 @@ const ActiveBootcamp: React.FC = () => {
                   <p className="text-[var(--text-muted)]">Huawei Cloud CCE</p>
                 </div>
               </div>
-              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
-                {bootcampDetails.status}
-              </div>
             </div>
             
             <p className="text-[var(--text-muted)] text-lg leading-relaxed mb-8">
               {bootcampDetails.description}
             </p>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-[var(--primary)] mb-2">{bootcampDetails.duration}</div>
                 <div className="text-[var(--text-muted)] text-sm">Eğitim Süresi</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[var(--primary)] mb-2">50</div>
-                <div className="text-[var(--text-muted)] text-sm">Sınırlı Kontenjan</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[var(--primary)] mb-2">100%</div>
-                <div className="text-[var(--text-muted)] text-sm">Sertifikasyon</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-[var(--primary)] mb-2">5+</div>
@@ -161,28 +147,13 @@ const ActiveBootcamp: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between bg-[var(--accent)]/5 rounded-xl p-6 mb-8">
-              <div className="flex items-center space-x-4 mb-4 md:mb-0">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-[var(--primary)]" />
-                  <span className="text-[var(--text-muted)]"><strong>Son Başvuru:</strong> {bootcampDetails.deadline}</span>
-                </div>
-              </div>
+            <div className="flex flex-col md:flex-row items-center justify-center bg-[var(--accent)]/5 rounded-xl p-6 mb-8">
               <div className="flex items-center space-x-2">
                 <Flag className="w-5 h-5 text-[var(--accent)]" />
                 <span className="text-[var(--text-muted)]"><strong>Başlangıç:</strong> {bootcampDetails.startDate}</span>
               </div>
             </div>
 
-            <div className="text-center">
-              <button
-                onClick={handleApplyClick}
-                className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold py-4 px-8 rounded-xl text-lg transition-all duration-300 hover:shadow-lg flex items-center space-x-3 mx-auto"
-              >
-                <span>Hemen Başvur</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
           </motion.div>
 
 
