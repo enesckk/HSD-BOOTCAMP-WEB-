@@ -48,28 +48,46 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Tüm kullanıcılara bildirim gönder
+    // Tüm kullanıcılara bildirim gönder (duplicate kontrolü ile)
     try {
       const allUsers = await prisma.user.findMany({
         select: { id: true }
       });
 
-      // Her kullanıcıya bildirim oluştur
-      const notificationPromises = allUsers.map(user => 
-        prisma.notification.create({
-          data: {
-            type: 'ANNOUNCEMENT',
-            title: 'Yeni Duyuru',
-            message: `${title} - ${summary || content.substring(0, 50)}...`,
-            actionUrl: '/dashboard/announcements',
-            userId: user.id,
-            read: false
+      // Son 5 dakika içinde aynı duyuru için bildirim var mı kontrol et
+      const recentNotification = await prisma.notification.findFirst({
+        where: {
+          type: 'ANNOUNCEMENT',
+          title: 'Yeni Duyuru',
+          message: {
+            contains: title
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 5 * 60 * 1000) // 5 dakika önce
           }
-        })
-      );
+        }
+      });
 
-      await Promise.all(notificationPromises);
-      console.log(`Bildirim gönderildi: ${allUsers.length} kullanıcıya`);
+      // Eğer son 5 dakika içinde aynı duyuru için bildirim yoksa gönder
+      if (!recentNotification) {
+        const notificationPromises = allUsers.map(user => 
+          prisma.notification.create({
+            data: {
+              type: 'ANNOUNCEMENT',
+              title: 'Yeni Duyuru',
+              message: `${title} - ${summary || content.substring(0, 50)}...`,
+              actionUrl: '/dashboard/announcements',
+              userId: user.id,
+              read: false
+            }
+          })
+        );
+
+        await Promise.all(notificationPromises);
+        console.log(`Bildirim gönderildi: ${allUsers.length} kullanıcıya`);
+      } else {
+        console.log('Duplicate bildirim engellendi - son 5 dakika içinde aynı duyuru için bildirim mevcut');
+      }
     } catch (notificationError) {
       console.error('Bildirim gönderme hatası:', notificationError);
       // Bildirim hatası duyuru oluşturmayı engellemez
