@@ -246,7 +246,14 @@ const ParticipantDashboard = () => {
           </div>
           <div className="hidden md:block">
             <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
-              <Target className="w-12 h-12 text-white" />
+              <div className="flex items-center space-x-1">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                  <span className="text-red-600 font-bold text-xs">&lt;HSD&gt;</span>
+                </div>
+                <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">H</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
