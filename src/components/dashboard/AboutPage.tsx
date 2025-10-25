@@ -45,8 +45,8 @@ const AboutPage = () => {
         </div>
         </div>
         <p className="text-lg text-red-100 leading-relaxed">
-          Huawei Türkiye ve Habitat Derneği iş birliğiyle düzenlenen teknoloji eğitimleri platformu. 
-          Geleceğin teknoloji liderlerini yetiştiriyoruz.
+          Teknoloji tutkusunu paylaşan üniversite öğrencilerine yönelik Huawei tarafından desteklenen küresel bir programdır. 
+          Türkiye genelinde teknoloji ve inovasyon eğitimleri. Cloud, AI, DevOps ve daha fazlası.
         </p>
       </motion.div>
 
