@@ -289,24 +289,20 @@ const About: React.FC = () => {
                 </div>
               </div>
               
-              <div className="relative">
-                <div className="text-center mb-4">
-                  <h4 className="text-xl font-semibold mb-2">HSD Türkiye Tanıtım Videosu</h4>
-                  <p className="text-white/80 text-sm">HSD topluluğu ile bağlantıda kalın</p>
-                </div>
-                <div className="relative w-full max-w-md mx-auto">
-                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                      className="absolute top-0 left-0 w-full h-full rounded-xl"
-                      src="https://www.youtube.com/embed/de8ANp2L52I?start=1"
-                      title="HSD Türkiye Tanıtım Videosu"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
+                <div className="relative">
+                  <div className="relative w-full max-w-lg mx-auto">
+                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                      <iframe
+                        className="absolute top-0 left-0 w-full h-full rounded-xl"
+                        src="https://www.youtube.com/embed/de8ANp2L52I?start=1"
+                        title="HSD Türkiye Tanıtım Videosu"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
                   </div>
                 </div>
-              </div>
             </div>
           </motion.div>
 
