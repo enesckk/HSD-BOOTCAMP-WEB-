@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
               message: `${title} - ${summary || content.substring(0, 50)}...`,
               actionUrl: '/dashboard/announcements',
               userId: user.id,
-              isRead: false
+              read: false
             }
           })
         );
