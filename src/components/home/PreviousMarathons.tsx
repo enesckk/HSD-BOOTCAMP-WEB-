@@ -92,7 +92,7 @@ const PreviousMarathons: React.FC = () => {
       duration: "6 Hafta",
       description: "DevOps metodolojileri ve sürekli entegrasyon süreçleri üzerine yoğun eğitim programı. Huawei Cloud DevOps araçları ile pratik deneyim.",
       achievements: [
-        "2000+ DevOps uzmanı yetiştirildi",
+        "2000+ eğitim aldı",
         "Huawei Cloud DevOps araçları kullanıldı",
         "Sertifikasyon programı tamamlandı"
       ],
