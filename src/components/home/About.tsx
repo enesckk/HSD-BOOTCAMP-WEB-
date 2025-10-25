@@ -102,37 +102,23 @@ const About: React.FC = () => {
             viewport={{ once: true }}
             className="grid lg:grid-cols-2 gap-12 mb-16"
           >
-            {/* Left Column - Social Media Icons */}
+            {/* Left Column - Video */}
             <div>
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-[var(--text)] mb-2">Bizi Takip Edin</h3>
+                <h3 className="text-2xl font-bold text-[var(--text)] mb-2">HSD Tanıtım Videosu</h3>
                 <p className="text-[var(--text-muted)]">HSD topluluğu ile bağlantıda kalın</p>
               </div>
-              <div className="flex justify-center space-x-6">
-                {[
-                  { name: 'LinkedIn', icon: <Linkedin className="w-8 h-8" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
-                  { name: 'Instagram', icon: <Instagram className="w-8 h-8" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
-                  { name: 'YouTube', icon: <Youtube className="w-8 h-8" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
-                  { name: 'Medium', icon: <span className="font-bold text-lg text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
-                  { name: 'X (Twitter)', icon: <span className="font-bold text-xl text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
-                ].map((social, index) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ scale: 1.2, rotate: 5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`transition-all duration-300 ${social.color} hover:drop-shadow-lg flex items-center justify-center`}
-                    title={social.name}
-                  >
-                    {social.icon}
-                  </motion.a>
-                ))}
+              <div className="relative w-full max-w-sm mx-auto">
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    className="absolute top-0 left-0 w-full h-full rounded-xl shadow-lg"
+                    src="https://www.youtube.com/embed/de8ANp2L52I?start=1"
+                    title="HSD Türkiye Tanıtım Videosu"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
               </div>
             </div>
 
