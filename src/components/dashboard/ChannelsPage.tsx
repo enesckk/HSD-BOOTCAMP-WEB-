@@ -555,12 +555,14 @@ const ChannelsPage = () => {
                           </span>
                         )}
                         <div className="mt-3 flex space-x-2">
-                          <button 
-                            onClick={() => handleReplyClick(message)}
-                            className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                          >
-                            Cevapla
-                          </button>
+                          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+                            <button 
+                              onClick={() => handleReplyClick(message)}
+                              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                            >
+                              Cevapla
+                            </button>
+                          )}
                           <button className="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                             Detay
                           </button>
@@ -613,14 +615,16 @@ const ChannelsPage = () => {
                             </span>
                           </div>
                           <p className="text-gray-800">{message.content}</p>
-                          <div className="mt-2 flex space-x-2">
-                            <button 
-                              onClick={() => handleReplyClick(message)}
-                              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                            >
-                              Cevapla
-                            </button>
-                          </div>
+                          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+                            <div className="mt-2 flex space-x-2">
+                              <button 
+                                onClick={() => handleReplyClick(message)}
+                                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                              >
+                                Cevapla
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))
