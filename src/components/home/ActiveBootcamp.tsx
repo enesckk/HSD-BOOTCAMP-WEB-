@@ -108,7 +108,7 @@ const ActiveBootcamp: React.FC = () => {
               <span>Aktif Bootcamp</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
-              Şu Anda <span className="text-[var(--primary)]">Başvuruya Açık</span>
+              Bu Eğitim <span className="text-[var(--primary)]">Başladı</span>
             </h2>
             <p className="text-lg text-[var(--text-muted)] max-w-4xl mx-auto leading-relaxed">
               Şu anda başvuruya açık olan bootcamp programımız. Hemen başvurun ve teknoloji dünyasında uzmanlaşın.
