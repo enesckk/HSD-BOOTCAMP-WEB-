@@ -7,122 +7,152 @@ import { BookOpen, Download, ExternalLink, Video, FileText, Code, Database, Clou
 const ResourcesPage = () => {
   const resourceCategories = [
     {
-      title: 'Kubernetes Temelleri',
+      title: 'Cloud Native Mimarilerine Genel Bakış',
+      icon: <Cloud className="w-6 h-6" />,
+      resources: [
+        {
+          title: 'Cloud Native Computing Arka Planı',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Cloud native computing\'in temellerini ve gelişim sürecini öğrenin. Modern uygulama geliştirme yaklaşımlarını anlayın.'
+        },
+        {
+          title: 'Temel Cloud Native Teknolojiler',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Container, Kubernetes, microservices gibi temel cloud native teknolojileri ve bunların birbirleriyle ilişkilerini keşfedin.'
+        },
+        {
+          title: 'Huawei Cloud Native Çözümleri',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Huawei Cloud\'un cloud native ekosistemindeki çözümlerini ve hizmetlerini tanıyın.'
+        }
+      ]
+    },
+    {
+      title: 'Cloud Native Altyapı - Container\'lar',
       icon: <Zap className="w-6 h-6" />,
       resources: [
         {
-          title: 'Kubernetes Temel Kavramlar',
-          type: 'PDF',
-          size: '2.5 MB',
+          title: 'Container Teknolojileri',
+          type: 'Content',
           icon: <FileText className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Pod, Service, Deployment gibi temel kavramlar'
+          description: 'Docker, containerd gibi container teknolojilerini ve bunların nasıl çalıştığını öğrenin.'
         },
         {
-          title: 'Kubernetes Architecture Video',
-          type: 'Video',
-          size: '45 dk',
-          icon: <Video className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Kubernetes mimarisi detaylı anlatım'
-        },
-        {
-          title: 'Hands-on Lab: Pod Yönetimi',
-          type: 'Lab',
-          size: '30 dk',
-          icon: <Code className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Pratik pod oluşturma ve yönetimi'
+          title: 'Container Yaşam Döngüsü Yönetimi',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Container\'ların oluşturulması, çalıştırılması, durdurulması ve silinmesi süreçlerini yönetmeyi öğrenin.'
         }
       ]
     },
     {
-      title: 'Konfigürasyon & Veri Yönetimi',
+      title: 'Cloud Native Altyapı - Kubernetes',
       icon: <Target className="w-6 h-6" />,
       resources: [
         {
-          title: 'ConfigMap ve Secret Kullanımı',
-          type: 'PDF',
-          size: '1.8 MB',
+          title: 'Kubernetes Temel Teknolojileri',
+          type: 'Content',
           icon: <FileText className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Konfigürasyon yönetimi rehberi'
+          description: 'Pod, Service, Deployment, ConfigMap gibi Kubernetes temel bileşenlerini öğrenin.'
         },
         {
-          title: 'Persistent Volume Workshop',
-          type: 'Video',
-          size: '60 dk',
-          icon: <Video className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Veri kalıcılığı ve storage yönetimi'
-        },
-        {
-          title: 'Huawei OBS Entegrasyonu',
-          type: 'Lab',
-          size: '45 dk',
-          icon: <Database className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Object Storage Service entegrasyonu'
+          title: 'Container Orkestrasyonu',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Kubernetes ile container\'ları nasıl orkestre edeceğinizi ve yöneteceğinizi öğrenin.'
         }
       ]
     },
     {
-      title: 'İzleme & Container Yönetimi',
+      title: 'Huawei Cloud Container Servisleri',
       icon: <Play className="w-6 h-6" />,
       resources: [
         {
-          title: 'AOM Monitoring Guide',
-          type: 'PDF',
-          size: '3.2 MB',
+          title: 'CCE (Cloud Container Engine)',
+          type: 'Content',
           icon: <FileText className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Application Operations Management rehberi'
+          description: 'Huawei Cloud Container Engine servisini tanıyın ve Kubernetes cluster\'larını nasıl yöneteceğinizi öğrenin.'
         },
         {
-          title: 'SWR Container Registry',
-          type: 'Video',
-          size: '35 dk',
-          icon: <Video className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Container image yönetimi'
+          title: 'CCI (Cloud Container Instance)',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Serverless container çözümü CCI ile tanışın ve kullanım senaryolarını öğrenin.'
         },
         {
-          title: 'Monitoring Best Practices',
-          type: 'Lab',
-          size: '50 dk',
-          icon: <Code className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Uygulama izleme stratejileri'
+          title: 'SWR (Software Repository)',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Container image\'lerini saklama ve yönetme için SWR servisini kullanmayı öğrenin.'
         }
       ]
     },
     {
-      title: 'Ağ Yönetimi & Sertifikasyon',
+      title: 'Mikroservis Mimarisi',
+      icon: <Database className="w-6 h-6" />,
+      resources: [
+        {
+          title: 'Mikroservis Mimarisi Temelleri',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Mikroservis mimarisinin temel prensiplerini ve avantajlarını öğrenin.'
+        },
+        {
+          title: 'ServiceStage ile Mikroservis Yönetimi',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Huawei Cloud ServiceStage platformunda mikroservislerin deployment ve yönetimini öğrenin.'
+        }
+      ]
+    },
+    {
+      title: 'Istio Service Mesh',
       icon: <Flag className="w-6 h-6" />,
       resources: [
         {
-          title: 'Ingress Controller Setup',
-          type: 'PDF',
-          size: '2.1 MB',
+          title: 'Service Mesh Nedir?',
+          type: 'Content',
           icon: <FileText className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Ağ yönetimi ve load balancing'
+          description: 'Service mesh kavramını ve modern mikroservis mimarilerindeki rolünü öğrenin.'
         },
         {
-          title: 'HCCDA Sertifikasyon Hazırlık',
-          type: 'Video',
-          size: '90 dk',
-          icon: <Video className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Sertifikasyon sınavı hazırlık rehberi'
+          title: 'Istio Mimarisi',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Istio\'nun bileşenlerini ve nasıl çalıştığını detaylı olarak öğrenin.'
         },
         {
-          title: 'Final Project Template',
-          type: 'Template',
-          size: '5.0 MB',
-          icon: <Code className="w-5 h-5" />,
-          downloadUrl: '#',
-          description: 'Bitirme projesi şablonu'
+          title: 'Istio Trafik Yönetimi',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Istio ile trafik yönetimi politikalarını nasıl uygulayacağınızı öğrenin.'
+        }
+      ]
+    },
+    {
+      title: 'Cloud Native DevSecOps',
+      icon: <BookOpen className="w-6 h-6" />,
+      resources: [
+        {
+          title: 'Agile Yazılım Geliştirme',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Agile metodolojilerini ve modern yazılım geliştirme süreçlerini öğrenin.'
+        },
+        {
+          title: 'DevOps Mindset',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'DevOps kültürünü ve geliştirme-operasyon işbirliğini anlayın.'
+        },
+        {
+          title: 'Huawei Cloud HE2E DevOps Framework',
+          type: 'Content',
+          icon: <FileText className="w-5 h-5" />,
+          description: 'Huawei Cloud\'un end-to-end DevOps çözümlerini ve framework\'ünü öğrenin.'
         }
       ]
     }
@@ -130,24 +160,10 @@ const ResourcesPage = () => {
 
   const additionalResources = [
     {
-      title: 'Huawei Cloud Documentation',
-      description: 'Resmi Huawei Cloud dokümantasyonu',
+      title: 'Huawei Cloud Native Eğitimi',
+      description: 'Cloud Native Architectures resmi eğitim kursu',
       icon: <Cloud className="w-6 h-6" />,
-      url: 'https://docs.huaweicloud.com',
-      type: 'External'
-    },
-    {
-      title: 'Kubernetes Official Docs',
-      description: 'Kubernetes resmi dokümantasyonu',
-      icon: <BookOpen className="w-6 h-6" />,
-      url: 'https://kubernetes.io/docs',
-      type: 'External'
-    },
-    {
-      title: 'CNCF Learning Path',
-      description: 'Cloud Native Computing Foundation öğrenme yolu',
-      icon: <Target className="w-6 h-6" />,
-      url: 'https://www.cncf.io/certification/training',
+      url: 'https://connect.huaweicloud.com/intl/en-us/courses/learn/C101714287822705994/about/sp:cloudEdu_en',
       type: 'External'
     }
   ];
@@ -158,7 +174,7 @@ const ResourcesPage = () => {
      
       
         <p className="text-lg text-gray-600 leading-relaxed">
-          Kubernetes bootcamp programı için hazırlanmış tüm eğitim materyalleri, videolar, 
+          Cloud Native Architectures bootcamp programı için hazırlanmış tüm eğitim materyalleri, videolar, 
           laboratuvarlar ve ek kaynaklar.
         </p>
       {/* Resource Categories */}
@@ -192,23 +208,12 @@ const ResourcesPage = () => {
                       <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
                         {resource.icon}
                       </div>
-                      <div>
-                        <span className="text-sm font-semibold text-gray-900">{resource.type}</span>
-                        <p className="text-xs text-gray-500">{resource.size}</p>
-                      </div>
                     </div>
-                    <button className="text-gray-400 hover:text-red-600 transition-colors">
-                      <Download className="w-4 h-4" />
-                    </button>
                   </div>
                   
                   <h3 className="text-lg font-bold text-gray-900 mb-2">{resource.title}</h3>
                   <p className="text-gray-600 text-sm mb-4">{resource.description}</p>
                   
-                  <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center space-x-2">
-                    <Download className="w-4 h-4" />
-                    <span>İndir</span>
-                  </button>
                 </motion.div>
               ))}
             </div>
@@ -257,25 +262,6 @@ const ResourcesPage = () => {
         </div>
       </motion.div>
 
-      {/* Download All */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 border border-red-200 text-center"
-      >
-        <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Download className="w-8 h-8 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Tüm Materyalleri İndir</h2>
-        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Tüm eğitim materyallerini tek seferde ZIP dosyası olarak indirebilirsiniz.
-        </p>
-        <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 mx-auto">
-          <Download className="w-5 h-5" />
-          <span>Tümünü İndir (ZIP)</span>
-        </button>
-      </motion.div>
     </div>
   );
 };
