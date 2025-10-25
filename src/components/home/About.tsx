@@ -156,7 +156,7 @@ const About: React.FC = () => {
             className="mb-16"
           >
             <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">HSD Nasıl Çalışır?</h3>
+              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">HSD Program Özellikleri</h3>
               <p className="text-lg text-[var(--text-muted)] max-w-3xl mx-auto">Huawei Student Developers Programı; teknoloji, yazılım, liderlik, kariyer gibi konularda ekosistemindeki üyelere eğitimler verir ve etkinlikler düzenler.</p>
             </div>
 
