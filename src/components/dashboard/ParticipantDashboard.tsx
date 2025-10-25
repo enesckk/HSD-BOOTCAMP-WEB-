@@ -238,7 +238,7 @@ const ParticipantDashboard = () => {
               Hoş Geldiniz{user?.fullName ? `, ${user.fullName}` : ''}! 👋
             </h1>
             <p className="text-red-100 text-lg">
-              HSD Türkiye Bootcamp programına katıldığınız için sizi tebrik ederiz!
+              Huawei Cloud CCE (Kubernetes) Bootcamp programımıza katılmaya hak kazandığınız için tebrikler!
             </p>
             <p className="text-red-200 mt-2">
               Eğitim programınızı takip edin ve teknoloji dünyasında uzmanlaşın!
