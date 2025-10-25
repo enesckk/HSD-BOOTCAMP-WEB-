@@ -103,13 +103,10 @@ const ActiveBootcamp: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center space-x-2 bg-[var(--primary)] text-white px-4 py-2 rounded-full text-sm font-semibold mb-6">
-              <CheckCircle className="w-4 h-4" />
+            <div className="inline-flex items-center space-x-3 bg-[var(--primary)] text-white px-6 py-3 rounded-full text-lg font-semibold mb-6">
+              <CheckCircle className="w-5 h-5" />
               <span>Aktif Bootcamp</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
-              Bu Eğitim <span className="text-[var(--primary)]">Başladı</span>
-            </h2>
           </motion.div>
 
           {/* Main Bootcamp Card */}
