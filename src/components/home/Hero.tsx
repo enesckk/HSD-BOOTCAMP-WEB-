@@ -35,7 +35,7 @@ const Hero: React.FC = () => {
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center min-h-screen py-12 sm:py-16 lg:py-20">
             
             {/* Sol Taraf - İçerik */}
             <motion.div
@@ -70,7 +70,7 @@ const Hero: React.FC = () => {
             >
               <h1
                 className="font-black tracking-tight text-[#0B0F19] mb-2 leading-[1.05]"
-                style={{ fontSize: 'clamp(40px, 7vw, 72px)' }}
+                style={{ fontSize: 'clamp(24px, 6vw, 72px)' }}
               >
                 HSD Türkiye <span className="text-[#E31B23]">Bootcamp</span>
               </h1>
@@ -109,21 +109,21 @@ const Hero: React.FC = () => {
           >
             <button
               onClick={handleLoginClick}
-              className="group relative bg-[#E31B23] hover:bg-[#C8161D] text-white font-semibold py-4 sm:py-4.5 px-8 sm:px-10 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-[1px] transform w-full sm:w-auto"
+              className="group relative bg-[#E31B23] hover:bg-[#C8161D] text-white font-semibold py-3.5 sm:py-4.5 px-6 sm:px-10 rounded-xl text-sm sm:text-lg transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-[1px] transform w-full sm:w-auto"
             >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Giriş Yap</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             
             <button
               onClick={handleLearnMoreClick}
-              className="group text-white font-semibold py-4 sm:py-4.5 px-8 sm:px-10 rounded-xl text-base sm:text-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-md hover:shadow-lg hover:-translate-y-[1px] transform"
+              className="group text-white font-semibold py-3.5 sm:py-4.5 px-6 sm:px-10 rounded-xl text-sm sm:text-lg transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-md hover:shadow-lg hover:-translate-y-[1px] transform"
               style={{background:'var(--accent)'}}
               onMouseEnter={(e)=>{(e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-hover)'}}
               onMouseLeave={(e)=>{(e.currentTarget as HTMLButtonElement).style.background = 'var(--accent)'}}
             >
-                  <Target className="w-5 h-5" />
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Daha Fazla Bilgi</span>
             </button>
           </motion.div>
@@ -134,7 +134,7 @@ const Hero: React.FC = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="relative h-80 sm:h-96 lg:h-full flex items-center justify-center order-first lg:order-last"
+              className="relative h-60 sm:h-80 md:h-96 lg:h-full flex items-center justify-center order-first sm:order-last"
             >
               <TurkeyMap />
             </motion.div>

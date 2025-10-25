@@ -199,23 +199,30 @@ const Header: React.FC = () => {
                 : 'bg-white/95 border-[var(--border)]'
             }`}
           >
-            <div className="container mx-auto px-4 py-6">
-              <nav className="flex flex-col space-y-6">
+            <div className="container mx-auto px-4 py-8">
+              <nav className="flex flex-col space-y-4">
                 {menuItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => scrollToSection(item.id)}
-                    className={`text-left font-medium text-base py-3 transition-colors duration-200 relative ${
+                    onClick={() => {
+                      scrollToSection(item.id);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`text-left font-medium text-lg py-4 px-4 rounded-lg transition-all duration-200 relative ${
                       isActive(item.id)
-                        ? isScrolled ? 'text-white' : 'text-[var(--accent)]'
-                        : isScrolled ? 'text-white/80 hover:text-white' : 'text-[var(--text-muted)] hover:text-[var(--accent)]'
+                        ? isScrolled 
+                          ? 'text-white bg-white/20' 
+                          : 'text-[var(--accent)] bg-[var(--accent)]/10'
+                        : isScrolled 
+                          ? 'text-white/90 hover:text-white hover:bg-white/10' 
+                          : 'text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/5'
                     }`}
                   >
                     {item.label}
                     {isActive(item.id) && (
                       <motion.div
                         layoutId="mobileActiveIndicator"
-                        className={`absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 rounded-full ${
+                        className={`absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-full ${
                           isScrolled ? 'bg-white' : 'bg-[var(--accent)]'
                         }`}
                         initial={false}
@@ -230,10 +237,10 @@ const Header: React.FC = () => {
                 }`}>
                   <button
                     onClick={handleLoginClick}
-                    className={`flex items-center gap-3 font-medium py-3 transition-colors duration-200 w-full ${
+                    className={`flex items-center gap-3 font-medium py-4 px-4 rounded-lg transition-all duration-200 w-full ${
                       isScrolled 
-                        ? 'text-white/80 hover:text-white' 
-                        : 'text-[var(--text-muted)] hover:text-[var(--accent)]'
+                        ? 'text-white bg-white/10 hover:bg-white/20' 
+                        : 'text-[var(--accent)] bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20'
                     }`}
                   >
                     <LogIn className="w-5 h-5" />
