@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 // GET - Duyuruları listele
 export async function GET(request: NextRequest) {
   try {
-    const announcements = await (prisma as any).announcement.findMany({
+    const announcements = await prisma.announcement.findMany({
       orderBy: {
         createdAt: 'desc'
       }
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newAnnouncement = await (prisma as any).announcement.create({
+    const newAnnouncement = await prisma.announcement.create({
       data: {
         title,
         summary: summary || content.substring(0, 100) + '...',
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
               message: `${title} - ${summary || content.substring(0, 50)}...`,
               actionUrl: '/dashboard/announcements',
               userId: user.id,
-              read: false
+              isRead: false
             }
           })
         );
