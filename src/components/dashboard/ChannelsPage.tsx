@@ -82,6 +82,12 @@ const ChannelsPage = () => {
   
   // Questions Modal
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  
+  // Reply functionality
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [replyingToMessage, setReplyingToMessage] = useState<any>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
   useEffect(() => {
     fetchChannels();
@@ -329,6 +335,53 @@ const ChannelsPage = () => {
     }
   };
 
+  // Reply functions
+  const handleReplyClick = (message: any) => {
+    setReplyingToMessage(message);
+    setReplyContent('');
+    setShowReplyModal(true);
+  };
+
+  const handleSendReply = async () => {
+    if (!replyContent.trim() || !replyingToMessage) return;
+
+    setSendingReply(true);
+    try {
+      const response = await fetch('/api/chat/messages/reply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('afet_maratonu_token')}`,
+        },
+        body: JSON.stringify({
+          messageId: replyingToMessage.id,
+          content: replyContent,
+        }),
+      });
+
+      if (response.ok) {
+        setSuccessMessage('Yanıt başarıyla gönderildi!');
+        setShowSuccessModal(true);
+        setShowReplyModal(false);
+        setReplyContent('');
+        setReplyingToMessage(null);
+        // Mesajları yenile
+        if (selectedChannel) {
+          fetchMessages(selectedChannel.id);
+        }
+      } else {
+        const error = await response.json();
+        console.error('Error sending reply:', error);
+        alert('Yanıt gönderilirken bir hata oluştu!');
+      }
+    } catch (error) {
+      console.error('Error sending reply:', error);
+      alert('Yanıt gönderilirken bir hata oluştu!');
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
   const getChannelColor = (category: string) => {
     switch (category) {
       case 'GENEL': return 'bg-blue-500';
@@ -502,9 +555,14 @@ const ChannelsPage = () => {
                           </span>
                         )}
                         <div className="mt-3 flex space-x-2">
-                          <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                            Cevapla
-                          </button>
+                          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+                            <button 
+                              onClick={() => handleReplyClick(message)}
+                              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                            >
+                              Cevapla
+                            </button>
+                          )}
                           <button className="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                             Detay
                           </button>
@@ -557,6 +615,16 @@ const ChannelsPage = () => {
                             </span>
                           </div>
                           <p className="text-gray-800">{message.content}</p>
+                          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+                            <div className="mt-2 flex space-x-2">
+                              <button 
+                                onClick={() => handleReplyClick(message)}
+                                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                              >
+                                Cevapla
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))
@@ -792,6 +860,66 @@ const ChannelsPage = () => {
                   Güncelle
                 </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Reply Modal */}
+      {showReplyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-white rounded-2xl p-6 w-full max-w-md mx-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Mesaja Yanıt Ver</h3>
+              <button
+                onClick={() => setShowReplyModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {replyingToMessage && (
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 mb-1">
+                  <strong>{replyingToMessage.user?.fullName || 'Bilinmeyen'}</strong> tarafından:
+                </p>
+                <p className="text-gray-800 text-sm">{replyingToMessage.content}</p>
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Yanıtınız
+              </label>
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Yanıtınızı yazın..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 bg-white resize-none"
+                rows={4}
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowReplyModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleSendReply}
+                disabled={!replyContent.trim() || sendingReply}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {sendingReply ? 'Gönderiliyor...' : 'Gönder'}
+              </button>
             </div>
           </motion.div>
         </div>
