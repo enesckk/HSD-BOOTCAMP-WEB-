@@ -249,26 +249,38 @@ const Footer: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Newsletter */}
+          {/* Social Media */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Bülten</h4>
-            <p className="text-[var(--text-muted)] text-sm mb-4">
-              En son haberler ve güncellemeler için bültenimize abone olun.
+            <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Sosyal Medya</h4>
+            <p className="text-[var(--text-muted)] text-sm mb-6">
+              En güncel haberler ve etkinlikler için sosyal medya hesaplarımızı takip edin.
             </p>
-            <div className="flex space-x-2">
-              <input
-                type="email"
-                placeholder="E-posta adresiniz"
-                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
-              />
-              <button className="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-hover)] transition-colors duration-200">
-                Abone Ol
-              </button>
+            <div className="flex items-center space-x-4">
+              {[
+                { name: 'LinkedIn', icon: <Linkedin className="w-6 h-6" />, url: 'https://www.linkedin.com/company/hsdturkiye/posts/?feedView=all', color: 'hover:text-blue-600' },
+                { name: 'Instagram', icon: <Instagram className="w-6 h-6" />, url: 'https://www.instagram.com/hsdturkiye/', color: 'hover:text-pink-600' },
+                { name: 'YouTube', icon: <Youtube className="w-6 h-6" />, url: 'https://www.youtube.com/c/HuaweiDeveloperGroupsTürkiye', color: 'hover:text-red-600' },
+                { name: 'Medium', icon: <span className="font-bold text-sm text-gray-700">Medium</span>, url: 'https://medium.com/huawei-developers', color: 'hover:text-green-600' },
+                { name: 'X (Twitter)', icon: <span className="font-bold text-lg text-gray-800">𝕏</span>, url: 'https://x.com/turkiye_hsd', color: 'hover:text-black' }
+              ].map((social, index) => (
+                <motion.a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`text-[var(--text-muted)] transition-all duration-300 ${social.color} hover:drop-shadow-lg`}
+                  title={social.name}
+                >
+                  {social.icon}
+                </motion.a>
+              ))}
             </div>
           </motion.div>
         </div>
