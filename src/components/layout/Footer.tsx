@@ -213,41 +213,9 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Social Media & Newsletter */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        {/* Social Media */}
+        <div className="mb-8">
           
-          {/* Social Media */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-lg font-semibold text-[var(--text)] mb-6">Sosyal Medya</h4>
-            <div className="flex space-x-4">
-              {socialMedia.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 ${
-                    social.name === 'LinkedIn' 
-                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                      : social.name === 'Twitter'
-                      ? 'bg-black text-white hover:bg-gray-800'
-                      : social.name === 'Instagram'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
-                      : social.name === 'Medium'
-                      ? 'bg-gray-800 text-white hover:bg-gray-900'
-                      : 'bg-red-600 text-white hover:bg-red-700'
-                  }`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Social Media */}
           <motion.div
