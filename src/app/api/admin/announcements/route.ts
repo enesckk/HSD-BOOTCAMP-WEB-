@@ -48,6 +48,33 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Tüm kullanıcılara bildirim gönder
+    try {
+      const allUsers = await prisma.user.findMany({
+        select: { id: true }
+      });
+
+      // Her kullanıcıya bildirim oluştur
+      const notificationPromises = allUsers.map(user => 
+        prisma.notification.create({
+          data: {
+            type: 'ANNOUNCEMENT',
+            title: 'Yeni Duyuru',
+            message: `${title} - ${summary || content.substring(0, 50)}...`,
+            actionUrl: '/dashboard/announcements',
+            userId: user.id,
+            read: false
+          }
+        })
+      );
+
+      await Promise.all(notificationPromises);
+      console.log(`Bildirim gönderildi: ${allUsers.length} kullanıcıya`);
+    } catch (notificationError) {
+      console.error('Bildirim gönderme hatası:', notificationError);
+      // Bildirim hatası duyuru oluşturmayı engellemez
+    }
+
     return NextResponse.json({
       success: true,
       announcement: newAnnouncement,
