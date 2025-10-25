@@ -95,7 +95,7 @@ export default function AdminChannelsPage() {
       const data = await response.json();
       setChannels(data.channels || []);
     } catch (error) {
-      console.error('Error fetching channels:', error);
+      console.error('Error fetching channels:', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -144,7 +144,7 @@ export default function AdminChannelsPage() {
         setError(errorData.error || 'Kanal oluşturulamadı');
       }
     } catch (error) {
-      console.error('Error creating channel:', error);
+      console.error('Error creating channel:', error instanceof Error ? error.message : 'Unknown error');
       setError('Bağlantı hatası');
     }
   };
@@ -170,7 +170,7 @@ export default function AdminChannelsPage() {
         setError(errorData.error || 'Kanal güncellenemedi');
       }
     } catch (error) {
-      console.error('Error updating channel:', error);
+      console.error('Error updating channel:', error instanceof Error ? error.message : 'Unknown error');
       setError('Bağlantı hatası');
     }
   };
@@ -203,9 +203,9 @@ export default function AdminChannelsPage() {
         alert('Kanal silinemedi: ' + (responseData.error || 'Bilinmeyen hata'));
       }
     } catch (error) {
-      console.error('Error deleting channel:', error);
-      setError('Bağlantı hatası: ' + error.message);
-      alert('Kanal silinemedi: Bağlantı hatası - ' + error.message);
+      console.error('Error deleting channel:', error instanceof Error ? error.message : 'Unknown error');
+      setError('Bağlantı hatası: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert('Kanal silinemedi: Bağlantı hatası - ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -232,7 +232,7 @@ export default function AdminChannelsPage() {
         setMessages(data.messages || []);
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching messages:', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setMessagesLoading(false);
     }
@@ -266,7 +266,7 @@ export default function AdminChannelsPage() {
         fetchChannelMessages(selectedChannel.id);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setSendingMessage(false);
     }
@@ -284,7 +284,7 @@ export default function AdminChannelsPage() {
         fetchChannelMessages(selectedChannel.id);
       }
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('Error deleting message:', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -314,7 +314,7 @@ export default function AdminChannelsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kanal Yönetimi</h1>
+            
             <p className="text-gray-600 mt-2">Chat kanallarını yönetin ve sohbetleri görüntüleyin</p>
           </div>
           <button

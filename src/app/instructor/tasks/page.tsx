@@ -419,7 +419,7 @@ const TasksPage = () => {
                                 Tekrar Başlat
                               </button>
                             )}
-                          </div>
+                            </div>
                             </div>
                           </div>
                         </div>

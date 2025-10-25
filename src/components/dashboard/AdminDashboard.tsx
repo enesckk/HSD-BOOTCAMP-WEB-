@@ -156,35 +156,6 @@ const AdminDashboard = () => {
     }
   ];
 
-  const progressStats = [
-    {
-      title: 'Aktif Katılımcılar',
-      value: stats.totalUsers,
-      total: stats.totalUsers,
-      percentage: 100,
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
-    },
-    {
-      title: 'Kanal Aktivitesi',
-      value: stats.totalMessages,
-      total: stats.totalMessages,
-      percentage: 100,
-      icon: MessageSquare,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    },
-    {
-      title: 'Duyuru Sayısı',
-      value: stats.totalAnnouncements,
-      total: stats.totalAnnouncements,
-      percentage: 100,
-      icon: Bell,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
-    }
-  ];
 
 
   return (
@@ -282,96 +253,51 @@ const AdminDashboard = () => {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Progress Overview */}
-        <div className="lg:col-span-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-          >
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Bootcamp İstatistikleri</h2>
-            <div className="space-y-6">
-              {progressStats.map((stat, index) => {
-                const IconComponent = stat.icon;
-                return (
-                  <div key={stat.title} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
-                          <IconComponent className={`w-4 h-4 ${stat.color}`} />
-                        </div>
-                        <span className="text-gray-600">{stat.title}</span>
-                      </div>
-                      <span className="font-semibold text-gray-900">{stat.value}/{stat.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${stat.percentage}%` }}
-                        transition={{ duration: 1, delay: 0.6 + index * 0.2 }}
-                        className={`h-3 rounded-full bg-gradient-to-r from-red-500 to-red-600`}
-                      />
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm text-gray-500">{stat.percentage}%</span>
-                    </div>
+      {/* Recent Activities - Full Width */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Son Aktiviteler</h2>
+          <Activity className="w-5 h-5 text-gray-400" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {isLoading ? (
+            <div className="col-span-full text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+            </div>
+          ) : recentActivities.length === 0 ? (
+            <div className="col-span-full text-center py-8 text-gray-500">
+              Henüz aktivite yok
+            </div>
+          ) : (
+            recentActivities.map((activity, index) => {
+              const IconComponent = activity.icon;
+              return (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                >
+                  <div className={`w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <IconComponent className={`w-5 h-5 ${activity.color}`} />
                   </div>
-                );
-              })}
-            </div>
-          </motion.div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{activity.title}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{activity.description}</p>
+                    <p className="text-gray-400 text-xs mt-2">{activity.time}</p>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </div>
-
-        {/* Recent Activities */}
-        <div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Son Aktiviteler</h2>
-              <Activity className="w-5 h-5 text-gray-400" />
-            </div>
-            <div className="space-y-4">
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-                </div>
-              ) : recentActivities.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  Henüz aktivite yok
-                </div>
-              ) : (
-                recentActivities.map((activity, index) => {
-                  const IconComponent = activity.icon;
-                  return (
-                    <motion.div
-                      key={activity.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className={`w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
-                        <IconComponent className={`w-5 h-5 ${activity.color}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{activity.title}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{activity.description}</p>
-                        <p className="text-gray-400 text-xs mt-2">{activity.time}</p>
-                      </div>
-                    </motion.div>
-                  );
-                })
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

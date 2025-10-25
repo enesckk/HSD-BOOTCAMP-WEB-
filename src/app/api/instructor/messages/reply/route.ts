@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       data: {
         fromUserId: decoded.userId,
         toUserId: originalMessage.fromUserId, // Orijinal mesajı gönderen kişiye cevap
-        subject: `Cevap: ${originalMessage.id}`,
+        subject: `Eğitmen cevap verdi: Soru ${originalMessage.id.slice(-4)}`,
         body: reply,
         messageType: 'answer',
         toRole: originalMessage.fromUser?.role || 'PARTICIPANT'

@@ -9,8 +9,8 @@ export async function GET() {
     // Admin tarafından oluşturulan görevleri getir (userId null olanlar)
     const availableTasks = await prisma.task.findMany({
       where: {
-        userId: null, // Admin görevleri
-        status: 'PENDING' // Sadece bekleyen görevler
+        userId: null // Admin görevleri
+        // Tüm durumlardaki görevleri getir (PENDING, IN_PROGRESS, COMPLETED)
       },
       orderBy: {
         createdAt: 'desc'

@@ -259,6 +259,8 @@ model Certificate {
   notes         String?
   issuedAt      DateTime?
   downloadUrl   String?
+  fileUrl       String?
+  linkUrl       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -392,6 +394,7 @@ enum CertificateStatus {
   PENDING
   APPROVED
   REJECTED
+  UPLOADED
 }
 
 enum NotificationType {

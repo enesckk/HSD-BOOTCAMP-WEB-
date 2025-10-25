@@ -71,24 +71,12 @@ const InstructorsPage = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-      >
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Eğitmenler</h1>
-            <p className="text-red-100">Uzman eğitmen kadromuz</p>
-          </div>
-        </div>
-        <p className="text-lg text-red-100 leading-relaxed">
+      
+        
+        <p className="text-lg text-gray-600 leading-relaxed">
           Alanında uzman eğitmenlerimizden eğitim alın. Her biri kendi alanında deneyimli ve sertifikalı.
         </p>
-      </motion.div>
+      
 
       {/* Instructors Grid */}
       <div className="grid lg:grid-cols-1 gap-8">

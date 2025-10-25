@@ -17,7 +17,8 @@ import {
   Save,
   X,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  MessageSquare
 } from 'lucide-react';
 
 interface User {
@@ -84,7 +85,7 @@ export default function AdminMessagesPage() {
       const data = await response.json();
       setUsers(data.users || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching users:', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -119,7 +120,7 @@ export default function AdminMessagesPage() {
         setMessages(data.messages || []);
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching messages:', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -151,7 +152,7 @@ export default function AdminMessagesPage() {
         ));
       }
     } catch (error) {
-      console.error('Error marking message as read:', error);
+      console.error('Error marking message as read:', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -172,7 +173,7 @@ export default function AdminMessagesPage() {
         showAlertMessage('Hata', 'Mesaj silinirken hata oluştu', false);
       }
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('Error deleting message:', error instanceof Error ? error.message : 'Unknown error');
       showAlertMessage('Hata', 'Mesaj silinirken hata oluştu', false);
     }
   };
@@ -208,7 +209,7 @@ export default function AdminMessagesPage() {
         showAlertMessage('Hata', 'Mesaj güncellenirken hata oluştu', false);
       }
     } catch (error) {
-      console.error('Error updating message:', error);
+      console.error('Error updating message:', error instanceof Error ? error.message : 'Unknown error');
       showAlertMessage('Hata', 'Mesaj güncellenirken hata oluştu', false);
     }
   };
@@ -252,7 +253,7 @@ export default function AdminMessagesPage() {
         showAlertMessage('Hata', 'Cevap gönderilemedi', false);
       }
     } catch (error) {
-      console.error('Error replying to question:', error);
+      console.error('Error replying to question:', error instanceof Error ? error.message : 'Unknown error');
       showAlertMessage('Hata', 'Cevap gönderilirken hata oluştu', false);
     } finally {
       setReplying(false);
@@ -294,7 +295,7 @@ export default function AdminMessagesPage() {
         showAlertMessage('Hata', 'Mesaj gönderilirken hata oluştu', false);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', error instanceof Error ? error.message : 'Unknown error');
       showAlertMessage('Hata', 'Mesaj gönderilirken hata oluştu', false);
     } finally {
       setSubmitting(false);
@@ -319,26 +320,12 @@ export default function AdminMessagesPage() {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Mesaj Yönetimi</h1>
-              <p className="text-red-100 text-lg">Katılımcılara mesaj gönderin ve mesajları yönetin</p>
-            </div>
-            <button
-              onClick={() => setActiveTab('compose')}
-              className="bg-white text-red-600 px-6 py-3 rounded-xl font-semibold hover:bg-red-50 transition-colors flex items-center space-x-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Yeni Mesaj</span>
-            </button>
-          </div>
-        </motion.div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600">Katılımcılara mesaj gönderin ve mesajları yönetin</p>
+        </div>
+      </div>
 
         {/* Tabs */}
         <motion.div

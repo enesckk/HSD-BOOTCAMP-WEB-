@@ -72,6 +72,33 @@ export default function AdminTasksPage() {
 
   useEffect(() => {
     fetchTasks();
+    
+    // Her 30 saniyede bir otomatik kontrol yap
+    const intervalId = setInterval(async () => {
+      try {
+        console.log('=== RUNNING PERIODIC AUTO CHECK ===');
+        const response = await fetch('/api/tasks/auto-schedule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Periodic auto check completed:', data);
+          // Görevleri yenile
+          await fetchTasks();
+        }
+      } catch (error) {
+        console.error('Periodic auto check error:', error);
+      }
+    }, 30000); // 30 saniyede bir kontrol et
+    
+    // Cleanup
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   const fetchTasks = async () => {
@@ -88,7 +115,9 @@ export default function AdminTasksPage() {
       if (data.success) {
         console.log('Success: Setting tasks:', data.tasks?.length || 0, 'tasks');
         const tasksData = data.tasks || [];
+        console.log('Tasks data before setting:', tasksData);
         setTasks(tasksData);
+        console.log('✅ Tasks state updated with', tasksData.length, 'tasks');
         
         // Görevleri kullanıcıya göre grupla
       } else {
@@ -222,21 +251,58 @@ export default function AdminTasksPage() {
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     try {
+      const now = new Date();
+      const currentDate = now.toISOString().split('T')[0];
+      const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+      
+      // Görev bilgilerini al
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      
+      let updateData: any = { 
+        status: newStatus,
+        title: task.title,
+        description: task.description,
+        startDate: task.startDate,
+        endDate: task.endDate,
+        startTime: task.startTime,
+        endTime: task.endTime,
+        dueDate: task.dueDate
+      };
+      
+      // Manuel başlatma durumunda
+      if (newStatus === 'IN_PROGRESS') {
+        updateData.startDate = currentDate;
+        updateData.startTime = currentTime;
+        // Eğer bitiş tarihi yoksa veya geçmişse, yeni bitiş tarihi ekle
+        if (!task.endDate || new Date(task.endDate) <= now) {
+          const newEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 gün sonra
+          updateData.endDate = newEndDate.toISOString().split('T')[0];
+          updateData.endTime = '23:59';
+        }
+      }
+      
+      // Manuel bitirme durumunda
+      if (newStatus === 'COMPLETED') {
+        updateData.endDate = currentDate;
+        updateData.endTime = currentTime;
+      }
+      
       const response = await fetch(`/api/admin/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          status: newStatus
-        }),
+        body: JSON.stringify(updateData),
       });
 
       if (response.ok) {
+        console.log('✅ Status update successful, refreshing tasks...');
         // Görevleri yeniden yükle
-        fetchTasks();
+        await fetchTasks();
+        console.log('✅ Tasks refreshed after status update');
       } else {
-        console.error('Status update failed');
+        console.error('❌ Status update failed');
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -379,6 +445,31 @@ export default function AdminTasksPage() {
             <Plus className="w-5 h-5" />
             <span>Yeni Görev</span>
           </button>
+        </div>
+
+        {/* Otomatik Sistem Kontrolü */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Otomatik Görev Yönetimi</h3>
+              <p className="text-sm text-gray-600">Görevlerin otomatik başlatılması ve bitirilmesi</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                Otomatik Aktif
+              </span>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <h4 className="font-medium text-green-900 mb-2">Sistem Bilgisi</h4>
+            <div className="text-sm text-green-800">
+              <p>• Görevlerinizde başlangıç ve bitiş tarihi belirlediğinizde otomatik olarak başlatılır ve bitirilir.</p>
+              <p>• Sistem 5 dakikada bir otomatik kontrol yapar.</p>
+              <p>• Görev oluşturma/güncelleme sonrası anlık kontrol yapılır.</p>
+            </div>
+            
+          </div>
         </div>
 
         {/* Tasks List */}

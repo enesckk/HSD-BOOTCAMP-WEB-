@@ -75,6 +75,23 @@ export async function POST(
       }
     });
 
+    // Bildirim oluştur - Admin'e kanal mesajı bildirimi
+    try {
+      await prisma.notification.create({
+        data: {
+          type: 'CHANNEL_MESSAGE',
+          title: 'Yeni Kanal Mesajı',
+          message: `Yeni mesaj gönderildi`,
+          actionUrl: '/admin/channels',
+          read: false
+        }
+      });
+      console.log('Notification created for channel message');
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Bildirim hatası mesaj gönderimini engellemez
+    }
+
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
     console.error('Error creating channel message:', error);

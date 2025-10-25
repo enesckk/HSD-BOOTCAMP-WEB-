@@ -13,11 +13,11 @@ import {
   MessageSquare,
   TrendingUp,
   Award,
-  Target,
   CheckCircle,
   AlertCircle,
   Info,
-  Cloud
+  Cloud,
+  Target
 } from 'lucide-react';
 
 const ParticipantDashboard = () => {
@@ -35,8 +35,10 @@ const ParticipantDashboard = () => {
         const tasksJson = await tasksRes.json();
         
         console.log('Dashboard data:', { tasksJson });
+        console.log('Tasks from API:', tasksJson.tasks);
+        console.log('Tasks length:', tasksJson.tasks?.length || 0);
         
-        setTasks(tasksJson.items || []);
+        setTasks(tasksJson.tasks || []);
         setPresentations([]); // Presentations artık yok
       } catch (e) {
         console.error('Dashboard data fetch error:', e);
@@ -48,34 +50,35 @@ const ParticipantDashboard = () => {
   }, [user]);
 
   const completedTasks = useMemo(() => {
-    const completed = tasks.filter(t => t.status === 'COMPLETED').length;
-    console.log('Tasks analysis:', { tasks, completed, total: tasks.length });
+    console.log('Tasks state in useMemo:', tasks);
+    console.log('Tasks length in useMemo:', tasks.length);
+    
+    // Tüm teslim edilen görevleri say (SUBMITTED, APPROVED, COMPLETED)
+    const completed = tasks.filter(t => 
+      t.status === 'COMPLETED' || 
+      t.status === 'SUBMITTED' || 
+      t.status === 'APPROVED'
+    ).length;
+    
+    const submitted = tasks.filter(t => t.status === 'SUBMITTED').length;
+    const approved = tasks.filter(t => t.status === 'APPROVED').length;
+    const completedOnly = tasks.filter(t => t.status === 'COMPLETED').length;
+    
+    console.log('Tasks analysis:', { 
+      tasks: tasks.length, 
+      completed: completed, 
+      submitted: submitted,
+      approved: approved,
+      completedOnly: completedOnly,
+      total: tasks.length,
+      taskStatuses: tasks.map(t => ({ id: t.id, title: t.title, status: t.status }))
+    });
     return completed;
   }, [tasks]);
   const totalTasks = tasks.length;
   const pendingTasks = Math.max(totalTasks - completedTasks, 0);
   const inProgressTasks = 0;
   
-  // Proje ilerlemesi: görevler + sunumlar
-  const completedPresentations = useMemo(() => {
-    const completed = presentations.filter(p => p.status === 'approved').length;
-    console.log('Presentations analysis:', { presentations, completed, total: presentations.length });
-    return completed;
-  }, [presentations]);
-  const totalPresentations = presentations.length;
-  const totalItems = totalTasks + totalPresentations;
-  const completedItems = completedTasks + completedPresentations;
-  const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-  
-  console.log('Progress calculation:', { 
-    completedTasks, 
-    totalTasks, 
-    completedPresentations, 
-    totalPresentations, 
-    totalItems, 
-    completedItems, 
-    progressPercent 
-  });
 
   const stats = [
     {
@@ -95,21 +98,13 @@ const ParticipantDashboard = () => {
       borderColor: 'border-red-200'
     },
     {
-      title: 'Tamamlanan Görevler',
+      title: 'Onaylanan Görevler',
       value: totalTasks ? `${completedTasks}/${totalTasks}` : '0/0',
       icon: CheckCircle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
     },
-    {
-      title: 'Proje İlerlemesi',
-      value: `${progressPercent}%`,
-      icon: Target,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200'
-    }
   ];
 
   const recentActivities = useMemo(() => {
@@ -411,59 +406,6 @@ const ParticipantDashboard = () => {
         </div>
       </div>
 
-      {/* Progress Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-      >
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Proje İlerlemesi</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Genel İlerleme</span>
-            <span className="font-semibold text-gray-900">{isLoading ? '...' : `${progressPercent}%`}</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 1, delay: 0.6 }}
-              className="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle className="w-6 h-6 text-red-600" />
-              </div>
-              <p className="text-sm text-gray-600">Tamamlanan Görevler</p>
-              <p className="font-semibold text-gray-900">{completedTasks}/{totalTasks}</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Presentation className="w-6 h-6 text-red-600" />
-              </div>
-              <p className="text-sm text-gray-600">Tamamlanan Sunumlar</p>
-              <p className="font-semibold text-gray-900">{completedPresentations}/{totalPresentations}</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Clock className="w-6 h-6 text-red-600" />
-              </div>
-              <p className="text-sm text-gray-600">Devam Eden</p>
-              <p className="font-semibold text-gray-900">{inProgressTasks} Görev</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Target className="w-6 h-6 text-gray-600" />
-              </div>
-              <p className="text-sm text-gray-600">Bekleyen</p>
-              <p className="font-semibold text-gray-900">{pendingTasks} Görev</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </div>
   );
 };

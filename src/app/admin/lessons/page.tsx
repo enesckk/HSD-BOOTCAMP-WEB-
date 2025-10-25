@@ -262,7 +262,7 @@ const AdminLessons = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ders Linkleri Yönetimi</h1>
+         
           <p className="text-gray-600">YouTube yayınlarını ve ders linklerini yönetin</p>
         </div>
         <motion.button

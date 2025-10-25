@@ -155,26 +155,12 @@ const ResourcesPage = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-      >
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-            <BookOpen className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Eğitim Kaynağı</h1>
-            <p className="text-red-100">Tüm eğitim materyalleri ve kaynaklar</p>
-          </div>
-        </div>
-        <p className="text-lg text-red-100 leading-relaxed">
+     
+      
+        <p className="text-lg text-gray-600 leading-relaxed">
           Kubernetes bootcamp programı için hazırlanmış tüm eğitim materyalleri, videolar, 
           laboratuvarlar ve ek kaynaklar.
         </p>
-      </motion.div>
-
       {/* Resource Categories */}
       <div className="space-y-8">
         {resourceCategories.map((category, categoryIndex) => (

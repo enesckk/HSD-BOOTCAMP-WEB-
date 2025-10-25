@@ -25,6 +25,23 @@ export async function PUT(
       }
     });
 
+    // Görev güncellendikten sonra otomatik kontrol yap
+    try {
+      const autoCheckResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/tasks/auto-schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (autoCheckResponse.ok) {
+        const autoCheckData = await autoCheckResponse.json();
+        console.log('Auto check completed after update:', autoCheckData);
+      }
+    } catch (error) {
+      console.error('Auto check error after update:', error);
+    }
+
     return NextResponse.json({ task });
   } catch (error) {
     console.error('Error updating task:', error);

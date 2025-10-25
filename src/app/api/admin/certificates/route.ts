@@ -10,6 +10,14 @@ export async function GET(request: NextRequest) {
           select: {
             fullName: true,
             email: true,
+            tasks: {
+              where: {
+                status: 'APPROVED'
+              },
+              select: {
+                id: true
+              }
+            }
           },
         },
       },
@@ -30,6 +38,9 @@ export async function GET(request: NextRequest) {
       notes: cert.notes,
       issuedAt: cert.issuedAt?.toISOString(),
       downloadUrl: cert.downloadUrl,
+      approvedTasks: cert.user.tasks.length,
+      fileUrl: cert.fileUrl,
+      linkUrl: cert.linkUrl,
     }));
 
     return NextResponse.json({

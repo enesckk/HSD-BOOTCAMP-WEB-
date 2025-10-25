@@ -40,17 +40,17 @@ const AnnouncementsPage = () => {
     }
   }, [authLoading, isAuthenticated, user, router]);
 
-  const fetchAnnouncements = async () => {
-    try {
+    const fetchAnnouncements = async () => {
+      try {
       const response = await fetch('/api/admin/announcements');
-      const data = await response.json();
+        const data = await response.json();
       if (data.announcements) {
         setAnnouncements(data.announcements);
       }
-    } catch (error) {
-      console.error('Error fetching announcements:', error);
-    }
-  };
+      } catch (error) {
+        console.error('Error fetching announcements:', error);
+      }
+    };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Bu duyuruyu silmek istediğinizden emin misiniz?')) return;
@@ -143,7 +143,7 @@ const AnnouncementsPage = () => {
         setSuccessMessage('Duyuru başarıyla güncellendi!');
         setShowSuccessModal(true);
         setShowEditModal(false);
-        fetchAnnouncements();
+      fetchAnnouncements();
       } else {
         const errorData = await response.json();
         setSuccessMessage('Duyuru güncellenirken hata oluştu: ' + (errorData.error || 'Bilinmeyen hata'));
@@ -206,17 +206,17 @@ const AnnouncementsPage = () => {
             <h2 className="text-lg font-semibold text-gray-900">
               Duyurular ({announcements.length})
             </h2>
-          </div>
+            </div>
           
           <div className="divide-y divide-gray-200">
             {announcements.map((announcement) => (
               <div key={announcement.id} className="p-6 hover:bg-gray-50">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                    <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-lg font-medium text-gray-900">
-                        {announcement.title}
-                      </h3>
+                          {announcement.title}
+                        </h3>
                     </div>
                     
                     <p className="text-gray-600 mb-4 line-clamp-3">
@@ -250,12 +250,12 @@ const AnnouncementsPage = () => {
                     </button>
                   </div>
                 </div>
-              </div>
+                      </div>
             ))}
-          </div>
-        </div>
-      </div>
-
+                    </div>
+                    </div>
+                  </div>
+                  
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
@@ -298,8 +298,8 @@ const AnnouncementsPage = () => {
                   placeholder="Duyuru içeriğini girin"
                 />
               </div>
-            </div>
-            
+                  </div>
+                  
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -314,9 +314,9 @@ const AnnouncementsPage = () => {
                 Oluştur
               </button>
             </div>
-          </div>
-        </div>
-      )}
+                      </div>
+                        </div>
+                      )}
 
       {/* Edit Modal */}
       {showEditModal && selectedAnnouncement && (
@@ -346,9 +346,9 @@ const AnnouncementsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
                   placeholder="Duyuru başlığını girin"
                 />
-              </div>
+                    </div>
               
-              <div>
+                    <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   İçerik
                 </label>
@@ -375,9 +375,9 @@ const AnnouncementsPage = () => {
               >
                 Güncelle
               </button>
-            </div>
-          </div>
-        </div>
+                    </div>
+                  </div>
+                </div>
       )}
 
       {/* Success Modal */}
@@ -389,7 +389,7 @@ const AnnouncementsPage = () => {
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-              </div>
+        </div>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Başarılı!</h3>
             <p className="text-gray-600 text-center mb-6">{successMessage}</p>
@@ -399,8 +399,8 @@ const AnnouncementsPage = () => {
             >
               Tamam
             </button>
-          </div>
-        </div>
+      </div>
+    </div>
       )}
     </InstructorLayout>
   );

@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     });
     
     console.log('User tasks found:', tasks.length);
+    console.log('Tasks details:', tasks.map(t => ({ id: t.id, title: t.title, status: t.status, userId: t.userId })));
     
     return NextResponse.json({
       success: true,

@@ -240,7 +240,7 @@ const AdminBulkEmail = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Toplu Mail Gönderimi</h1>
+          
           <p className="text-gray-600">Katılımcılara toplu e-posta gönderin ve dosya ekleyin</p>
         </div>
         <div className="flex space-x-3">

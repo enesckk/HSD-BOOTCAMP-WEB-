@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
           { type: 'ANNOUNCEMENT' },
           { type: 'TEAM' },
           { type: 'ADMIN_TASK' },
-          { type: 'ADMIN_PRESENTATION' }
+          { type: 'ADMIN_PRESENTATION' },
+          { type: 'TASK_SUBMISSION' },
+          { type: 'CHANNEL_MESSAGE' }
         ]
       };
     } else if (panel === 'instructor') {

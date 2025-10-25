@@ -106,15 +106,28 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
-      {/* Professional Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.015]">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='40' cy='40' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+      {/* Technology Background Animation */}
+      <div className="absolute inset-0">
+        {/* Animated Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div 
+            className="absolute inset-0 animate-pulse"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
+        
+        {/* Floating Tech Elements */}
+        <div className="absolute top-20 left-20 w-4 h-4 bg-red-500 rounded-full animate-bounce opacity-20"></div>
+        <div className="absolute top-40 right-32 w-3 h-3 bg-blue-400 rounded-full animate-pulse opacity-30"></div>
+        <div className="absolute bottom-32 left-16 w-5 h-5 bg-red-500 rounded-full animate-ping opacity-10"></div>
+        <div className="absolute bottom-20 right-20 w-2 h-2 bg-red-400 rounded-full animate-bounce opacity-25"></div>
+        
+        {/* Subtle Wave Animation */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-red-600/10 to-transparent animate-pulse"></div>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-600/10 to-transparent animate-pulse"></div>
       </div>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -272,7 +285,9 @@ const LoginForm = () => {
               <div className="text-gray-600">
                 Başvurunuz yok mu?{' '}
                 <a 
-                  href="/register" 
+                  href="https://developer.huaweicloud.com/intl/en-us/activity" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-red-600 hover:text-red-700 font-semibold transition-colors duration-300 hover:underline"
                 >
                   Başvuru yapın

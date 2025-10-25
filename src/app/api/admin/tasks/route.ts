@@ -74,13 +74,31 @@ export async function POST(request: NextRequest) {
 
     console.log('Validation passed, creating task in database...');
 
+    // Tarih ve saat validasyonu
+    let finalStartDate = null;
+    let finalEndDate = null;
+    
+    if (startDate && startTime) {
+      const startDateTime = new Date(`${startDate}T${startTime}`);
+      if (startDateTime > new Date()) {
+        finalStartDate = startDateTime;
+      }
+    }
+    
+    if (endDate && endTime) {
+      const endDateTime = new Date(`${endDate}T${endTime}`);
+      if (endDateTime > new Date()) {
+        finalEndDate = endDateTime;
+      }
+    }
+
     // Gerçek veritabanına admin görevi oluştur
     const task = await prisma.task.create({
       data: {
         title: title.trim(),
         description: description.trim(),
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
+        startDate: finalStartDate,
+        endDate: finalEndDate,
         startTime: startTime || null,
         endTime: endTime || null,
         dueDate: dueDate ? new Date(dueDate) : null,
@@ -92,6 +110,23 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Admin task created in database:', task);
+
+    // Görev oluşturulduktan sonra otomatik kontrol yap
+    try {
+      const autoCheckResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/tasks/auto-schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (autoCheckResponse.ok) {
+        const autoCheckData = await autoCheckResponse.json();
+        console.log('Auto check completed:', autoCheckData);
+      }
+    } catch (error) {
+      console.error('Auto check error:', error);
+    }
 
     return NextResponse.json({ 
       success: true,

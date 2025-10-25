@@ -6,7 +6,11 @@ const prisma = new PrismaClient();
 // GET - Admin dashboard istatistikleri
 export async function GET(request: NextRequest) {
   try {
-    const totalUsers = await prisma.user.count();
+    const totalUsers = await prisma.user.count({
+      where: {
+        role: 'PARTICIPANT'
+      }
+    });
     const totalAnnouncements = await prisma.announcement.count();
     const totalMessages = await prisma.channelMessage.count();
     const totalNotifications = await prisma.notification.count();

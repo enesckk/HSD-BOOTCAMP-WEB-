@@ -104,6 +104,23 @@ export async function POST(request: NextRequest) {
 
     console.log('Task submitted successfully:', submittedTask);
 
+    // Bildirim oluştur - Admin'e görev teslimi bildirimi
+    try {
+      await prisma.notification.create({
+        data: {
+          type: 'TASK_SUBMISSION',
+          title: 'Yeni Görev Teslimi',
+          message: `${originalTask.title} görevi teslim edildi`,
+          actionUrl: '/admin/submissions',
+          read: false
+        }
+      });
+      console.log('Notification created for task submission');
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Bildirim hatası görev teslimini engellemez
+    }
+
     return NextResponse.json({ 
       success: true, 
       task: submittedTask,

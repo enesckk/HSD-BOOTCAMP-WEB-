@@ -122,6 +122,23 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Task created successfully:', newTask.id);
+
+    // Görev oluşturulduktan sonra otomatik kontrol yap
+    try {
+      const autoCheckResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/tasks/auto-schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (autoCheckResponse.ok) {
+        const autoCheckData = await autoCheckResponse.json();
+        console.log('Auto check completed for instructor task:', autoCheckData);
+      }
+    } catch (error) {
+      console.error('Auto check error for instructor task:', error);
+    }
     
     return NextResponse.json({
       message: 'Görev başarıyla oluşturuldu',

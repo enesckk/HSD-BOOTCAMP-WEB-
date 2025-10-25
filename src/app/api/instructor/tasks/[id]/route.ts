@@ -67,6 +67,23 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     });
 
     console.log('Task updated successfully:', updatedTask.id);
+
+    // Görev güncellendikten sonra otomatik kontrol yap
+    try {
+      const autoCheckResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/tasks/auto-schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (autoCheckResponse.ok) {
+        const autoCheckData = await autoCheckResponse.json();
+        console.log('Auto check completed for instructor task update:', autoCheckData);
+      }
+    } catch (error) {
+      console.error('Auto check error for instructor task update:', error);
+    }
     
     return NextResponse.json({
       success: true,

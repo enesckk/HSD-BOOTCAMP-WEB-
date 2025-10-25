@@ -74,24 +74,13 @@ const ProgramPage = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 text-white"
-      >
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-            <Calendar className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Eğitim Programı</h1>
-            <p className="text-red-100">Kubernetes Bootcamp Program Detayları</p>
-          </div>
-        </div>
-        <p className="text-lg text-red-100 leading-relaxed">
+      
+            
+            <p className="text-black-100">Kubernetes Bootcamp Program Detayları</p>
+  
+        <p className="text-lg text-gray-600 leading-relaxed">
           4 haftalık yoğun Kubernetes eğitimi ile container orkestrasyonu konusunda uzmanlaşın.
         </p>
-      </motion.div>
 
       {/* Program Details */}
       <motion.div
