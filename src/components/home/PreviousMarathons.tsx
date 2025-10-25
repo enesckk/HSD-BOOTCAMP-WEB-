@@ -388,7 +388,7 @@ const PreviousMarathons: React.FC = () => {
               <div>
                 
                 <h3 className="text-3xl md:text-4xl font-bold text-[var(--text)] mb-6">
-                  Maraton <span className="text-[var(--primary)]">İstatistikleri</span>
+                  HSD Türkiye <span className="text-[var(--primary)]">İstatistikleri</span>
                 </h3>
                 <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
                   Huawei Fikir Maratonlarının toplam başarıları ve etkileri. Geçmiş yıllarda düzenlenen bootcamp ve maratonlarımızın genel başarı metrikleri ve katılımcılarımızın elde ettiği sonuçlar.
