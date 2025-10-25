@@ -56,8 +56,14 @@ const InstructorLayout = ({ children, title, subtitle }: InstructorLayoutProps) 
           {/* Sidebar Header */}
           <div className="flex items-center p-6 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
+              {/* HSD Logo */}
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">&lt;HSD&gt;</span>
+                </div>
+                <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">H</span>
+                </div>
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Eğitmen Paneli</h2>
