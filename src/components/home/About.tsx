@@ -104,11 +104,7 @@ const About: React.FC = () => {
           >
             {/* Left Column - Video */}
             <div>
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-[var(--text)] mb-2">HSD Tanıtım Videosu</h3>
-                <p className="text-[var(--text-muted)]">HSD topluluğu ile bağlantıda kalın</p>
-              </div>
-              <div className="relative w-full max-w-sm mx-auto">
+              <div className="relative w-full max-w-lg mx-auto">
                 <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                   <iframe
                     className="absolute top-0 left-0 w-full h-full rounded-xl shadow-lg"
