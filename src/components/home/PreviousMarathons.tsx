@@ -65,7 +65,7 @@ const PreviousMarathons: React.FC = () => {
       id: 1,
       year: "Temmuz 2025",
       title: "Huawei Cloud AI Bootcamp",
-      subtitle: "Yapay Zeka ve Makine Öğrenmesi",
+      subtitle: "Yapay Zeka ve Bulut Teknolojileri",
       location: "Online",
       participants: "2000+",
       duration: "8 Hafta",
