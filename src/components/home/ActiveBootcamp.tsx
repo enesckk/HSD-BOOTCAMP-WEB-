@@ -107,9 +107,6 @@ const ActiveBootcamp: React.FC = () => {
               <CheckCircle className="w-4 h-4" />
               <span>Aktif Bootcamp</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text)] mb-6">
-              Bu Eğitim <span className="text-[var(--primary)]">Başladı</span>
-            </h2>
           </motion.div>
 
           {/* Main Bootcamp Card */}
