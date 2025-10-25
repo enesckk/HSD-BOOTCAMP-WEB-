@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 import {
   Calendar,
   Clock,
@@ -244,16 +245,22 @@ const ParticipantDashboard = () => {
               Eğitim programınızı takip edin ve teknoloji dünyasında uzmanlaşın!
             </p>
           </div>
-          <div className="hidden md:block">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
-              <div className="flex items-center space-x-1">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-red-600 font-bold text-xs">&lt;HSD&gt;</span>
-                </div>
-                <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">H</span>
-                </div>
-              </div>
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/hsd-logo-white.png"
+                alt="HSD Logo"
+                width={80}
+                height={40}
+                className="object-contain"
+              />
+              <Image
+                src="/Huawei-Logo.png"
+                alt="Huawei Logo"
+                width={100}
+                height={40}
+                className="object-contain brightness-0 invert"
+              />
             </div>
           </div>
         </div>
