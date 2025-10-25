@@ -256,6 +256,35 @@ const About: React.FC = () => {
             </div>
           </motion.div>
 
+          {/* YouTube Video */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            viewport={{ once: true }}
+            className="bg-white rounded-2xl p-8 mb-16 shadow-lg border border-gray-200"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-bold text-[var(--text)] mb-4">HSD Türkiye Tanıtım Videosu</h3>
+              <p className="text-lg text-[var(--text-muted)] max-w-3xl mx-auto">
+                HSD Türkiye'nin misyonu ve vizyonu hakkında daha fazla bilgi edinmek için tanıtım videomuzu izleyin.
+              </p>
+            </div>
+            
+            <div className="relative w-full max-w-4xl mx-auto">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-xl"
+                  src="https://www.youtube.com/embed/de8ANp2L52I?start=1"
+                  title="HSD Türkiye Tanıtım Videosu"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+          </motion.div>
+
           {/* YouTube Channel Info */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
