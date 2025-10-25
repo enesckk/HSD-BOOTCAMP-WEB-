@@ -51,12 +51,15 @@ const TasksPage = () => {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('tasks');
   const [groupedSubmissions, setGroupedSubmissions] = useState<any[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -95,6 +98,7 @@ const TasksPage = () => {
   }, [authLoading, isAuthenticated, user, router]);
 
     const fetchTasks = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('afet_maratonu_token');
       const response = await fetch('/api/instructor/tasks', {
@@ -116,6 +120,8 @@ const TasksPage = () => {
       }
       } catch (error) {
         console.error('Error fetching tasks:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -135,8 +141,8 @@ const TasksPage = () => {
       }
     } catch (error) {
       console.error('❌ Error fetching submissions:', error);
-    }
-  };
+      }
+    };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -322,46 +328,88 @@ const TasksPage = () => {
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     try {
+      const now = new Date();
+      const currentDate = now.toISOString().split('T')[0];
+      const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+      
+      // Görev bilgilerini al
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      
+      let updateData: any = { 
+        status: newStatus,
+        title: task.title,
+        description: task.description,
+        startDate: task.startDate,
+        endDate: task.endDate,
+        startTime: task.startTime,
+        endTime: task.endTime,
+        dueDate: task.dueDate
+      };
+      
+      // Manuel başlatma durumunda
+      if (newStatus === 'IN_PROGRESS') {
+        updateData.startDate = currentDate;
+        updateData.startTime = currentTime;
+        // Eğer bitiş tarihi yoksa veya geçmişse, yeni bitiş tarihi ekle
+        if (!task.endDate || new Date(task.endDate) <= now) {
+          const newEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 gün sonra
+          updateData.endDate = newEndDate.toISOString().split('T')[0];
+          updateData.endTime = '23:59';
+        }
+      }
+      
+      // Manuel bitirme durumunda
+      if (newStatus === 'COMPLETED') {
+        updateData.endDate = currentDate;
+        updateData.endTime = currentTime;
+      }
+      
       const token = localStorage.getItem('afet_maratonu_token');
-      const response = await fetch('/api/instructor/tasks', {
+      const response = await fetch(`/api/instructor/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ taskId, status: newStatus }),
+        body: JSON.stringify(updateData),
       });
 
       if (response.ok) {
+        console.log('✅ Status update successful, refreshing tasks...');
         setSuccessMessage('Görev durumu başarıyla güncellendi!');
         setShowSuccessModal(true);
-        fetchTasks(); // Görevleri yenile
+        // Görevleri yeniden yükle
+        await fetchTasks();
+        console.log('✅ Tasks refreshed after status update');
       } else {
         const errorData = await response.json();
+        console.error('❌ Status update failed');
         setSuccessMessage('Görev durumu güncellenemedi: ' + (errorData.message || 'Bilinmeyen hata'));
         setShowSuccessModal(true);
       }
     } catch (error) {
-      console.error('Error updating task status:', error);
+      console.error('Error updating status:', error);
       setSuccessMessage('Görev durumu güncellenirken hata oluştu');
       setShowSuccessModal(true);
     }
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (!confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
-      return;
-    }
+  const handleDelete = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!taskToDelete) return;
 
     try {
       const token = localStorage.getItem('afet_maratonu_token');
-      const response = await fetch('/api/instructor/tasks', {
+      const response = await fetch(`/api/instructor/tasks/${taskToDelete}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ taskId }),
       });
 
       if (response.ok) {
@@ -377,7 +425,15 @@ const TasksPage = () => {
       console.error('Error deleting task:', error);
       setSuccessMessage('Görev silinirken hata oluştu');
       setShowSuccessModal(true);
+    } finally {
+      setShowDeleteModal(false);
+      setTaskToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setTaskToDelete(null);
   };
 
   const handleEdit = (task: Task) => {
@@ -460,11 +516,17 @@ const TasksPage = () => {
   return (
     <InstructorLayout title="Görevler" subtitle="Bootcamp Görevleri">
       <div className="space-y-6">
-        {/* Description */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            Bootcamp görevlerini düzenleyin ve yönetin. Yeni görevler oluşturun, mevcut görevleri takip edin.
-          </p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+           
+            <p className="text-gray-600 mt-1">Bootcamp görevlerini oluşturun, düzenleyin ve takip edin</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-600">
+              Toplam: {tasks.length} görev
+            </div>
+          </div>
         </div>
 
         {/* Action Bar */}
@@ -494,21 +556,21 @@ const TasksPage = () => {
           <>
 
             {/* Tasks List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Görevler ({tasks.length})
-                </h2>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100"
+            >
+              {loading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
           </div>
-          
-              <div className="divide-y divide-gray-200">
-          {tasks.length === 0 ? (
+              ) : tasks.length === 0 ? (
                   <div className="p-12 text-center">
-                    <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz oluşturulan görev yok</h3>
-                    <p className="text-gray-500 mb-6">
-                      İlk görevinizi oluşturmak için "Yeni Görev" butonuna tıklayın.
-                    </p>
+                  <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Henüz Görev Yok</h3>
+                  <p className="text-gray-600 mb-6">İlk görevinizi oluşturmak için yukarıdaki butona tıklayın.</p>
                     <button 
                       onClick={() => setShowCreateModal(true)}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors"
@@ -518,101 +580,141 @@ const TasksPage = () => {
                     </button>
             </div>
           ) : (
-                  tasks.map((task) => (
-                    <div key={task.id} className="p-6 hover:bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            {task.title}
-                          </h3>
-                          <p className="text-gray-600 mb-4">{task.description}</p>
-                          
-                          <div className="flex items-center space-x-6 text-sm text-gray-500">
-                            {task.startDate && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Görev</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Durum</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Başlama Tarihi</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Bitiş Tarihi</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Oluşturulma</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {tasks.map((task) => (
+                        <tr key={task.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{task.title}</h3>
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                {task.description}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                                {getStatusText(task.status)}
+                              </span>
+                              <div className="flex space-x-1">
+                                {task.status === 'PENDING' && (
+                                  <button
+                                    onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
+                                    className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+                                  >
+                                    Başlat
+                                  </button>
+                                )}
+                                {task.status === 'IN_PROGRESS' && (
+                                  <button
+                                    onClick={() => handleStatusChange(task.id, 'COMPLETED')}
+                                    className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 hover:bg-green-200 rounded-full transition-colors"
+                                  >
+                                    Bitir
+                                  </button>
+                                )}
+                                {task.status === 'COMPLETED' && (
+                                  <button
+                                    onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
+                                    className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+                                  >
+                                    Tekrar Başlat
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {task.startDate ? (
+                              <div>
                               <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Başlangıç: {new Date(task.startDate).toLocaleDateString('tr-TR')}
-                                {task.startTime && ` ${task.startTime}`}
+                                  <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                                  {new Date(task.startDate).toLocaleDateString('tr-TR')}
+                                </div>
+                                {task.startTime && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {task.startTime}
                               </div>
                             )}
-                            {task.endDate && (
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Bitiş: {new Date(task.endDate).toLocaleDateString('tr-TR')}
-                                {task.endTime && ` ${task.endTime}`}
                               </div>
+                            ) : (
+                              <span className="text-gray-400">Belirtilmemiş</span>
                             )}
-                            {!task.startDate && !task.endDate && task.dueDate && (
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {task.endDate ? (
+                              <div>
                         <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Bitiş: {new Date(task.dueDate).toLocaleDateString('tr-TR')}
+                                  <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                                  {new Date(task.endDate).toLocaleDateString('tr-TR')}
+                                </div>
+                                {task.endTime && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {task.endTime}
                               </div>
                             )}
                             </div>
+                            ) : task.dueDate ? (
+                              <div>
+                                <div className="flex items-center">
+                                  <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                                  {new Date(task.dueDate).toLocaleDateString('tr-TR')}
                           </div>
-                        
-                        <div className="ml-4 flex items-center space-x-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-                            {getStatusText(task.status)}
-                          </span>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Son tarih
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">Belirtilmemiş</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {new Date(task.createdAt).toLocaleDateString('tr-TR')}
+                          </td>
+                          <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
                             <button 
                               onClick={() => handleView(task)}
-                              className="text-gray-400 hover:text-gray-600 transition-colors" 
+                                className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded hover:bg-gray-100" 
                               title="Detayları Görüntüle"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleEdit(task)}
-                              className="text-gray-400 hover:text-blue-600 transition-colors" 
+                                className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded hover:bg-blue-50" 
                               title="Düzenle"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleDelete(task.id)}
-                              className="text-gray-400 hover:text-red-600 transition-colors" 
+                                className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50" 
                               title="Sil"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
-                          
-                          {/* Status Change Buttons */}
-                          <div className="flex items-center space-x-2 ml-4">
-                            {task.status === 'PENDING' && (
-                              <button
-                                onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
-                                className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
-                              >
-                                Başlat
-                              </button>
-                            )}
-                            {task.status === 'IN_PROGRESS' && (
-                              <button
-                                onClick={() => handleStatusChange(task.id, 'COMPLETED')}
-                                className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 hover:bg-green-200 rounded-full transition-colors"
-                              >
-                                Bitir
-                              </button>
-                            )}
-                            {task.status === 'COMPLETED' && (
-                              <button
-                                onClick={() => handleStatusChange(task.id, 'IN_PROGRESS')}
-                                className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
-                              >
-                                Tekrar Başlat
-                              </button>
-                            )}
-                            </div>
-                            </div>
-                          </div>
-                        </div>
-                  ))
-                )}
-              </div>
-            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </motion.div>
           </>
         )}
 
@@ -676,7 +778,7 @@ const TasksPage = () => {
                   <button className="w-full bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2">
                     <Filter className="w-4 h-4" />
                     <span>Filtrele</span>
-                  </button>
+                              </button>
                 </div>
               </div>
             </div>
@@ -760,7 +862,7 @@ const TasksPage = () => {
                                     </div>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
-                                    <button
+                              <button
                                       onClick={() => {
                                         setSelectedSubmission(submission);
                                         setShowDetailModal(true);
@@ -779,7 +881,7 @@ const TasksPage = () => {
                                       <span className="text-sm font-medium">
                                         {submission.submissionType === 'FILE' ? 'Dosya' : 'Link'}
                                       </span>
-                                    </button>
+                              </button>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${getSubmissionStatusColor(submission.status)}`}>
@@ -802,7 +904,7 @@ const TasksPage = () => {
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div className="flex items-center space-x-2">
-                                      <button
+                              <button
                                         onClick={() => {
                                           setSelectedSubmission(submission);
                                           setShowDetailModal(true);
@@ -811,7 +913,7 @@ const TasksPage = () => {
                                         title="Detayları Görüntüle"
                                       >
                                         <Eye className="w-4 h-4" />
-                                      </button>
+                              </button>
                                       <button
                                         onClick={() => openEvaluationModal(submission)}
                                         className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
@@ -819,21 +921,21 @@ const TasksPage = () => {
                                       >
                                         <CheckCircle className="w-4 h-4" />
                                       </button>
-                                    </div>
+                            </div>
                                   </td>
                                 </motion.tr>
                               ))}
                             </tbody>
                           </table>
-                        </div>
-                      )}
-                    </div>
+                            </div>
+                )}
+              </div>
                   ))}
-                </div>
+            </div>
               )}
             </div>
-          </div>
-        )}
+            </div>
+          )}
       </div>
       
       {/* Create Task Modal */}
@@ -1338,6 +1440,52 @@ const TasksPage = () => {
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
                   {isEvaluating ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-transparent backdrop-blur-sm" onClick={cancelDelete}></div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4"
+          >
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-red-100">
+                  <AlertCircle className="w-6 h-6 text-red-600" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Görevi Sil
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Bu görevi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  Sil
                 </button>
               </div>
             </div>
