@@ -129,10 +129,6 @@ const Footer: React.FC = () => {
                   <span className="text-sm">info@huawei.com.tr</span>
                 </div>
                 <div className="flex items-center space-x-3 text-[var(--text-muted)]">
-                  <Phone className="w-4 h-4 text-[var(--primary)]" />
-                  <span className="text-sm">+90 212 123 45 67</span>
-                </div>
-                <div className="flex items-center space-x-3 text-[var(--text-muted)]">
                   <MapPin className="w-4 h-4 text-[var(--primary)]" />
                   <span className="text-sm">İstanbul, Türkiye</span>
                 </div>
